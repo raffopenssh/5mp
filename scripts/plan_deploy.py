@@ -16,7 +16,9 @@ this step decides WHERE A SMALL STAFF STANDS FIRST, which is a triage question a
         HydroRIVERS / 1930s wells / JRC and printed, never assumed silently.
   TANGO (corridor zones): urgency = herd utilisation the band carries × people within 25 km (herders meet residents) × gold
         targets in the band (a rush on a herd route is where the two conflicts meet); site = settlement on a road inside or
-        within SITE_REACH_KM of the band, at the band's densest passage; active from the bundle's onset month.
+        within SITE_REACH_KM of the band, at the band's densest passage; active from the bundle's onset month. A corridor of
+        >= 3 bundles over >= 1 M ha gets a SECOND site, > 2 x SITE_REACH_KM from the first, chosen by the marginal weighted
+        coverage it adds given the first (the targets the first base cannot reach within REACH_MIN) — not by its own reach.
   FP    (focal points): towns ≥ fp_min_pop on a road, ranked by the staffed ECHO/TANGO sites within FP_REACH_KM.
 
 Year 1 = the first --staff-y1 people worth of sites in urgency order (a team is 5: 4 scouts + 1 leader, per the budget's
@@ -124,15 +126,28 @@ class Access:
 
 REACH_MIN = 240     # a day's out-and-back from the base: 4 h each way by the best mode
 
-def shortlist(cands, IX, AC, G, zone_mask, target_w, prefer=None, k=3, need_road=True, exclude=(), exclude_geom=()):
+def shortlist(cands, IX, AC, G, zone_mask, target_w, prefer=None, k=3, need_road=True, exclude=(), exclude_geom=(), given=None):
     """cands: settlement rows (lat, lon, pop, cls, ...). Keep settlements >= MIN_SITE_POP that are not camps and have a road
     within ROAD_KM; score each by what it REACHES of the zone (OSRM, weighted by target_w on the zone's cells) x log(people);
-    return the top k with their numbers. The deterministic score picks; muse-glimmer may re-order the shortlist (adjudicate)."""
+    return the top k with their numbers. The deterministic score picks; muse-glimmer may re-order the shortlist (adjudicate).
+    given=(lon, lat) of a base already placed on the zone: the score is then the MARGINAL weighted coverage — the share of the
+    zone's targets within REACH_MIN of the candidate that the given base does not reach (2026-10-16, B1: a second team is placed
+    to cover what the first cannot, not where its own reach is largest); `marginal` and `union` are recorded on each entry."""
     rows = [x for x in cands if x[3] != "temporary_camp" and (x[2] or 0) >= MIN_SITE_POP]
-    rows.sort(key=lambda x: -((prefer(x) if prefer else 1.0) * math.log1p(x[2] or 0)))
     cids = AC.cell_ids(zone_mask, G) if AC.ok else np.zeros(0, int)
     rr, cc = (G.rc_arr(AC.cells[cids, 0], AC.cells[cids, 1]) if len(cids) else (np.zeros(0, int), np.zeros(0, int)))
     w = target_w[rr, cc] if len(cids) else np.zeros(0)
+    wn = w / max(float(w.sum()), 1e-9) if len(cids) else w
+    first = None
+    if given is not None and AC.ok and len(cids):
+        j0 = AC.station(*given); first = (AC.t[j0, cids] <= REACH_MIN) if j0 is not None else np.zeros(len(cids), bool)
+    def marginal(x):
+        j = AC.station(x[1], x[0])
+        if j is None: return 0.0, 0.0
+        s = AC.t[j, cids] <= REACH_MIN
+        return float(wn[s & ~first].sum()), float(wn[s | first].sum())
+    if first is not None: rows.sort(key=lambda x: -marginal(x)[0])
+    else: rows.sort(key=lambda x: -((prefer(x) if prefer else 1.0) * math.log1p(x[2] or 0)))
     out = []
     for x in rows[:120]:
         rk = IX["road_km"](x[1], x[0], ROAD_FAR_KM)
@@ -143,10 +158,13 @@ def shortlist(cands, IX, AC, G, zone_mask, target_w, prefer=None, k=3, need_road
         if need_road and not road_ok: continue                      # TANGO walks (hundreds of km, like the herders; helicopter in extremis): no road test
         pref = prefer(x) if prefer else 1.0; road_f = 1.0 if (rk is not None and rk <= ROAD_KM) else 0.7
         score = (rc["share"] if rc else 0.3) * (0.5 + 0.5 * (rc["car_share"] if rc else 0.5)) * pref * road_f * math.log1p(x[2] or 0)
+        mg = marginal(x) if first is not None else None
+        if mg is not None: score = mg[0]                              # second site: marginal weighted coverage given the first base, nothing else
         name = IX["name_at"](x[1], x[0], x[5])
         if exclude and site_excluded(name, exclude): continue          # a settlement set aside by declared constraint (--deprioritise site:NAME)
         if exclude_geom and any(g.contains(Point(x[1], x[0])) for g in exclude_geom): continue   # a settlement on the penalised ground (east of the line / in the polygon)
-        out.append(dict(row=x, road_km=(round(rk, 1) if rk is not None else None), water=IX["water_at"](x[1], x[0]), reach=rc, score=round(score, 3), name=name))
+        out.append(dict(row=x, road_km=(round(rk, 1) if rk is not None else None), water=IX["water_at"](x[1], x[0]), reach=rc, score=round(score, 3), name=name,
+                        **({"marginal": round(mg[0], 3), "union": round(mg[1], 3)} if mg is not None else {})))
         if len(out) >= 40: break
     out.sort(key=lambda o: -o["score"]); return out[:k]
 
@@ -436,12 +454,18 @@ def main():
         placed.append(s_)
         if len(t["bundles"]) >= 3 and t["area_ha"] >= 1_000_000:
             # a corridor zone that merges three or more routes over a million hectares is not one team's ground: a second site,
-            # chosen among settlements the first cannot reach within REACH_MIN (else the two would stand on the same passage)
+            # > 2 x SITE_REACH_KM from the first, chosen by MARGINAL weighted coverage given the first (the share of the zone's herd
+            # targets within REACH_MIN of the candidate that the first base does not reach, OSRM) — not by its own reach, which
+            # would put both teams on the densest passage (2026-10-16, review B1: on corridor 255 own reach chose Busseri River,
+            # 50 km from Bisellia on the same leg, marginal 0.102; Raja on the western leg adds 0.154)
             far = [x for x in cands if P.dkm((x[1], x[0]), (s_["lon"], s_["lat"])) > 2 * SITE_REACH_KM]
-            sl2 = shortlist(far, IX, AC, G, t["mask"], t["udr"] * t["mask"], prefer=herd_at, need_road=False, exclude=EXCL_SITES, exclude_geom=EXCL_GEOM)
+            sl2 = shortlist(far, IX, AC, G, t["mask"], t["udr"] * t["mask"], need_road=False, exclude=EXCL_SITES, exclude_geom=EXCL_GEOM, given=(s_["lon"], s_["lat"]))
             if sl2:
-                s2 = mk("TANGO", sl2[0], [t["uid"]], round(t["urgency"] * 0.85, 3), s_["season"], why + f" Second team: the zone spans {len(t['bundles'])} bundles and {t['area_ha']/1e6:.1f} M ha; this site is > {2*SITE_REACH_KM:g} km from the first.", [])
-                s2["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl2]
+                c0 = sl2[0]; first_share = (s_["reach"] or {}).get("share")
+                s2 = mk("TANGO", c0, [t["uid"]], round(t["urgency"] * 0.85, 3), s_["season"], why + f" Second team: the zone spans {len(t['bundles'])} bundles and {t['area_ha']/1e6:.1f} M ha; this site is > {2*SITE_REACH_KM:g} km from the first and is chosen by marginal coverage given it: "
+                        + f"it adds {c0.get('marginal', 0):.0%} of the zone's targets the first base ({s_['place']}" + (f", {first_share:.0%}" if first_share is not None else "") + f") does not reach within {REACH_MIN//60} h (union {c0.get('union', 0):.0%}).", [])
+                s2["marginal"] = c0.get("marginal"); s2["union_share"] = c0.get("union"); s2["given"] = s_["place"]
+                s2["alternatives"] = [dict(name=c["name"], people=int(c["row"][2] or 0), road_km=c["road_km"], reach=c["reach"], score=c["score"], marginal=c.get("marginal"), union=c.get("union"), lon=round(c["row"][1], 4), lat=round(c["row"][0], 4)) for c in sl2]
                 placed.append(s2)
     adjudicate(placed, zs, a.workers, prior_teams(tag, a.reuse), ask=not a.no_llm, exclude=EXCL_SITES, exclude_geom=EXCL_GEOM)
     # two teams of one kind on one passage are one team: after adjudication, a site within 2 x SITE_REACH_KM of a higher-urgency
@@ -548,14 +572,14 @@ def main():
              f"  SOUTH SUDAN STRAND: year 1 ≤ {a.staff_y1} staff → {staff1} placed ({dict(Counter(s['kind'] for s in y1 if s['strand'] == 'SSD'))});  year 2 ≤ {a.staff_y2} staff → {staff2} placed ({dict(Counter(s['kind'] for s in y2 if s['strand'] == 'SSD'))}); caps ECHO {a.echo_y2} TANGO {a.tango_y2} FP {a.fp_y2}",
              *[f"  {k} STRAND (separate budget, {v['name']}; ids {v['prefix']}1..; {v['law']}): ECHO on {v['iso']} community zones, cap {v['cap_teams']} by year 2 → {v['placed']} placed, {v['year1']}/{v['year2']} staff in Y1/Y2 outside the caps above" for k, v in strand_staff.items()],
              f"  ECHO urgency = 0.5·gold-target rank + 0.3·(people × mean P10) rank + 0.2·shield rank, zero without a gold target ({G.mining_note}); TANGO urgency = 0.4·herd UD + 0.35·UD within 25 km of residents + 0.25·gold targets in band (rank-percentiles).",
-             f"  a site = GHSL settlement ≥ {MIN_SITE_POP} people (residence implies water; mapped water re-checked and printed); ECHO needs a trunk…tertiary road ≤ {ROAD_KM:g} km or OSRM car trips (motorbikes); TANGO walks with the herds (no road test; helicopter in extremis). Shortlist scored by OSRM reach within {REACH_MIN//60} h; muse-glimmer adjudicates among the shortlisted sites only. Footprint = served zones + {SITE_REACH_KM:g} km round the site.", ""]
+             f"  a site = GHSL settlement ≥ {MIN_SITE_POP} people (residence implies water; mapped water re-checked and printed); ECHO needs a trunk…tertiary road ≤ {ROAD_KM:g} km or OSRM car trips (motorbikes); TANGO walks with the herds (no road test; helicopter in extremis). Shortlist scored by OSRM reach within {REACH_MIN//60} h; a corridor's SECOND site (≥ 3 bundles, ≥ 1 M ha) is > {2*SITE_REACH_KM:g} km from the first and scored by the MARGINAL share of the zone's targets it adds within {REACH_MIN//60} h given the first base; muse-glimmer adjudicates among the shortlisted sites only. Footprint = served zones + {SITE_REACH_KM:g} km round the site.", ""]
         L += constraint_lines(a, DP, echo, tango, placed, y2, SP, dropped)
         for yr in (1, 2):
             L.append(f"YEAR {yr}" + (" (adds to year 1)" if yr == 2 else ""))
             for s in sorted([s for s in y2 if s["year"] == yr], key=lambda s: (s["kind"] != "FP", s["kind"], -s["urgency"])):
                 L.append(f"  {s['id']:<3} {s['kind']:<5} x{s['staff']}  {s['place']}{' (the Project Manager — no focal-point pay)' if s.get('pm') else ''}  ({s['lon']}, {s['lat']})  urgency {s['urgency']:.2f}" + (f"  picked in {s['robust']:.0%} of perturbed re-rankings" if s.get("robust") is not None else "") + f"  zones {s['zone_uids']}  footprint {s.get('footprint_km2', 0):,} km²")
                 L.append(f"        water: {s['water']}; road {(str(s['road_km']) + ' km') if s.get('road_km') is not None else 'no mapped road within %g km (OSRM car trips say tracks exist)' % ROAD_FAR_KM}; when: {s['season']}"); L.append(f"        why: {s['why']}")
-                if s.get("adjudication"): L.append(f"        site: {s['adjudication']}; shortlist {[(c['name'], c['people'], (c['reach'] or {}).get('share')) for c in s.get('alternatives', [])]}")
+                if s.get("adjudication"): L.append(f"        site: {s['adjudication']}; shortlist {[(c['name'], c['people'], (c['reach'] or {}).get('share')) + ((c['marginal'],) if c.get('marginal') is not None else ()) for c in s.get('alternatives', [])]}" + (" (4th number = marginal share given the first base)" if s.get("marginal") is not None else ""))
                 if s.get("short"): L.append(f"        short: {s['short']}")
                 if s.get("brief"): L.append(f"        brief: {s['brief']}")
                 if s.get("first_season"): L.append(f"        first season: {s['first_season']}")
@@ -771,7 +795,9 @@ def narrate(tag, teams, zs, workers, prior, ask=True):
     todo = []
     for s in teams:
         o = old.get((s["kind"], s["place"], tuple(s["zone_uids"]), nowave(s["why"])))
-        if o: s["brief"], s["first_season"], s["short"] = o["brief"], o.get("first_season"), o.get("short")
+        if o:
+            s["brief"], s["first_season"], s["short"] = o["brief"], o.get("first_season"), o.get("short")
+            if o.get("brief_model"): s["brief_model"] = o["brief_model"]     # who wrote it travels with the brief (plan_deploy_apply_briefs.py)
         else: todo.append(s)
     print(f"narrate: {len(teams) - len(todo)} briefs kept from prior runs, {len(todo)} to write" + (" — NOT written (--no-llm)" if ask is False and todo else ""), file=sys.stderr)
     teams_all = teams; teams = todo

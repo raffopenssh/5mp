@@ -29,6 +29,7 @@ FROM_EASY = ["04_existing_pa", "20_settlements", "21_fire_fronts", "30_gold_top5
 # (group, layer, title, visible, opacity) top → bottom
 TREE = [
  ("Deployment", "deploy_teams", "Teams — T TANGO · E ECHO · F focal point (hollow = year 2)", True, 1.0),
+ ("Deployment", "focus", "This phase's focus — the veil over everything outside it (South Sudan east of 28 E, Sudan, CAR, DRC)", True, 1.0),
  ("Deployment", "deploy_zones", "Zones the teams work (outline; the fill is the layer below)", True, 1.0),
  ("Deployment", "raster:deploy_fill", "Team-zone fill: deeper = stronger evidence for the class", True, 1.0),
  ("Deployment", "deploy_reach", "25 km working disc per team (reach, not a finding)", False, 1.0),

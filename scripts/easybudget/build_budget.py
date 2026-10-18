@@ -818,7 +818,7 @@ def build_xlsx(path, F, P):
     loc_last = wl.max_row
     wl.append([]); wl.append(["Weight sums by delivery unit"]); wl.cell(row=wl.max_row, column=1).font = Font(bold=True)
     wsum_row = {}
-    for key in ("TEAM", "FP", "HQ", "NONE") + STRAND_KEYS:
+    for key in ("TEAM", "FP", "HQ", "NONE") + tuple(k for k in STRAND_KEYS if any(t["strand"][k]["total"])):
         wl.append([key]); r = wl.max_row; wsum_row[key] = r
         for y in range(N):
             wc = get_column_letter(7 + y)
@@ -902,8 +902,9 @@ def build_xlsx(path, F, P):
             for c in range(2, 2 * N + 4): ap.cell(row=rr, column=c).number_format = MONEY
     cats = list(dict.fromkeys(rv["cat"] for rv in rows))
     ap_block("By cost category", "A", cats)
-    ap_block("By budget strand", "E", ["South Sudan request"] + [strand_name[k] for k in STRAND_KEYS])
-    ap_block("By delivery unit", "D", ["HQ", "FP", "TEAM", "NONE"] + list(STRAND_KEYS))
+    live_strands = [k for k in STRAND_KEYS if any(t["strand"][k]["total"])]
+    ap_block("By budget strand", "E", ["South Sudan request"] + [strand_name[k] for k in live_strands])
+    ap_block("By delivery unit", "D", ["HQ", "FP", "TEAM", "NONE"] + live_strands)
     ap_block("By plan action", "B", list(ACTIONS.values()))
     ap.column_dimensions["A"].width = 44
     for c in "BCDEFGH": ap.column_dimensions[c].width = 18
@@ -1014,7 +1015,9 @@ def build_txt(path, xlsx_name, F, P):
     Pp(""); Pp("THE HEADLINE"); Pp("-" * W); Pp("")
     hdr_row("TOTAL")
     Pp("    " + "-" * (W - 8))
-    for cat in CATS: row(cat, t["by_cat"][cat])
+    for cat in CATS:
+        if cat in STRAND_CAT.values() and not any(t["by_cat"][cat]): continue   # a strand without teams this run is not a budget line (2026-10-18)
+        row(cat, t["by_cat"][cat])
     Pp("    " + "-" * (W - 8))
     row("DIRECT COSTS", t["direct"])
     row(f"Freight, customs, clearing ({a['FREIGHT_PCT']:.0%})", t["freight"])
@@ -1081,6 +1084,7 @@ def build_txt(path, xlsx_name, F, P):
             "The workbook holds the same lines as live formulae."))
     for cat in CATS:
         sel = [r for r in rows if r["cat"] == cat]
+        if cat in STRAND_CAT.values() and not sel: continue
         Pp(""); Pp(f"  {cat.upper()}   ({HM} mo {m(sum(t['by_cat'][cat]))})"); Pp("  " + "-" * (W - 4))
         for r in sel:
             Pp(f"  {r['item']}"); Pp(wrap(r["basis"], indent="      "))

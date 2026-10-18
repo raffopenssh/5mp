@@ -192,3 +192,8 @@ Result 2026-09-06 (superseded): 2 years Nov 2026–Oct 2028, USD 1.52 M (0.50 / 
 ## PIP LaTeX report
 
 See `docs/agents/tex.md`.
+* Same day, later: `FOCUS_EAST_LON` 28.25, veil alpha 0.58, no edge hairline/meridian label. The zones the **1 Oct plan** (frozen
+  `reports/pip_latex/facts_v2_2026-10-01.json` + `deploy_focus_pool.json`) selected and this phase does not staff (`deploy["other"]`,
+  9 zones) are drawn in class colour with their names under the veil; the two inside the meridian (Kuajok, Nyamlell) stay in the
+  focus and get veil-tone fill + name only (settlements/fire on them untouched). `focus.geojson` carries `area_km2` (geodesic, rounded to 100) and `other`; legend row "Focus
+  (unveiled): N km²", caption and summary read it (`facts.focus`). Legend team counts are derived (were typed "(5)").

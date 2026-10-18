@@ -82,6 +82,8 @@ MAP_W_IN = 15.5
 PANEL_W_IN = 2.75          # one legend COLUMN; the legend is an inset card in the map's empty east strip
 PANEL_SCALE = 0.80           # legend row text = 10.6 × 0.80 ≈ 8.5 pt, the scale-bar size
 LEGEND_COMPACT = True
+NO_GOLD = False            # --no-gold: the share copy for readers outside AP (feedback B6): no gold cells, targets, watchlist or
+                           # reported workings on the sheet and no Gold block in the legend; everything else identical
 SITUATION = False          # --situation: the ground only (fire, people, clearing, gold) - no zoning, no plan, no teams      # rows = symbol + a few words; every explanation lives in the report / docs, not on the sheet
 LANDSCAPE_ASPECT = 1.414   # A-series landscape: the map frame is widened (east, where the AOI is blank) to this ratio         # every legend font size is multiplied by this (2026-09-06: the map carries the page, the key serves it)
 
@@ -725,8 +727,70 @@ def load_deploy(pdir, arg):
             clip = (D.get("params") or {}).get("line_clip_lat") or [-90, 90]
             pts = [q for q in pts if clip[0] <= q[1] <= clip[1]]
             if len(pts) > 1: line = LineString(sorted(pts, key=lambda q: q[1]))
-    return dict(footprints=foot, teams=teams, path=fp, strands=strands, set_aside=set_aside, line=line,
+    # Conservancies this plan does NOT staff but another organisation could: the pool run (deploy_focus_pool.json, the 22-site
+    # run before the caps) keeps the cross-border strand teams the capped run drops. Drawn under the veil with their names,
+    # no team id, so the reader sees the ground is zoned and named, and that nobody of this plan is placed there.
+    # Sources: the pool run's strand teams (CAR) and the frozen Version-2 record (CAR, Sudan, DRC — the plan before the focus),
+    # so Sam-Ouandja, M'Boki, Songo and Bandasi all stay on the map by name.
+    # (18 Oct, user): every zone the Version-2 plan (1 Oct, before the focus) selected and this phase does not staff —
+    # Cueibet, Kuajok, Nyamlell, the Maridi corridor, Songo, Bandasi, Sam-Ouandja, M'Boki, the CAR corridor — stays on
+    # the map in its class colour with its name(s), under the veil. A second team of the same zone adds its name.
+    other, byzone = [], {}
+    def _add(place, uids, kind, country):
+        key = tuple(sorted(int(u) for u in uids))
+        if not key: return
+        nm = str(place).split(" (")[0].replace("near ", "").replace("*", "").strip()
+        o = byzone.get(key)
+        if o is None:
+            o = byzone[key] = dict(place=nm, names=[nm], uids=list(key), kind=kind, country=country); other.append(o)
+        elif nm not in o["names"]:
+            o["names"].append(nm); o["place"] = " / ".join(o["names"])
+    pool = fp.with_name("deploy_focus_pool.json")
+    if pool.exists():
+        for t in json.load(open(pool)).get("teams") or []:
+            if t.get("strand") and t.get("strand") != "SSD" and t.get("kind") in ("ECHO", "TANGO"):
+                _add(t.get("place", ""), t.get("zone_uids") or [], t["kind"], t["strand"])
+    v2 = ROOT / "reports/pip_latex/facts_v2_2026-10-01.json"
+    if v2.exists():
+        for k, t in sorted((json.load(open(v2)).get("deploy") or {}).get("teams", {}).items()):
+            if t.get("kind") in ("ECHO", "TANGO"):
+                _add(t.get("place", ""), t.get("zone_uids") or [], t["kind"], t.get("country"))
+    served_now = {int(u) for t in foot for u in (t.get("zone_uids") or [])}
+    other = [o for o in other if not set(o["uids"]) & served_now]       # only what this phase does NOT staff is "other"
+    return dict(footprints=foot, teams=teams, path=fp, strands=strands, set_aside=set_aside, line=line, other=other,
                 factor=((D.get("spatial_constraint") or [{}])[0].get("factor")))
+
+
+FOCUS_EAST_LON = 28.25       # deployment sheet: the focus is South Sudan WEST of this meridian (AP-RCA, 18 Oct 2026; +0.25 the same day)
+FOCUS_ISO = "SSD"
+VEIL_C, VEIL_ALPHA = "#ffffff", 0.58   # the veil over everything outside the focus: white, translucent, nothing under it is deleted
+                                       # (0.74 on 18 Oct hid the names of the conservancies other partners could take up; 0.58 keeps them legible)
+FOCUS_EDGE_C = "#3a3a3a"
+VEIL_Z = 4.6                 # above every area layer (gold cells 4.3), below the marks (5+) that stay inside the focus
+
+
+def focus_polygon(frame, borders, deploy, planner_path):
+    """The ground this phase works: FOCUS_ISO west of FOCUS_EAST_LON, plus every staffed CONSERVANCY whole (a team's zone is
+    the budget's unit; the staffed corridor keeps the rule - its east end past the meridian is the end the constraint set
+    aside). Returns a (Multi)Polygon in lon/lat, clipped to the frame."""
+    x0, y0, x1, y1 = frame
+    ssd = unary_union([g for iso, g in borders if iso == FOCUS_ISO])
+    west = Polygon([(x0, y0), (FOCUS_EAST_LON, y0), (FOCUS_EAST_LON, y1), (x0, y1)])
+    foc = ssd.intersection(west)
+    zp = planner_path if planner_path.name == "zones.geojson" else planner_path.parent / "zones.geojson"
+    if zp.exists():
+        served = {u for t in deploy["footprints"] if t.get("kind") == "ECHO" and t.get("strand", "SSD") == FOCUS_ISO
+                  for u in (t.get("zone_uids") or [])}
+        zf = json.load(open(zp))["features"]
+        foc = unary_union([foc] + [shape(f["geometry"]) for f in zf if int(f["properties"]["uid"]) in served])
+        # (a 1 Oct zone inside the meridian — Kuajok, Nyamlell — is NOT cut out of the focus: the veil is ground, and the
+        #  settlements and fire there are this phase's to see. The zone itself and its name are drawn at veil tone instead.)
+    return foc.buffer(0)
+
+
+def veil_polygon(frame, focus):
+    x0, y0, x1, y1 = frame
+    return Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]).difference(focus)
 
 
 def solver_raster(pdir):
@@ -804,12 +868,12 @@ def draw_graticule(ax, frame, kx, step=1.0):
         ax.plot([lon, lon], [y0, y1], color="#c9c9c2", lw=0.5, ls=(0, (1, 4)),
                 zorder=1.0)
         ax.text(lon, y0 + (y1 - y0) * 0.004, f"{lon:g}\u00b0E", fontsize=7.5,
-                color="#a5a59d", ha="center", va="bottom", zorder=1.0)
+                color="#a5a59d", ha="center", va="bottom", zorder=VEIL_Z + 0.05)
     for lat in np.arange(math.ceil(y0), y1, step):
         ax.plot([x0, x1], [lat, lat], color="#c9c9c2", lw=0.5, ls=(0, (1, 4)),
                 zorder=1.0)
         ax.text(x0 + (x1 - x0) * 0.003, lat, f"{lat:g}\u00b0N", fontsize=7.5,
-                color="#a5a59d", ha="left", va="bottom", zorder=1.0)
+                color="#a5a59d", ha="left", va="bottom", zorder=VEIL_Z + 0.05)
 
 
 # --------------------------------------------------------------- labelling
@@ -1104,6 +1168,46 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # how many fronts are in the wash, how far the gold clip extends. Anything
     # a reader would quote rather than use to decode the picture belongs in the
     # text, where it can be qualified.
+    def deploy_block():
+        # the DEPLOYMENT sheet: the focus and the teams come FIRST (what this sheet adds to Figure 1); the base layers follow
+        head("This phase", TEAM_C)
+        key("s", f"Focus (unveiled): {deploy['focus_km2']:,} km\u00b2 \u2014 South Sudan west of {FOCUS_EAST_LON:g}\u00b0E, staffed conservancies whole",
+            "none", "#c8c8c2", swatch=True, mew=0.6, alpha=0.9,
+            short=f"Focus (unveiled): {deploy['focus_km2']:,} km\u00b2, South Sudan west of {FOCUS_EAST_LON:g}\u00b0E")
+        key("s", f"Veiled: outside this phase's focus (South Sudan east of {FOCUS_EAST_LON:g}\u00b0E, Sudan, CAR, DRC) \u2014 zoning kept for other partners, no teams",
+            "#ecece8", "#c8c8c2", swatch=True, mew=0.6, alpha=0.9,
+            short=f"Veiled = outside this phase's focus (South Sudan east of {FOCUS_EAST_LON:g}\u00b0E, Sudan, CAR, DRC); zoning kept for other partners, no teams")
+        if deploy.get("other"):
+            _n = len(deploy["other"])
+            key("s", f"Zone selected in the 1 Oct plan, not staffed now ({_n}): named under the veil for another organisation to take up",
+                ZONE_FILL["community"], ZONE_C["community"], swatch=True, mew=0.6, alpha=0.5,
+                short=f"Selected 1 Oct, not staffed now ({_n}): named for another organisation")
+        n1 = sum(1 for t in deploy["teams"] if t["year"] == 1); n2 = sum(1 for t in deploy["teams"] if t["year"] == 2)
+        head("Teams", TEAM_C)
+        for c, w in (("community", "Community zone (ECHO)"), ("corridor", "Corridor zone (TANGO)")):
+            key("s", w, ZONE_C[c], ZONE_C[c], swatch=True, mew=0.6, alpha=0.55, short=w)
+        # foreign strands (deploy.json "strands": CAR / COD / SDN, each its own budget line). Dashed + lighter where the
+        # strand says so (CAR, DRC); Sudan is drawn like South Sudan and only its ids and budget line differ.
+        for k, v in (deploy.get("strands") or {}).items():
+            n_k = sum(1 for t in deploy["teams"] if t.get("strand") == k)
+            if not n_k: continue
+            ids = f"{v['prefix']}1\u2013{v['prefix']}{n_k}" if n_k > 1 else f"{v['prefix']}1"
+            if v.get("dashed"):
+                key("s", f"{v['name']} (ECHO, separate budget) \u2014 dashed, lighter", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.9, alpha=0.28, ls=(0, (3.0, 1.6)),
+                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
+            else:
+                key("s", f"{v['name']} (ECHO, separate budget)", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.6, alpha=0.55,
+                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
+        key("s", "Fill depth = evidence for the class (people / herd use)", "none", "none", ms=0, mew=0,
+            short="deeper fill = stronger evidence")
+        key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
+        n_e = sum(1 for t in deploy["teams"] if t["kind"] == "ECHO"); n_t = sum(1 for t in deploy["teams"] if t["kind"] == "TANGO")
+        key(None, f"ECHO team ({n_e})", None, None, kind="s", color=TEAM_C, short=f"ECHO team ({n_e})")
+        key(None, f"TANGO team ({n_t})", None, None, kind="^", color=TEAM_C, short=f"TANGO team ({n_t})")
+        key(None, "Second-wave team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
+            short=f"hollow = second wave ({n1} first wave, +{n2} second)")
+    if deploy:
+        deploy_block()
     if SITUATION:
         head("Boundaries", GREEN)
         key("s", "International border", "none", "#b9b9b2", lw=1.1, ls=(0, (6, 3)), short="International border")
@@ -1163,58 +1267,32 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
             note="reviewed Hansen/GLAD loss events since 2000, area summed per cell", short="Clearing, cell size \u221d area")
     key("_", "Trunk rivers", "none", BLUE, lw=1.4)
 
-    head("Gold", GOLD)
-    # the grade must carry its score (root invariant 12) and say how the score was measured:
-    # held-out (fitted elsewhere, scored once here) or in-sample (selected and scored on the same sites)
-    sk5, basis = G.get("skill_top05") or {}, G.get("skill_basis") or ""
-    how = "held-out" if basis.startswith("held-out") else ("in-sample" if basis.startswith("in-sample") else "unmeasured")
-    skill_txt = (f"{how}: top 5 % of ground holds {sk5['capture']*100:.0f} % of {G['n_anchors']} known workings, "
-                 f"{sk5['lift_reach']}\u00d7 what the reporting lists would find by their reach alone (p {sk5['p_reach']:.3f})"
-                 if sk5.get("capture") is not None and sk5.get("lift_reach") is not None else "skill unmeasured")
-    key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch="graded", mew=0.8, alpha=0.45,
-        note=f"{skill_txt} \u2014 drawn only within {gold_clip_km:g} km of the proposed shapes; "
-             f"blank elsewhere means NOT DRAWN, not scored low", short=("Gold model top 5 %: pale = 95th, solid = 100th percentile" if SITUATION else "Gold model top 5 %"))
-    if not SITUATION:
-        key(None, "Imagery target \u2014 the model's best cell, somewhere to look, never a mine", None, None,
-            kind="target", color=GOLD, short="Imagery target: top model cell \u00b7 not a mine")
-        key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
-    key(None, "Reported working (OSM / Crisis Tracker)", None, None, kind="working", color=GOLD,
-        short="Reported working")
-    add(SP * 0.9, lambda ax, y: None)
-    text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP, tag="blurb")
+    if NO_GOLD:
+        head("Gold", GOLD)
+        key("s", "", "none", "none", ms=0, mew=0,
+            short="Gold-model layers withheld in this copy; the African Parks copy carries them")
+    else:
+        head("Gold", GOLD)
+        # the grade must carry its score (root invariant 12) and say how the score was measured:
+        # held-out (fitted elsewhere, scored once here) or in-sample (selected and scored on the same sites)
+        sk5, basis = G.get("skill_top05") or {}, G.get("skill_basis") or ""
+        how = "held-out" if basis.startswith("held-out") else ("in-sample" if basis.startswith("in-sample") else "unmeasured")
+        skill_txt = (f"{how}: top 5 % of ground holds {sk5['capture']*100:.0f} % of {G['n_anchors']} known workings, "
+                     f"{sk5['lift_reach']}\u00d7 what the reporting lists would find by their reach alone (p {sk5['p_reach']:.3f})"
+                     if sk5.get("capture") is not None and sk5.get("lift_reach") is not None else "skill unmeasured")
+        key("s", "Top 5% of ground by model score", GOLD, GOLD, swatch="graded", mew=0.8, alpha=0.45,
+            note=f"{skill_txt} \u2014 drawn only within {gold_clip_km:g} km of the proposed shapes; "
+                 f"blank elsewhere means NOT DRAWN, not scored low", short=("Gold model top 5 %: pale = 95th, solid = 100th percentile" if SITUATION else "Gold model top 5 %"))
+        if not SITUATION:
+            key(None, "Imagery target \u2014 the model's best cell, somewhere to look, never a mine", None, None,
+                kind="target", color=GOLD, short="Imagery target: top model cell \u00b7 not a mine")
+            key(None, "Abandoned-village watchlist", None, None, kind="watch", color=GOLD, short="Village watchlist")
+        key(None, "Reported working (OSM / Crisis Tracker)", None, None, kind="working", color=GOLD,
+            short="Reported working")
+        add(SP * 0.9, lambda ax, y: None)
+        text(G["verdict"], 9.2, "#8a5a00", style="italic", x=TXT_X, gap=SP, tag="blurb")
 
-    if deploy:
-        # the DEPLOYMENT sheet: the zones the teams work are the subject; everything else is context
-        n1 = sum(1 for t in deploy["teams"] if t["year"] == 1); n2 = sum(1 for t in deploy["teams"] if t["year"] == 2)
-        head("Teams", TEAM_C)
-        for c, w in (("community", "Community zone (ECHO)"), ("corridor", "Corridor zone (TANGO)")):
-            key("s", w, ZONE_C[c], ZONE_C[c], swatch=True, mew=0.6, alpha=0.55, short=w)
-        # foreign strands (deploy.json "strands": CAR / COD / SDN, each its own budget line). Dashed + lighter where the
-        # strand says so (CAR, DRC); Sudan is drawn like South Sudan and only its ids and budget line differ.
-        for k, v in (deploy.get("strands") or {}).items():
-            n_k = sum(1 for t in deploy["teams"] if t.get("strand") == k)
-            if not n_k: continue
-            ids = f"{v['prefix']}1\u2013{v['prefix']}{n_k}" if n_k > 1 else f"{v['prefix']}1"
-            if v.get("dashed"):
-                key("s", f"{v['name']} (ECHO, separate budget) \u2014 dashed, lighter", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.9, alpha=0.28, ls=(0, (3.0, 1.6)),
-                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
-            else:
-                key("s", f"{v['name']} (ECHO, separate budget)", ZONE_C["community"], ZONE_C["community"], swatch=True, mew=0.6, alpha=0.55,
-                    short=f"{v['name'].replace('conservancies', 'conservancy')}: separate budget ({ids})")
-        key("s", "Fill depth = evidence for the class (people / herd use)", "none", "none", ms=0, mew=0,
-            short="deeper fill = stronger evidence")
-        if deploy.get("set_aside"):
-            key("s", f"Set aside for this phase (AP-RCA constraint, urgency \u00d7 {deploy.get('factor') or 0:g}): later phase / via FFI", "none", SET_ASIDE_C, swatch=True, mew=0.0, alpha=0.4, hatch="///",
-                short=f"Set aside this phase ({len(deploy['set_aside'])} zones): later / via FFI")
-        if deploy.get("line") is not None:
-            key("_", "Nahr al Jur / Sue line \u2014 the declared constraint (east of it penalised)", "none", SET_ASIDE_C, lw=1.6, ls=(0, (6, 2.5)), alpha=0.85,
-                short="Jur / Sue line: constraint, east penalised")
-        key(None, "Focal point (1 person)", None, None, kind="*", color=TEAM_C, short="Focal point (1)")
-        key(None, "ECHO team (5)", None, None, kind="s", color=TEAM_C, short="ECHO team (5)")
-        key(None, "TANGO team (5)", None, None, kind="^", color=TEAM_C, short="TANGO team (5)")
-        key(None, "Second-wave team: hollow", None, None, kind=[k_ for k_, kd in (("*", "FP"), ("s", "ECHO"), ("^", "TANGO")) if any(t["year"] == 2 and t["kind"] == kd for t in deploy["teams"])], color=TEAM_C, hollow=True,
-            short=f"hollow = second wave ({n1} first wave, +{n2} second)")
-    elif planner_n and not SITUATION:
+    if planner_n and not SITUATION and not deploy:
         # planner layers are drawn only with --planner; the legend says what they are and how sure the machine is
         n_prop = planner_n
         head("Zoning proposals (machine)", "#6a2c8f")
@@ -1250,7 +1328,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
                else f"every town of 2,000+ within reach of a {'team' if deploy else 'plan site'}"))
     if deploy and belt:
         key("s", "", "none", "none", ms=0, mew=0,
-            short=f"{belt['clusters']} towns, {fmt(belt['people'])} people, >{belt['reach_km']:g} km from a team")
+            short=f"{belt['clusters']} town{'s' if belt['clusters'] != 1 else ''}, {fmt(belt['people'])} people, >{belt['reach_km']:g} km from a team")
     if not SITUATION: text("A tilde after a site name means the assessment could not confirm its "
          "position on the ground.", 9.4, MUTED, style="italic", x=TXT_X,
          gap=SP, tag="blurb")
@@ -1271,7 +1349,7 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
     # ------------------------------------------------------------ provenance
     # one line under the frame, at the legend's size: read after the map, never competing with it
     text(f"Sources \u00b7 boundaries: {'Protected Planet (WDPA), gazetted areas on file' if SITUATION else str(SH['n_files']) + ' KML files as received'} \u00b7 fire: VIIRS/FIRMS, v5 fronts 2024\u201326 \u00b7 people: GHSL estimate, "
-         f"not a count \u00b7 clearing: Hansen/GLAD, verified \u00b7 gold: {G.get('model_variant', 'in-sample')} model, {G['n_anchors']} known workings \u00b7 "
+         f"not a count \u00b7 clearing: Hansen/GLAD, verified \u00b7 gold: {'withheld (share copy)' if NO_GOLD else G.get('model_variant', 'in-sample') + ' model, ' + str(G['n_anchors']) + ' known workings'} \u00b7 "
          f"all figures from data/eval/pip_facts.json \u00b7 {date}",
          7.2 / PANEL_SCALE, MUTED, lead=1.3, gap=0.0, wrap=False, tag="footer")
     return items
@@ -1379,9 +1457,12 @@ def main():
     ap.add_argument("--situation", action="store_true",
                     help="the SITUATION sheet: fire, people, clearing, gold and rivers only - no zoning, no drawn "
                          "boundaries, no teams. Needs --planner for the density rasters and the named-town rule")
+    ap.add_argument("--no-gold", action="store_true",
+                    help="the share copy for readers outside AP (B6): no gold layer on the sheet, no Gold block in the legend")
     a = ap.parse_args()
-    global SITUATION
+    global SITUATION, NO_GOLD
     SITUATION = bool(a.situation)
+    NO_GOLD = bool(a.no_gold)
     deploy = None if SITUATION else load_deploy(Path(a.planner).parent if a.planner else None, a.deploy)
 
     zones = load_zones(a.kml_dir)
@@ -1393,13 +1474,10 @@ def main():
 
     # ---- frame from the shapes themselves
     frame_geoms = [z["geom"] for z in zones.values()]
-    if deploy:
-        # the zones the teams work are part of the ask too: K1 (Sam-Ouandja, CAR strand) lies west of every
-        # drawn KML and was cut off at the frame edge on 2026-10-16. Same rule — derived, never typed.
-        _zp = Path(a.planner) if Path(a.planner).name == "zones.geojson" else Path(a.planner).parent / "zones.geojson"
-        # v3 (2026-10-16, user): every zone drawn — served, set aside (hatched) or a foreign strand — must sit whole inside the
-        # frame, so the frame is the whole solved zoning, not the KMLs plus the served zones.
-        frame_geoms += [shape(f["geometry"]) for f in json.load(open(_zp))["features"]]
+    # The frame is the KMLs as received, on EVERY sheet (2026-10-18, user): Figure 1 (situation) and Figure 2 (deployment)
+    # must have exactly the same size and viewport, so the reader's eye does not re-register between them. The 16 Oct rule
+    # that widened the deployment frame to the whole solved zoning is gone with the focus veil: what lies outside the frame
+    # (K1 Sam-Ouandja's zone, the far set-aside zones) is outside this phase's focus anyway.
     allg = unary_union(frame_geoms)
     x0, y0, x1, y1 = allg.bounds
     frame = (x0 - FRAME_PAD_DEG, y0 - FRAME_PAD_DEG,
@@ -1410,11 +1488,6 @@ def main():
     # report format: widen the frame to a landscape A-series ratio. The extra width goes EAST, where the study
     # area's diagonal edge leaves the frame blank — that strip is where the legend card sits, off the map content.
     need_w = (y1 - y0) * LANDSCAPE_ASPECT / kx
-    if deploy:
-        # the legend card is an inset in the east strip; with the whole zoning in the frame (2026-10-16) that strip must be
-        # at least the card's width beyond the easternmost zone, or the card covers the hatched set-aside zones east of Wau.
-        card_frac = (PANEL_W_IN + 0.65) / MAP_W_IN
-        need_w = max(need_w, (allg.bounds[2] + 0.15 - x0) / (1 - card_frac))
     if need_w > (x1 - x0):
         x1 = x0 + need_w
     need_h = (x1 - x0) * kx / LANDSCAPE_ASPECT
@@ -1441,12 +1514,33 @@ def main():
     if SITUATION:   # the situation sheet has no "ask" to clip to: the whole frame is the subject
         reach = Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)])
     gold, gold_note = load_gold(reach)
+    if NO_GOLD:
+        gold = None
+    # THE FOCUS of this phase (2026-10-18, user): South Sudan west of FOCUS_EAST_LON, with a staffed conservancy kept whole
+    # (Wau's zone 116 reaches 28.05 E). Everything else in the frame - South Sudan east of the meridian, Sudan, CAR, DRC -
+    # is drawn as before and then VEILED (white, translucent): the zoning stays legible for other organisations, no team is
+    # placed there, and the reader sees the focus at a glance. Derived from the country polygon and the deploy file, not
+    # typed; the veil is also a GeoPackage layer (plan_zones_package.py reads focus_polygon()).
+    focus = None
+    if deploy:
+        focus = focus_polygon(frame, borders, deploy, Path(a.planner))
+        _fa = 0.0
+        for _g in (focus.geoms if hasattr(focus, "geoms") else [focus]):
+            _fa += abs(GEOD.geometry_area_perimeter(_g)[0])
+        deploy["focus_km2"] = int(round(_fa / 1e6, -2))   # the unveiled ground, rounded to 100 km2 (geodesic on WGS84)
+        reach_belt = reach.intersection(focus)   # the "no team within 40 km" question is asked inside the focus only
+        from shapely.geometry import mapping as _mapping   # the same two polygons go into the GeoPackage (plan_zones_package.py)
+        json.dump({"type": "FeatureCollection", "features": [
+            {"type": "Feature", "geometry": _mapping(focus), "properties": {"role": "focus", "label": f"This phase's focus: South Sudan west of {FOCUS_EAST_LON:g} E (+ staffed conservancies whole)", "east_lon": FOCUS_EAST_LON, "iso3": FOCUS_ISO, "declared": "AP-RCA, 18 Oct 2026", "area_km2": deploy["focus_km2"],
+                                                                             "other": [dict(place=o["place"], uids=o["uids"], kind=o["kind"], country=o["country"]) for o in (deploy.get("other") or [])]}},
+            {"type": "Feature", "geometry": _mapping(veil_polygon(frame, focus)), "properties": {"role": "veil", "label": f"Outside this phase's focus (South Sudan east of {FOCUS_EAST_LON:g} E, Sudan, CAR, DRC): zoning kept for other partners, no teams", "east_lon": FOCUS_EAST_LON, "iso3": FOCUS_ISO, "declared": "AP-RCA, 18 Oct 2026"}}]},
+            open(Path(a.planner).parent / "focus.geojson", "w"))
     sites = site_rows(st)
     teams_early = deploy["teams"] if deploy else (load_teams(Path(a.planner).parent) if a.planner else [])
     # with the planner drawn, the proposals' teams ARE sites: a town 10 km from an ECHO team is served, and the
     # "no site within 40 km" belt must be measured against everything the sheet proposes, or it contradicts itself
     towns_only, n_unnamed_all = (named_towns(setl) if a.planner else (setl, 0))   # "towns" in the belt are NAMED towns, as on the sheet
-    belt = None if SITUATION else unserved_belt(towns_only, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach)
+    belt = None if SITUATION else unserved_belt(towns_only, ([] if deploy else sites) + [dict(name=t["place"], lon=t["lon"], lat=t["lat"], approx=False, kind="team") for t in teams_early], reach_belt if deploy else reach)
     if deploy and belt:   # the summary text quotes this number (easyplan.py reads it)
         json.dump({k: v for k, v in belt.items() if k != "towns"} | {"n_towns": len(belt["towns"]), "named_towns_500": len(towns_only), "unnamed_clusters_500": n_unnamed_all},
                   open(Path(a.planner).parent / "map_belt.json", "w"))
@@ -1490,7 +1584,7 @@ def main():
         c = g.representative_point()
         if x0 + 0.25 < c.x < x1 - 0.25 and y0 + 0.25 < c.y < y1 - 0.25:
             ax.text(c.x, c.y, iso, color="#b0b0a8", fontsize=17, weight="bold",
-                    ha="center", va="center", zorder=1.3, alpha=0.55)
+                    ha="center", va="center", zorder=(VEIL_Z + 0.03) if deploy else 1.3, alpha=0.55)
 
     # 2. trunk rivers
     if rivers:
@@ -1650,12 +1744,35 @@ def main():
                 continue
             for p in poly_patches(g, facecolor="none", edgecolor=ZONE_C[cls], linewidth=0.7, linestyle=DASHDOT, zorder=2.5, alpha=0.5):
                 ax.add_patch(p)
-            if int(pr["uid"]) in deploy.get("set_aside", ()):   # declared constraint: set aside for this phase (later phase / via FFI)
-                for p in poly_patches(g, facecolor="none", edgecolor=SET_ASIDE_C, linewidth=0.0, hatch="///", zorder=2.55, alpha=0.28):
-                    ax.add_patch(p)
-        if deploy.get("line") is not None:   # the Jur / Sue river line the constraint is drawn on (clipped as the solver clips it)
-            xs, ys = zip(*deploy["line"].coords)
-            ax.plot(xs, ys, color=SET_ASIDE_C, lw=1.6, ls=(0, (6, 2.5)), zorder=3.3, alpha=0.85, solid_capstyle="round")
+        # (i-b) conservancies another organisation could take up (the pool run's cross-border strand): light fill, solid
+        #       outline and the NAME, all BELOW the veil — zoned and named, nobody of this plan placed there
+        other_uids = {u: o for o in (deploy.get("other") or []) for u in o["uids"]}
+        other_drawn = []
+        for f in zfeat:
+            pr = f["properties"]; u = int(pr["uid"])
+            if u not in other_uids or u in served:
+                continue
+            g = shape(f["geometry"]); o = other_uids[u]; cls_ = "corridor" if o["kind"] == "TANGO" else "community"
+            # fill and outline strong enough to read THROUGH the veil (VEIL_ALPHA): the veil halves them. A zone that lies
+            # inside the focus (Kuajok, Nyamlell) gets the same halving in its own alpha, so it reads as veiled while the
+            # settlements and fire fronts on it stay at full strength.
+            fa_ = 0.40 if cls_ == "corridor" else 0.50
+            under_veil = focus is None or not focus.contains(g.representative_point())
+            k_ = 1.0 if under_veil else (1.0 - VEIL_ALPHA)
+            for p in poly_patches(g, facecolor=ZONE_FILL[cls_], alpha=fa_ * k_, edgecolor=ZONE_C[cls_], linewidth=1.6, zorder=3.06):
+                ax.add_patch(p)
+            gv = g.intersection(Polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]))   # the visible part: a zone cut by the frame is named in what shows
+            if gv.is_empty: continue
+            c = gv.centroid if gv.contains(gv.centroid) else gv.representative_point()
+            ha_, cx_ = "center", c.x
+            if gv.bounds[0] <= x0 + 0.02: ha_, cx_ = "left", x0 + 0.04       # Sam-Ouandja sits on the west edge
+            elif gv.bounds[2] >= x1 - 0.02: ha_, cx_ = "right", x1 - 0.04
+            ax.text(cx_, c.y, o["place"], fontsize=8.6, weight="bold", color=ZONE_C[cls_], ha=ha_, va="center",
+                    zorder=VEIL_Z - 0.05, alpha=0.95 * k_, path_effects=[pe.withStroke(linewidth=3.0, foreground=PAPER, alpha=k_)])
+            other_drawn.append(o["place"])
+        deploy["other_drawn"] = other_drawn
+        # (the 16 Oct set-aside hatching and the Jur / Sue constraint line are gone: the focus VEIL below says the same thing in one
+        #  stroke, and the zoning outside the focus stays drawn, un-hatched, for whoever takes it up)
         # (ii) the zones the teams work: filled by the solver's per-pixel intensity (evidence for the class → opacity).
         #      The fill is the RASTER itself (the 2 km cells the solver decided on), masked to the served zones on the
         #      same grid — one honest pixel edge, no vector clip fighting the cells — and kept light enough that the
@@ -1776,6 +1893,19 @@ def main():
                                        f"{town.strip(' ·') or nm} · {kha:,.0f}k ha · {pr['population_est']:,} ppl",
                                        st["ec"], 8.6))
 
+    # 4c. THE FOCUS VEIL (deployment sheet). Everything outside the focus - South Sudan east of the meridian, Sudan, CAR, DRC -
+    #     is already drawn and is now veiled in translucent white: legible, but unmistakably not this phase's ground. Point
+    #     marks that fall outside the focus are drawn BELOW the veil (see draw_marks call), the borders and country names
+    #     are repeated faintly above it so the reader keeps their bearings, and the focus edge is one dark hairline.
+    if focus is not None:
+        veil = veil_polygon(frame, focus)
+        for p in poly_patches(veil, facecolor=VEIL_C, edgecolor="none", alpha=VEIL_ALPHA, zorder=VEIL_Z):
+            ax.add_patch(p)
+        # (no outline on the veil, 18 Oct: the edge reads from the tone change alone; the meridian is named in the legend)
+        for iso, g in borders:
+            for p in poly_patches(g, facecolor="none", edgecolor="#b9b9b2", linewidth=1.1, linestyle=(0, (6, 3)), zorder=VEIL_Z + 0.01, alpha=0.9):
+                ax.add_patch(p)
+
     # 5. settlements: area by population, so an empty interior reads as empty
     n_unnamed = 0
     if setl and dens is not None:
@@ -1867,6 +1997,9 @@ def main():
         for t in belt["towns"]:
             marks.append((t[0], t[1], "unreached", UNREACHED_C, False, 5.5))
 
+    if focus is not None:   # a mark outside the focus sinks below the veil: still there, no longer shouting
+        pf_ = prep(focus)
+        marks = [(lon, lat, k, c, h, (z if pf_.contains(Point(lon, lat)) else min(z, VEIL_Z - 0.1))) for lon, lat, k, c, h, z in marks]
     draw_marks(fig, ax, marks)
 
     # the corridor: the axis the two pins encode, drawn as the ask it is

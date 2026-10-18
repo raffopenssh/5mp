@@ -33,8 +33,7 @@ Reports to      Chinko Landscape Coordinator.
 Start           {start}. {B['horizon_months']} months, the whole plan (Phase 1, {P['year_labels'][0]}: set-up;
                 Phase 2, {P['year_labels'][1]}: one field season and the options assessment). Preparation before the
                 start (key staff, donors, partner-grant scope) is Chinko's, so the CAR team keeps its 2026-27 dry season.
-Budget held     {musd(B['ssd_total'])} (South Sudan request, {usd(B['ssd_total'])}); the CAR conservancy strand
-                ({usd(B['strands']['CAR']['total'])}) is Chinko's own line beside it.
+Budget held     {musd(B['ssd_total'])} (South Sudan request, {usd(B['ssd_total'])}){"; the CAR conservancy strand (" + usd(B['strands']['CAR']['total']) + ") is Chinko's own line beside it" if B.get('strands', {}).get('CAR') else "; no cross-border strand"}.
 Line management {y2['staff']} field staff at full strength ({teams}); the post-holder is
                 also the Wau focal point in year one. A 0.5 FTE finance/admin officer in Juba (dotted line, AP South
                 Sudan); one national NGO grantee.
