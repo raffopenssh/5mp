@@ -246,6 +246,25 @@ fleet changes. See `docs/agents/fire.md` § F11.
 
 ---
 
+## Dev Tools
+
+### `scripts/gif_export.py`
+**Purpose:** Headless GIF of the time animator, through the app's own
+`Animator.exportGIF()` (same frames, 720 px, date pill, duration = span / speed).
+
+**Usage:**
+```bash
+scripts/gif_export.py '/?aoi_focus=XSA_Study_Area&from=2025-10-01&to=2026-03-31&anim=trajs,deforest,settlements&anim_aoi=XSA_Study_Area&anim_speed=10' out.gif
+make gif URL='<path+query with anim=>' OUT=out.gif GIF_ARGS='--palette global --max-frames 80'
+```
+Options: `--width 720`, `--palette per-frame|global`, `--max-frames N`,
+`--wait 40`, `--size 1280x720`, `--base http://localhost:8000`. Needs Playwright
+Chromium and `AOI_OWNER_PWD` (env or `secrets.env`; never printed). Progress with
+ETA on stderr. ~30 s for 160 frames without season layers; **~10 min** with
+`season=front,vanguard` (every frame is a MapLibre repaint + an ~8 s swiftshader
+readback — use `--max-frames 80`). Details, cost table and the rationale for
+the Chrome flags: `docs/agents/animator.md` "GIF export".
+
 ## Park Refresh
 
 ### `scripts/daily_park_refresh.py`
