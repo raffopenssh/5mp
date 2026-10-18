@@ -186,3 +186,23 @@ Deliverable filenames follow the title: `DELIV_STEM` in the generator (`build_pi
 from `VERSION_LINE`); `build_all.sh`, `build_docx.py`, `share.py` and the archive refresh all read it — bump `VERSION_LINE`, nothing else.
 `share.py` re-uploads and mints **new** links, so run it (then rebuild once more so the PDF carries the new links) only at delivery.
 C7 (16 Oct, author): the 30,000 governance seed is now the "Community outreach and engagement" line, same amount (`\revchg{5MP}{C7}`).
+
+## v3 round 3 (2026-10-18) — generator = the author's round-3 docx; review markup retired
+
+The text of `build_pip_tex.py` now equals `reports/pip_latex/PIP_Radom_Numatina_Southern_v3_2026-10-18_review3.docx`
+(the author's Word edits of 18 Oct, the single source of truth for prose). `main.tex` is the clean text by default; `--review`
+restores the v2→v3 colours and margin tags (`main_review.tex`, built by `build_all.sh` only with `REVIEW=1`); `--final` is accepted
+and means the default; `--ap` is a legacy no-op. `build_all.sh` builds `main` + `main_share`, copies to `<STEM>.pdf` /
+`<STEM>_share.pdf`, runs `build_docx.py` (from `main.tex`) and prints the log and `pdftotext -bbox` checks itself.
+- Guest links (`lnk()`, `share.json`) are no longer printed: every attachment is named by filename from the delivery zip
+  (`PIP_v3_attachments_2026-10-18.zip`, read with `zipfile` from `pip_latex/`, else from `reports/`), and Appendix E lists the
+  zip verbatim with sizes. Table 1 (AOI | Focus) reads `review_v3_sources/table1_focus.json`; Table 2 (AOI | Focus, km² to
+  the nearest 100, people = Table 1's settlement clusters per zone) reads `review_v3_sources/table2_focus.json`
+  (`table2_focus.py`), so Table 1 and Table 2 totals agree (2,633,521 / 663,677) — the docx had grid sums there.
+- Table 5 (contract-length frontier) and the "How the cap sizes the team" lead are gone (author's deletion); `fig:org` stays
+  (Cost still cites Figure 4). Wet flying rates are derived (dry rate + 20 / 40 l·h⁻¹ × landed barrel price; the burn
+  assumptions are asserted to reproduce the 18 operational barrels). GHSL sentence: `GHSL_EPOCH` is read from
+  `scripts/ghsl_tiles.py` (E2030, a projection whose last observed epoch is the 2018 Sentinel-2 composite) — the docx said "2019".
+- Known differences to the docx (all deliberate): Table 2 figures (see above), "some 240" vs "340" measured people in the exec
+  summary, 13,180 vs 13,185 fronts (the movement model's count, not the wind check's), table numbers (LaTeX renumbers after the
+  deleted Table 5), reference order (by first citation), Appendix E. Page 1 ends at 795.9 pt by design (`\enlargethispage`, no footer).
