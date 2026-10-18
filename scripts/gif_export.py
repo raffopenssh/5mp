@@ -100,7 +100,10 @@ def main():
                 sys.exit('export failed: ' + err)
             key = (ex.get('phase'), ex.get('frame'))
             if ex.get('phase') == 'frames' and key != last:
-                log('frame %d/%d  (%.0fs)' % (ex['frame'], ex['frames'], time.time() - t0))
+                el = time.time() - t0
+                fr, n = ex['frame'], ex['frames']
+                eta = (n - fr) * el / fr if fr else 0
+                log('frame %d/%d  %3.0f%%  %.1f s/frame  elapsed %3.0fs  eta %3.0fs' % (fr, n, 100 * fr / n, el / max(fr, 1), el, eta))
                 last = key
             elif ex.get('phase') not in ('frames', 'done') and key != last:
                 log('phase %s' % ex.get('phase'))
