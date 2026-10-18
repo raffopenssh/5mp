@@ -217,14 +217,23 @@ Two grammar fixes applied: "so that *a* pragmatic way forward", "identify key st
 group with `\parskip` 4 pt and `\enlargethispage{3\baselineskip}`; page 1 ends ≈ 775 pt, Introduction starts on p. 2. A rule-and-sans-caps
 title variant was tried and rejected by the author (too much in fonts and colours) — keep the plain centred block.
 
-## v3 delivery (2026-10-18, 12:38) — two zips, everything else revoked
+## v3 delivery (2026-10-18, 12:38; zips rebuilt 14:00) — two zips, everything else revoked
 
 `reports/piptex/build_delivery_zips.py` (after `build_all.sh` + `build_attachments_zip.py`) makes `<STEM>_report.zip` (share PDF, docx,
-`latex/` = main.tex, main_share.tex, refs.bib + the JPEGs the tex includes) and `<STEM>_all_files.zip` (full PDF + the same + the
-attachments zip stored under its own name, because Appendix E names it). **Fixpoint rule:** the sources zip inside the attachments zip
-carries the PDF, and the PDF's Appendix E prints the zip sizes — run `build_attachments_zip.py` → `build_all.sh` once more and check
-`pdftotext` of the inner PDF equals the outer one (sizes round to the same 0.1 MB, so one extra pass converges). Minted: report
-`g-cb9j9x3sdcpsv6zh`, all files `g-3q7nq5kmbmg8swhh` (`share.json` keys `report_zip`, `all_files_zip`). Revoked all 15 other live file
-links on principal 6 since 2026-08-17 (v2 pdf/pdf_share/docx, gpkg, maps, budget, dossier, legal brief, aoi_gpkg_light, ToR ×4,
-slides ×2) and deleted the 75 orphaned uploads (813 MB) via `DELETE /api/files/{id}`. Phase-I links (before 2026-08-17: XSA report
-data, geology/1930s MBTiles, mining GPKG, review, PIP Part I) and the six map-view links stay. Live guest file set on principal 6 = 14.
+`BUDGET_EASY_2026-10.xlsx`, `latex/` = main.tex, main_share.tex, refs.bib + the JPEGs the tex includes; 14.8 MB, 10 files) and
+`<STEM>_all_files.zip` (full PDF + the same + the attachments **unpacked into the folder `APPENDIX/`** — the 14 files Appendix E lists,
+incl. the sources zip; no zip-in-zip; 457.8 MB). The text names every attachment only in footnotes, as `<file>, in the folder
+\path{APPENDIX} of the all-files download, listed in Appendix E` (`IN_ZIP` in build_pip_tex.py); Appendix E says the archive sits
+unpacked in `APPENDIX`. **Sources zip = `git archive HEAD` of reports/, so commit (explicit paths, never `git add -A`) before each
+attachments build**; `build_sources_zip.py` EXCLUDE drops every delivery zip and `presentation/*`. **Fixpoint rule:** the sources zip
+inside the attachments zip carries the PDF, and the PDF's Appendix E prints the zip sizes — run `build_attachments_zip.py` →
+`build_all.sh` → commit once more and check `pdftotext` of the inner PDF equals the outer one (sizes round to the same 0.1 MB, so one
+extra pass converges). Links: report `g-cb9j9x3sdcpsv6zh`, all files `g-3q7nq5kmbmg8swhh` (`share.json` keys `report_zip`,
+`all_files_zip`). **To ship a rebuilt zip, do not mint a new link:** upload with `curl -F file=@... /api/files?pwd=`, then
+`sqlite3 db.sqlite3 "UPDATE short_links SET url='/api/files/<newid>/download' WHERE slug='g-...'"` (and copy the link's `expires_at`
+onto `shared_files.<newid>`, since a bare upload expires in 21 days), verify `curl -c jar -b jar -L localhost:8000/s/<slug>` serves
+the new size, then `DELETE /api/files/<oldid>`. Current ids: report `193ee939526e99f3`, all files `bc98c668d24dd112`. Revoked all 15
+other live file links on principal 6 since 2026-08-17 (v2 pdf/pdf_share/docx, gpkg, maps, budget, dossier, legal brief,
+aoi_gpkg_light, ToR ×4, slides ×2) and deleted the 75 orphaned uploads (813 MB) via `DELETE /api/files/{id}`. Phase-I links (before
+2026-08-17: XSA report data, geology/1930s MBTiles, mining GPKG, review, PIP Part I) and the six map-view links stay. Live guest file
+set on principal 6 = 14.
