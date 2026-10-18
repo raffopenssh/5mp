@@ -760,6 +760,14 @@ screen is invisible, a frame dropped in a file is the file being wrong.
 rendering on every frame is a MapLibre repaint (`idle` ≈ 1.2–2.2 s under
 swiftshader, measured 2026-10-18), so 160 frames is ~4–5 min headless and
 `--max-frames 80` halves it. Without season layers: ~30 s for 160 frames.
+**Measured at XSA scale with `season=front,vanguard`: 7 s/frame** (80 frames
+= 9.5 min). Profiled: draw 30 ms, `idle` 0.8–1.1 s, and **~8 s in
+`getImageData` after `drawImage(map.getCanvas())`** — with
+`--disable-accelerated-2d-canvas` the WebGL→2D copy is a deferred swiftshader
+readback. Without that flag the *fire* canvas readback costs 1–4 s/frame
+instead (that was the original >4 min). Open lead if this matters: read the
+map with `gl.readPixels` inside the `render`/`idle` callback instead of
+`drawImage`, or run on a machine with a GPU.
 
 **Speed / frames / duration.** `durSec = spanDays / A.speed`; frames
 = `round(durSec × 10)` (10 fps target) capped at `GIF_MAX_FRAMES` = 160 (80 on
