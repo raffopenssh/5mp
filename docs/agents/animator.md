@@ -751,32 +751,62 @@ screen is invisible, a frame dropped in a file is the file being wrong.
 
 ### GIF export (2026-10-18)
 
-`exportGIF(opts) → Promise<Blob>` is the one function; the button calls it via
-`exportGIFButton()` (% in the button, `download: true`), scripts via
-`window.Animator.exportGIF({width, palette, scale, onProgress})` and poll
-`Animator.exportState()` → `{frame, frames, phase, ms, bytes, …}`.
-`Animator.getState().ready` is true once every ON layer has its data.
-`opts.maxFrames` lowers the cap (same duration, fewer fps): with a Season
-rendering on every frame is a MapLibre repaint (`idle` ≈ 1.2–2.2 s under
-swiftshader, measured 2026-10-18), so 160 frames is ~4–5 min headless and
-`--max-frames 80` halves it. Without season layers: ~30 s for 160 frames.
-**Measured at XSA scale with `season=front,vanguard`: 7 s/frame** (80 frames
-= 9.5 min). Profiled: draw 30 ms, `idle` 0.8–1.1 s, and **~8 s in
-`getImageData` after `drawImage(map.getCanvas())`** — with
-`--disable-accelerated-2d-canvas` the WebGL→2D copy is a deferred swiftshader
-readback. Without that flag the *fire* canvas readback costs 1–4 s/frame
-instead (that was the original >4 min). Open lead if this matters: read the
-map with `gl.readPixels` inside the `render`/`idle` callback instead of
-`drawImage`, or run on a machine with a GPU.
+**Use it (headless):**
+
+```bash
+# any share-link path with anim=… (and anim_speed=, anim_aoi=, season=… as on screen)
+scripts/gif_export.py '/?aoi_focus=XSA_Study_Area&from=2025-10-01&to=2026-03-31&lat=7.7675&lng=26.7&z=6.6&anim=trajs,deforest,settlements&anim_aoi=XSA_Study_Area&anim_speed=10' out.gif
+make gif URL='…' OUT=out.gif GIF_ARGS='--palette global --max-frames 80'
+```
+
+Options: `--width 720` (output width, ≤ viewport) · `--palette per-frame|global`
+· `--max-frames N` (lower the 160 cap; same duration, fewer fps) · `--wait 40`
+(s to wait for layers) · `--scale output|0` · `--size 1280x720` · `--base`.
+Playwright Chromium with `--use-gl=angle --use-angle=swiftshader
+--disable-accelerated-2d-canvas`, DPR 1, owner cookie `access_pwd` from
+`secrets.env` `AOI_OWNER_PWD` (or the env var; never printed, never on the
+URL). Progress on stderr every ~2 s: `frame 37/160  23%  0.2 s/frame  elapsed
+8s  eta 25s`; the last stdout line has frames, delay, duration, encode time,
+size. The presentation's `reports/presentation/run_app.sh gif` is the worked
+example (two GIFs).
+
+**Use it (browser / console):** `await Animator.exportGIF({width, palette,
+scale, maxFrames, onProgress(i, n), download})` → `Promise<Blob>`; poll
+`Animator.exportState()` → `{phase, frame, frames, delayMs, durSec, ms,
+bytes, worker, season}` (`phase`: starting → palette? → frames → finishing →
+done | error). `Animator.getState().ready` is true once every ON layer has
+its data — a script must wait for it before exporting. The toolbar button
+is `exportGIFButton()`, the same function with the % in the button and
+`download: true`.
 
 **Speed / frames / duration.** `durSec = spanDays / A.speed`; frames
 = `round(durSec × 10)` (10 fps target) capped at `GIF_MAX_FRAMES` = 160 (80 on
-a phone); `delay = durSec × 1000 / frames` clamped 20–500 ms. So 182 d at
-10 d/s → 18.2 s → 182 frames → capped to 160 at 114 ms (choppier, same
-duration). At 5 d/s the same window is 36 s, 160 frames at 228 ms.
+a phone, `GIF_MAX_FRAMES_MOBILE`; `maxFrames` can only lower it); `delay =
+durSec × 1000 / frames` clamped 20–500 ms. So 182 d at 10 d/s → 18.2 s →
+182 frames → capped to 160 at 114 ms (choppier, same duration); at 80 frames
+227 ms. At 5 d/s the same window is 36 s, 160 frames at 228 ms.
 
-**What made it fast** (XSA, 4 layers, 160 frames, headless swiftshader
-1280×720: **>4 min → ~25 s**; see the measurement in this section's commit):
+**What it costs (headless swiftshader, 1280×720, XSA, measured 2026-10-18):**
+
+| Layers | Frames | Encode | Why |
+|---|---|---|---|
+| `trajs,deforest,settlements` (± `fireGrid`) | 160 | **~26 s** (+10 s page load) | map captured once; ~0.15 s/frame draw + readback, encode in a worker |
+| `deforest,settlements` + `season=front,vanguard` | 80 | **~9.5 min** (7 s/frame) | map re-captured every frame: `idle` 0.8–1.1 s + **~8 s** WebGL→2D readback |
+| same, before this work | 160 | >4 min / not finished | accelerated-2D `getImageData` of the fire canvas 1–4 s/frame |
+
+The two canvases want opposite Chrome settings and there is no flag that
+serves both: with `--disable-accelerated-2d-canvas` (what the script uses)
+the fire canvas reads back in 50–400 ms but `drawImage(map.getCanvas())` +
+`getImageData` becomes a deferred swiftshader readback of ~8 s; without it
+the map copy is free and the fire canvas costs 1–4 s. So **season-layer GIFs
+are slow headless by construction**; use `--max-frames 80`, run them last,
+and budget ten minutes. Open leads if this ever matters: `gl.readPixels` on
+MapLibre's context inside the `render`/`idle` callback instead of
+`drawImage`, or a machine with a GPU (the `idle` wait itself is ~0.4 s in
+the browser-tool Chromium). A plain `Animator.seek` + screenshot loop is
+**not** a shortcut: it pays the same readback.
+
+**What made the common case fast** (>4 min → ~26 s):
 
 1. *The map is captured once.* Basemap and every static MapLibre layer are
    identical in every frame; only Season renderings (fireseason.js GeoJSON
@@ -784,26 +814,27 @@ duration). At 5 d/s the same window is 36 s, 160 frames at 228 ms.
    before the loop, reused as a bitmap; with a season on it is still
    `mapFrameInto()` per frame on `idle` (the one-frame-behind rule above).
 2. *Encoding is in a worker.* `makeGifSink()` posts transferable RGBA buffers
-   to `gif_worker.js` (quantize + applyPalette + LZW), at most `ENC_INFLIGHT`
-   = 3 queued, so the draw of frame i+1 overlaps the encode of frame i. Falls
-   back inline if the module worker cannot load.
+   to `static/gif_worker.js` (vendored `static/vendor/gifenc.esm.js`:
+   quantize + applyPalette + LZW), at most `ENC_INFLIGHT` = 3 queued, so the
+   draw of frame i+1 overlaps the encode of frame i. Falls back inline if the
+   module worker cannot load. No CDN dependency any more.
 3. *Render at output size.* `opts.scale: 'output'` sets `_exportScale` so the
    fire canvas's backing store is the GIF's size for the duration of the
    export (draw() works in CSS px; only the transform changes) — a 1:1 copy
    instead of a 2–4× downsample. Off by default on screen (the live canvas
    would blur during the export); the dev tool turns it on.
+4. *The headless 2D canvas is software* (`--disable-accelerated-2d-canvas`,
+   see the table). This was the single biggest win for the no-season case
+   and is a Chrome flag, not app code — a different runner must set it too.
 
 **Palette.** `per-frame` (default) fits a 256-colour table to every frame —
 what the export always did, faithful to the ramp as the season brightens.
 `global` quantises once from the mid-window frame and writes a single global
-table: faster, a smaller file, slightly less faithful at the window's ends.
+table: a little faster, a smaller file, slightly less faithful at the
+window's ends (XSA: 25.9 s vs 31.5 s before the 2D-canvas flag; same 20 MB).
 
-**Dev tool:** `scripts/gif_export.py '<path+query with anim=…>' out.gif
-[--width 720] [--palette per-frame|global] [--wait 40]` /
-`make gif URL=… OUT=…`. Playwright Chromium (`--use-gl=angle
---use-angle=swiftshader`), 1280×720 DPR 1, owner cookie from `secrets.env`
-`AOI_OWNER_PWD` (never printed), progress `frame 37/160` on stderr. The
-presentation's `reports/presentation/run_app.sh gif` uses it.
+**Date stamp** is a rounded pill sized to the text (bottom-left), drawn on
+the composited frame by `stamp()` in `exportGIF` — not on the live canvas.
 
 **A module that throws at load looks like a CSS bug.** A pair of backticks in a
 comment *inside* anim.js's injected-CSS template literal ended the literal;
