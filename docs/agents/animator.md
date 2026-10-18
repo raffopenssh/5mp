@@ -791,20 +791,21 @@ durSec × 1000 / frames` clamped 20–500 ms. So 182 d at 10 d/s → 18.2 s →
 | Layers | Frames | Encode | Why |
 |---|---|---|---|
 | `trajs,deforest,settlements` (± `fireGrid`) | 160 | **~26 s** (+10 s page load) | map captured once; ~0.15 s/frame draw + readback, encode in a worker |
-| `deforest,settlements` + `season=front,vanguard` | 80 | **~9.5 min** (7 s/frame) | map re-captured every frame: `idle` 0.8–1.1 s + **~8 s** WebGL→2D readback |
+| `deforest,settlements` + `season=front,vanguard` | 80 | **~9.5 min** (7 s/frame) | map re-captured every frame: `idle` 0.8–1.1 s + **~8 s** WebGL→2D readback (flag-independent) |
 | same, before this work | 160 | >4 min / not finished | accelerated-2D `getImageData` of the fire canvas 1–4 s/frame |
 
-The two canvases want opposite Chrome settings and there is no flag that
-serves both: with `--disable-accelerated-2d-canvas` (what the script uses)
-the fire canvas reads back in 50–400 ms but `drawImage(map.getCanvas())` +
-`getImageData` becomes a deferred swiftshader readback of ~8 s; without it
-the map copy is free and the fire canvas costs 1–4 s. So **season-layer GIFs
-are slow headless by construction**; use `--max-frames 80`, run them last,
-and budget ten minutes. Open leads if this ever matters: `gl.readPixels` on
-MapLibre's context inside the `render`/`idle` callback instead of
-`drawImage`, or a machine with a GPU (the `idle` wait itself is ~0.4 s in
-the browser-tool Chromium). A plain `Animator.seek` + screenshot loop is
-**not** a shortcut: it pays the same readback.
+The slow piece is the **WebGL→2D copy of MapLibre's canvas**
+(`drawImage(map.getCanvas())` + `getImageData`): profiled at 8–10 s/frame
+with `--disable-accelerated-2d-canvas` and 8–14 s **without** it, so it is
+swiftshader's readback of a 1280×720 GL frame carrying 400k contour vertices,
+not the 2D-canvas flag (that flag only fixed the *fire* canvas, 1–4 s → 0.05–0.4 s).
+So **season-layer GIFs are slow headless by construction**; use
+`--max-frames 80`, run them last, and budget ten minutes. Open leads if this
+ever matters: `gl.readPixels` on MapLibre's context inside the
+`render`/`idle` callback (skips the compositor path), a smaller viewport, or
+a machine with a GPU (the `idle` wait itself is ~0.4 s in the browser-tool
+Chromium, which does the same copy in ~1 ms). A plain `Animator.seek` +
+screenshot loop is **not** a shortcut: it pays the same readback.
 
 **What made the common case fast** (>4 min → ~26 s):
 
