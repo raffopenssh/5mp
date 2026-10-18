@@ -783,6 +783,9 @@ def focus_polygon(frame, borders, deploy, planner_path):
                   for u in (t.get("zone_uids") or [])}
         zf = json.load(open(zp))["features"]
         foc = unary_union([foc] + [shape(f["geometry"]) for f in zf if int(f["properties"]["uid"]) in served])
+        # clipped to the solved ground: the country polygon west of the meridian spills ~3,100 km2 past the AOI's north-east
+        # corner (27.4-28.25 E, 8.75-9.6 N), which no zone covers; the focus must equal the sum of the zones inside it
+        foc = foc.intersection(unary_union([shape(f["geometry"]) for f in zf]).buffer(0))
         # (a 1 Oct zone inside the meridian — Kuajok, Nyamlell — is NOT cut out of the focus: the veil is ground, and the
         #  settlements and fire there are this phase's to see. The zone itself and its name are drawn at veil tone instead.)
     return foc.buffer(0)
@@ -1001,7 +1004,7 @@ def draw_north(ax, frame, x_frac=0.965, y_frac=0.10):
 PT = 1 / 72.0  # inches per point
 
 
-ZONE_C = {"core": "#1b5e20", "wilderness": "#4f7a5c", "community": "#6a2c8f", "corridor": "#b3261e"}
+ZONE_C = {"core": "#3b6e4a", "wilderness": "#3b6e4a", "community": "#6a2c8f", "corridor": "#b3261e"}   # core and old-growth are one line in the plan (18 Oct): one colour
 ZONE_FILL = {"core": "#2e7d32", "wilderness": "#7fae8b", "community": "#8e5bb0", "corridor": "#d4574d"}
 TEAM_C = "#0b7285"
 DASHDOT = (0, (5, 2.2, 1.2, 2.2))     # the one dash-dot used for every "context, not the subject" outline
@@ -1219,8 +1222,8 @@ def panel_items(st, fire, sites, belt, unmatched, rim_km, gold_clip_km,
         key("s", "Boundaries as drawn by the authors", "none", USER_GREY, lw=1.0, ls=DASHDOT, alpha=0.8,
             short="Drawn by the authors")
         key("s", "Southern NP, gazetted", "none", USER_GREY, lw=1.0, alpha=0.8, short="Southern NP, gazetted")
-        for c, w in (("core", "Core"), ("wilderness", "Old-growth vegetation"), ("community", "Community"), ("corridor", "Corridor")):
-            key("s", w, "none", ZONE_C[c], lw=0.9, ls=DASHDOT, alpha=0.7, short=f"Zoning: {w.lower()}")
+        for c, w in (("wilderness", "Old-growth vegetation (park-grade core included)"), ("community", "Community"), ("corridor", "Corridor")):
+            key("s", w, "none", ZONE_C[c], lw=0.9, ls=DASHDOT, alpha=0.7, short=f"Zoning: {w.lower().split(' (')[0]}")
     elif planner_n and not SITUATION:
         key("s", "Boundaries as drawn by the authors (park, old-growth blocks, grazing, corridor pins)", "none", USER_GREY, lw=1.1, ls=(0, (6, 3)),
             short="Boundaries as drawn by the authors")
