@@ -206,3 +206,13 @@ and means the default; `--ap` is a legacy no-op. `build_all.sh` builds `main` + 
 - Known differences to the docx (all deliberate): Table 2 figures (see above), "some 240" vs "340" measured people in the exec
   summary, 13,180 vs 13,185 fronts (the movement model's count, not the wind check's), table numbers (LaTeX renumbers after the
   deleted Table 5), reference order (by first citation), Appendix E. Page 1 ends at 795.9 pt by design (`\enlargethispage`, no footer).
+
+## v3 round 4 (2026-10-18, afternoon) — executive summary on one page
+
+Source: `reports/plan/versions/PIP_Radom_Numatina_Southern_v3_2026-10-18_RH.docx` (author's Google-Docs copy; the only edits are in the
+executive summary, now four paragraphs: the "goal" sentence joins paragraph 1, the preparation/launch text joins paragraph 3, the
+closing line "All data and scripts are available to African Parks …" joins the last paragraph; comment: "ensure it fits the title page").
+Two grammar fixes applied: "so that *a* pragmatic way forward", "identify key staff and *align* donors". Title block names four authors
+(Aebischer · Mararv · Tamco · Hickisch) with the version line in `\small` below. The summary sits in a `\begingroup\fontsize{10pt}{12.6pt}`
+group with `\parskip` 4 pt and `\enlargethispage{3\baselineskip}`; page 1 ends ≈ 775 pt, Introduction starts on p. 2. A rule-and-sans-caps
+title variant was tried and rejected by the author (too much in fonts and colours) — keep the plain centred block.
