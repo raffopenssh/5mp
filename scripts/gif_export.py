@@ -41,6 +41,7 @@ def main():
     ap.add_argument('--width', type=int, default=720)
     ap.add_argument('--palette', choices=['per-frame', 'global'], default='per-frame')
     ap.add_argument('--scale', default='output', help="'output' (render fire canvas at GIF size, default) or 0 (viewport×dpr)")
+    ap.add_argument('--max-frames', type=int, default=0, help='lower the frame cap (160); same duration, fewer fps. Use ~80 with season= layers: each frame is a MapLibre repaint')
     ap.add_argument('--wait', type=float, default=40, help='max seconds to wait for layers to load')
     ap.add_argument('--base', default='http://localhost:8000')
     ap.add_argument('--size', default='1280x720', help='viewport WxH')
@@ -89,7 +90,7 @@ def main():
         scale = a.scale if a.scale == 'output' else float(a.scale)
         page.evaluate("""([opts]) => { window.__gif = null; window.__gifErr = null;
             Animator.exportGIF(opts).then(b => { window.__gif = b; }).catch(e => { window.__gifErr = String(e && e.message || e); }); }""",
-            [{'width': a.width, 'palette': a.palette, 'scale': scale}])
+            [{'width': a.width, 'palette': a.palette, 'scale': scale, 'maxFrames': a.max_frames}])
         t0 = time.time()
         last = None
         while time.time() - t0 < a.timeout:

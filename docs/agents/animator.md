@@ -756,6 +756,10 @@ screen is invisible, a frame dropped in a file is the file being wrong.
 `window.Animator.exportGIF({width, palette, scale, onProgress})` and poll
 `Animator.exportState()` → `{frame, frames, phase, ms, bytes, …}`.
 `Animator.getState().ready` is true once every ON layer has its data.
+`opts.maxFrames` lowers the cap (same duration, fewer fps): with a Season
+rendering on every frame is a MapLibre repaint (`idle` ≈ 1.2–2.2 s under
+swiftshader, measured 2026-10-18), so 160 frames is ~4–5 min headless and
+`--max-frames 80` halves it. Without season layers: ~30 s for 160 frames.
 
 **Speed / frames / duration.** `durSec = spanDays / A.speed`; frames
 = `round(durSec × 10)` (10 fps target) capped at `GIF_MAX_FRAMES` = 160 (80 on

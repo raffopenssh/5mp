@@ -3002,7 +3002,7 @@
     // Render the whole window to a GIF and resolve with the Blob.
     //
     // opts: { width = 720, palette = 'per-frame'|'global', scale = 0|'output',
-    //         onProgress(i, frames), download = false }
+    //         maxFrames (≤ the cap), onProgress(i, frames), download = false }
     //
     // Timing semantics are unchanged: A.speed is days per second of wall
     // clock, so the clip lasts spanDays / speed seconds; 10 fps is the
@@ -3030,7 +3030,11 @@
         const outH = Math.round(srcH * outW / srcW);
         const span = A.t1 - A.t0;
         const durSec = Math.max(1, (span / DAY) / Math.max(0.25, A.speed));
-        const maxFrames = isMobileViewport() ? GIF_MAX_FRAMES_MOBILE : GIF_MAX_FRAMES;
+        // opts.maxFrames lowers the cap (never raises it): with a Season
+        // rendering on, every frame is a MapLibre repaint (~1.5 s headless), so
+        // a script may trade frame rate for wall clock — duration is kept.
+        let maxFrames = isMobileViewport() ? GIF_MAX_FRAMES_MOBILE : GIF_MAX_FRAMES;
+        if (+opts.maxFrames >= 8) maxFrames = Math.min(maxFrames, Math.round(+opts.maxFrames));
         const frames = Math.max(8, Math.min(maxFrames, Math.round(durSec * 10)));
         const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
         const seasonOn = anySeasonOn();
