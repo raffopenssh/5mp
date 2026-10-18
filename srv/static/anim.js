@@ -59,6 +59,17 @@
 
     let A = null; // active animator state
     let openSeq = 0; // open() generation, see Animator.open
+    // Where this file was loaded from (carries the ?v= build hash); the GIF
+    // encoder worker lives beside it.
+    const SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '/static/anim.js';
+    // While a GIF export runs, the fire canvas may be backed at the OUTPUT
+    // resolution instead of viewport × dpr (exportGIF opts.scale): draw()
+    // works in CSS px throughout, so only the backing store and its transform
+    // change, and the composite into the GIF frame becomes a 1:1 copy instead
+    // of a 2–4× downsample. 0 = normal (viewport × dpr).
+    let _exportScale = 0;
+    // What a script polling an export sees (Animator.exportState()).
+    let _exportState = { frame: 0, frames: 0, phase: 'idle' };
 
     // THE CHIPS SAY WHAT INK IS ON THE MAP (2026-09-16). Every chip used to
     // carry the same mark — a coloured dot meaning only "on" — and a label in
@@ -964,7 +975,7 @@
         c.id = 'anim-canvas';
         mapEl.appendChild(c);
         const resize = () => {
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const dpr = _exportScale > 0 ? _exportScale : Math.min(window.devicePixelRatio || 1, 2);
             c.width = mapEl.clientWidth * dpr;
             c.height = mapEl.clientHeight * dpr;
             c.style.width = mapEl.clientWidth + 'px';
@@ -2900,88 +2911,242 @@
         });
     }
 
-    async function exportGIF() {
-        if (!A || A.recording) return;
+    // ---------- the encoder, off the main thread ----------
+    //
+    // quantize + applyPalette + LZW for a 720×405 frame is ~100–300 ms of
+    // pure CPU. In the loop that used to sit between drawing one frame and
+    // the next; in a worker it overlaps the draw of frame i+1 and the map's
+    // repaint wait. The main thread keeps at most ENC_INFLIGHT frames queued
+    // so memory stays bounded (each frame is ~1.2 MB of RGBA).
+    //
+    // `palette`: 'per-frame' (default — what the export always did: a 256
+    // colour table fitted to each frame, faithful to the heat ramp as it
+    // brightens) or 'global' (one table fitted to a sampled mid-window frame,
+    // written once: faster and a smaller file, slightly less faithful at the
+    // extremes of the window).
+    const ENC_INFLIGHT = 3;
+    async function makeGifSink(outW, outH, paletteMode) {
+        const mode = paletteMode === 'global' ? 'global' : 'per-frame';
+        // Worker path.
+        try {
+            const w = new Worker(SCRIPT_SRC.replace(/anim\.js(\?.*)?$/, 'gif_worker.js$1'), { type: 'module' });
+            const waiters = new Map();
+            let resultResolve, resultReject, failed = null;
+            const result = new Promise((res, rej) => { resultResolve = res; resultReject = rej; });
+            w.onmessage = (ev) => {
+                const m = ev.data;
+                if (m.type === 'done') { const r = waiters.get(m.i); if (r) { waiters.delete(m.i); r(); } }
+                else if (m.type === 'result') resultResolve(m.bytes);
+                else if (m.type === 'error') { failed = new Error(m.message); resultReject(failed); waiters.forEach(r => r()); waiters.clear(); }
+            };
+            w.onerror = (e) => { failed = new Error('gif worker: ' + (e.message || 'failed')); resultReject(failed); waiters.forEach(r => r()); waiters.clear(); };
+            // A module worker that fails to load reports asynchronously; probe
+            // it with init and give it a beat so a 404 falls back inline.
+            w.postMessage({ type: 'init', width: outW, height: outH, palette: mode });
+            await new Promise(r => setTimeout(r, 0));
+            if (failed) throw failed;
+            let inflight = 0, pending = [];
+            const slot = () => inflight < ENC_INFLIGHT ? Promise.resolve() : new Promise(r => pending.push(r));
+            return {
+                mode, worker: true,
+                setPalette(imageData) {
+                    const buf = imageData.data.buffer;
+                    w.postMessage({ type: 'palette', buf }, [buf]);
+                },
+                async frame(i, imageData, delay) {
+                    if (failed) throw failed;
+                    await slot();
+                    inflight++;
+                    const buf = imageData.data.buffer;
+                    const done = new Promise(r => waiters.set(i, r));
+                    w.postMessage({ type: 'frame', i, buf, delay }, [buf]);
+                    done.then(() => { inflight--; const r = pending.shift(); if (r) r(); });
+                },
+                async finish() {
+                    // Everything queued must be written before the trailer.
+                    while (inflight > 0 && !failed) await new Promise(r => setTimeout(r, 5));
+                    if (failed) throw failed;
+                    w.postMessage({ type: 'finish' });
+                    const bytes = await result;
+                    w.terminate();
+                    return bytes;
+                },
+                abort() { try { w.terminate(); } catch (e) { /* gone */ } }
+            };
+        } catch (e) {
+            console.warn('GIF worker unavailable, encoding inline:', e && e.message);
+        }
+        // Inline fallback (same code path, main thread).
+        const { GIFEncoder, quantize, applyPalette } = await import('/static/vendor/gifenc.esm.js');
+        const enc = GIFEncoder();
+        let gp = null, first = true;
+        return {
+            mode, worker: false,
+            setPalette(imageData) { gp = quantize(imageData.data, 256); },
+            async frame(i, imageData, delay) {
+                const data = imageData.data;
+                if (mode === 'global' && gp) {
+                    enc.writeFrame(applyPalette(data, gp), outW, outH, { palette: first ? gp : undefined, delay });
+                } else {
+                    const palette = quantize(data, 256);
+                    enc.writeFrame(applyPalette(data, palette), outW, outH, { palette, delay });
+                }
+                first = false;
+                if (i % 4 === 0) await new Promise(r => setTimeout(r, 0));
+            },
+            async finish() { enc.finish(); return enc.bytes(); },
+            abort() {}
+        };
+    }
+
+    // Render the whole window to a GIF and resolve with the Blob.
+    //
+    // opts: { width = 720, palette = 'per-frame'|'global', scale = 0|'output',
+    //         onProgress(i, frames), download = false }
+    //
+    // Timing semantics are unchanged: A.speed is days per second of wall
+    // clock, so the clip lasts spanDays / speed seconds; 10 fps is the
+    // target, the frame count is capped (GIF_MAX_FRAMES / _MOBILE) and the
+    // delay stretched so the duration survives the cap (choppier, not faster).
+    //
+    // Cost model, in order of what it saved (2026-10-18):
+    //  * THE MAP IS CAPTURED ONCE unless a Season rendering is on. The basemap
+    //    and every static MapLibre layer are identical across frames; only
+    //    the GeoJSON season layers (front, vanguard, patrol, pressure —
+    //    fireseason.js) move with the playhead, and only they need a repaint
+    //    wait per frame (mapFrameInto, `idle` so the contours are not one
+    //    frame behind).
+    //  * ENCODING IS IN A WORKER (makeGifSink), overlapping the next draw.
+    //  * The fire canvas may be rendered at output size (opts.scale).
+    async function exportGIF(opts) {
+        opts = opts || {};
+        if (!A) throw new Error('animator not open');
+        if (A.recording) throw new Error('an export is already running');
         A.recording = true;
         pause();
-        const btn = document.getElementById('anim-export');
-        // A GIF encode HAS a percentage (we own the loop), and a real number
-        // always beats three dots — the dots are for waits we cannot measure.
-        const label = btn && btn.innerHTML;
+        const onProgress = typeof opts.onProgress === 'function' ? opts.onProgress : () => {};
+        const srcW = A.canvas.clientWidth, srcH = A.canvas.clientHeight;
+        const outW = Math.min(Math.max(120, +opts.width || 720), srcW);
+        const outH = Math.round(srcH * outW / srcW);
+        const span = A.t1 - A.t0;
+        const durSec = Math.max(1, (span / DAY) / Math.max(0.25, A.speed));
+        const maxFrames = isMobileViewport() ? GIF_MAX_FRAMES_MOBILE : GIF_MAX_FRAMES;
+        const frames = Math.max(8, Math.min(maxFrames, Math.round(durSec * 10)));
+        const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
+        const seasonOn = anySeasonOn();
+        const t0 = performance.now();
+        _exportState = { frame: 0, frames, phase: 'starting', width: outW, height: outH, delayMs, durSec, palette: opts.palette || 'per-frame', season: seasonOn };
+        let sink = null;
         try {
-            btn.classList.add('is-busy');
-            btn.textContent = '0%';
-            const gifenc = await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
-            const { GIFEncoder, quantize, applyPalette } = gifenc;
-            const srcW = A.canvas.clientWidth, srcH = A.canvas.clientHeight;
-            const outW = Math.min(720, srcW);
-            const outH = Math.round(srcH * outW / srcW);
             const off = document.createElement('canvas');
             off.width = outW; off.height = outH;
             const octx = off.getContext('2d', { willReadFrequently: true });
-            // The GIF must play back at the speed set on screen: A.speed is
-            // days of simulated time per second of wall clock, so the whole
-            // window lasts spanDays / speed seconds. Frame count and delay are
-            // derived from that duration, never fixed — a fixed 80×100 ms made
-            // every export an 8 s clip regardless of the speed control, which
-            // is the one thing the user had just chosen.
-            const enc = GIFEncoder();
-            const span = A.t1 - A.t0;
-            const durSec = Math.max(1, (span / DAY) / Math.max(0.25, A.speed));
-            // 10 fps is the target; clamp frame count for size, then stretch
-            // the delay so the *duration* stays right (choppier, not faster).
-            const maxFrames = isMobileViewport() ? GIF_MAX_FRAMES_MOBILE : GIF_MAX_FRAMES;
-            const frames = Math.max(8, Math.min(maxFrames, Math.round(durSec * 10)));
-            const delayMs = Math.max(20, Math.min(500, Math.round(durSec * 1000 / frames)));
+            if (opts.scale === 'output' || (+opts.scale > 0)) {
+                _exportScale = opts.scale === 'output' ? outW / srcW : +opts.scale;
+                A.resize();
+            }
+            sink = await makeGifSink(outW, outH, opts.palette);
+            _exportState.worker = sink.worker;
+            // Date stamp, bottom-left: a pill as wide as the date, not a
+            // fixed 150 px slab that out-ran "1 Oct 2025" by half its length.
+            const stamp = (t) => {
+                const txt = fmtDateHuman(t);
+                octx.font = 'bold 15px sans-serif';
+                octx.textBaseline = 'middle';
+                const padX = 8, h = 24, w = Math.ceil(octx.measureText(txt).width) + padX * 2;
+                const x = 10, y = outH - h - 10, r = 6;
+                octx.beginPath();
+                octx.moveTo(x + r, y); octx.lineTo(x + w - r, y); octx.arcTo(x + w, y, x + w, y + r, r);
+                octx.lineTo(x + w, y + h - r); octx.arcTo(x + w, y + h, x + w - r, y + h, r);
+                octx.lineTo(x + r, y + h); octx.arcTo(x, y + h, x, y + h - r, r);
+                octx.lineTo(x, y + r); octx.arcTo(x, y, x + r, y, r); octx.closePath();
+                octx.fillStyle = 'rgba(0,0,0,0.6)';
+                octx.fill();
+                octx.fillStyle = '#fff';
+                octx.fillText(txt, x + padX, y + h / 2 + 1);
+                octx.textBaseline = 'alphabetic';
+            };
+            // The map, once — or per frame when a Season rendering moves it.
+            let base = null;
+            if (!seasonOn) {
+                await mapFrameInto(octx, outW, outH);
+                base = document.createElement('canvas');
+                base.width = outW; base.height = outH;
+                base.getContext('2d').drawImage(off, 0, 0);
+            }
+            const compose = async (t) => {
+                draw(t, true);
+                if (base) octx.drawImage(base, 0, 0);
+                else await mapFrameInto(octx, outW, outH);
+                octx.drawImage(A.canvas, 0, 0, outW, outH);
+                stamp(t);
+                return octx.getImageData(0, 0, outW, outH);
+            };
+            if (sink.mode === 'global') {
+                // One palette for the file, fitted to the middle of the
+                // window — the frame most likely to carry the whole ramp.
+                _exportState.phase = 'palette';
+                sink.setPalette(await compose(A.t0 + span * 0.5));
+            }
+            _exportState.phase = 'frames';
             for (let i = 0; i < frames; i++) {
                 const t = A.t0 + span * i / (frames - 1);
-                draw(t, true);
-                // THE MAP IS PART OF THE FRAME, AND IT IS ASYNCHRONOUS.
-                // The season contours, the patrol isochrones and the pressure
-                // isopleths are MapLibre layers (fireseason.js): draw(t) only
-                // hands them the playhead, and MapLibre repaints on its own
-                // schedule. Grabbing the GL canvas straight afterwards copied
-                // whatever frame happened to be on it — for a fast export,
-                // the same contour date in every frame, i.e. a GIF in which
-                // the lines the reader switched on do not move. Worse, with
-                // `preserveDrawingBuffer: false` (globe.html, for memory) the
-                // buffer is only guaranteed readable INSIDE the render
-                // callback; outside it a browser may hand back a blank
-                // canvas. So we wait for the map's own repaint and copy the
-                // basemap + vector layers there.
-                await mapFrameInto(octx, outW, outH);
-                octx.drawImage(A.canvas, 0, 0, outW, outH);
-                octx.font = 'bold 16px sans-serif';
-                octx.fillStyle = 'rgba(0,0,0,0.55)';
-                octx.fillRect(8, outH - 30, 150, 22);
-                octx.fillStyle = '#fff';
-                octx.fillText(fmtDateHuman(t), 14, outH - 14);
-                const { data } = octx.getImageData(0, 0, outW, outH);
-                const palette = quantize(data, 256);
-                const index = applyPalette(data, palette);
-                enc.writeFrame(index, outW, outH, { palette, delay: delayMs });
-                btn.textContent = Math.round((i + 1) / frames * 100) + '%';
-                if (i % 8 === 0) await new Promise(r => setTimeout(r, 0));
+                const img = await compose(t);
+                await sink.frame(i, img, delayMs);
+                _exportState.frame = i + 1;
+                onProgress(i + 1, frames);
+                // Let the button repaint; the worker is already busy.
+                await new Promise(r => setTimeout(r, 0));
             }
-            enc.finish();
-            const blob = new Blob([enc.bytes()], { type: 'image/gif' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `5mp_animation_${fmtDate(A.t0)}_${fmtDate(A.t1)}.gif`;
-            // Android ignores click() on a detached anchor; append first.
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-            toast('GIF downloaded — ' + frames + ' frames, ' + durSec.toFixed(0) + 's at '
+            _exportState.phase = 'finishing';
+            const bytes = await sink.finish();
+            const blob = new Blob([bytes], { type: 'image/gif' });
+            _exportState.phase = 'done';
+            _exportState.ms = Math.round(performance.now() - t0);
+            _exportState.bytes = blob.size;
+            if (opts.download) {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `5mp_animation_${fmtDate(A.t0)}_${fmtDate(A.t1)}.gif`;
+                // Android ignores click() on a detached anchor; append first.
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+            }
+            return blob;
+        } catch (e) {
+            _exportState.phase = 'error';
+            _exportState.error = String(e && e.message || e);
+            if (sink) sink.abort();
+            throw e;
+        } finally {
+            if (_exportScale) { _exportScale = 0; if (A) A.resize(); }
+            if (A) { A.recording = false; drawAndSync(); }
+        }
+    }
+
+    // The button: same function, with the % in the button and a toast at the
+    // end. A GIF encode HAS a percentage (we own the loop), and a real number
+    // always beats three dots — the dots are for waits we cannot measure.
+    async function exportGIFButton() {
+        if (!A || A.recording) return;
+        const btn = document.getElementById('anim-export');
+        const label = btn && btn.innerHTML;
+        try {
+            if (btn) { btn.classList.add('is-busy'); btn.textContent = '0%'; }
+            const blob = await exportGIF({
+                download: true,
+                onProgress: (i, n) => { if (btn) btn.textContent = Math.round(i / n * 100) + '%'; }
+            });
+            const st = _exportState;
+            toast('GIF downloaded — ' + st.frames + ' frames, ' + st.durSec.toFixed(0) + 's at '
                 + fmtSpeed() + ' (' + Math.round(blob.size / 1024) + ' KB)', 'success');
         } catch (e) {
             console.error('GIF export failed:', e);
             toast('GIF export failed: ' + e.message, 'error');
         } finally {
-            A.recording = false;
             if (btn) { btn.classList.remove('is-busy'); btn.innerHTML = label; }
-            drawAndSync();
         }
     }
 
@@ -3102,7 +3267,7 @@
     // area exports: opening a link must not spend minutes of CPU or hundreds of
     // MB. The recipient lands on the frame with the row pointed at, and clicks.
     const EXPORT_ITEMS = {
-        gif:  { icon: 'icon-film',     label: 'GIF',        note: 'the animation', run: () => exportGIF() },
+        gif:  { icon: 'icon-film',     label: 'GIF',        note: 'the animation', run: () => exportGIFButton() },
         gpkg: { icon: 'icon-database', label: 'GeoPackage', note: 'this frame, QGIS', run: () => exportGPKG() }
     };
 
@@ -4346,10 +4511,18 @@
             drawAndSync();
             return true;
         },
+        // Programmatic export (scripts/gif_export.py): resolves with the Blob.
+        exportGIF(opts) { return exportGIF(opts); },
+        // {frame, frames, phase} — poll this from a script while exportGIF runs.
+        exportState() { return Object.assign({}, _exportState); },
         getState() {
             if (!A) return null;
+            const loading = Object.keys(A.loading || {});
             return {
                 layers: LAYER_ORDER.filter(n => A.on[n]),
+                loading,
+                // Every ON layer has its data (or gave up): a script may export.
+                ready: loading.length === 0 && LAYER_ORDER.filter(n => A.on[n]).every(n => A.data[n] !== undefined),
                 speed: A.speed,
                 tISO: fmtDate(A.t),
                 playing: A.playing,

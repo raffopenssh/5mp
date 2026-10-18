@@ -562,8 +562,9 @@ untouched (footer 93 px). Press feedback is `:active { transform: scale(.93) }`
 - Temporal semantics: fire grid/points flash + afterglow; trajectories build at true dated speed with glowing head, then **ashen out** (red→grey→gone over `TRAJ_FADE_DAYS`=21); effort ages to ash over 90d so refreshes flash green; deforestation accumulates (45d flash); settlements static; turbidity accumulates.
 - Speed +/−: click steps ×1.35, press-and-hold ramps (mobile). Keyboard: space/←/→/Esc.
 - **Share links**: `anim=<layers>&anim_speed&anim_t&anim_paused` written by `shareCurrentView()` (via `Animator.getState()`); restored through `window._pendingAnim` set in `restoreStateFromURL()`, polled by anim.js until map ready.
-- `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via `gifenc` CDN
-  (720px; on mobile the frame cap drops to `GIF_MAX_FRAMES_MOBILE`=80 — never hidden, a hidden row reads as "unavailable"). **The GIF plays back at the on-screen speed**: its
+- `chooseStep()`: ≤92d→day, ≤800d→week, else month. GIF export via vendored
+  `gifenc` (`static/vendor/gifenc.esm.js`, encoded in `static/gif_worker.js`;
+  see "GIF export" below) (720px; on mobile the frame cap drops to `GIF_MAX_FRAMES_MOBILE`=80 — never hidden, a hidden row reads as "unavailable"). **The GIF plays back at the on-screen speed**: its
   duration is `spanDays / A.speed` seconds, frames are `10/s` capped at
   `GIF_MAX_FRAMES`, and the per-frame `delay` is then stretched so a capped
   export gets *choppier, not faster*. It used to be a fixed 80 frames × 100 ms,
@@ -747,6 +748,50 @@ exactly one frame. `idle` costs ~0.9 s/frame (160 frames ≈ 52 s), so a
 canvas-only export keeps the 180 ms `render` path. `draw(t, true)` forces
 `FireSeason.animAt(t, force)` past its 80 ms coalescing — a frame dropped on
 screen is invisible, a frame dropped in a file is the file being wrong.
+
+### GIF export (2026-10-18)
+
+`exportGIF(opts) → Promise<Blob>` is the one function; the button calls it via
+`exportGIFButton()` (% in the button, `download: true`), scripts via
+`window.Animator.exportGIF({width, palette, scale, onProgress})` and poll
+`Animator.exportState()` → `{frame, frames, phase, ms, bytes, …}`.
+`Animator.getState().ready` is true once every ON layer has its data.
+
+**Speed / frames / duration.** `durSec = spanDays / A.speed`; frames
+= `round(durSec × 10)` (10 fps target) capped at `GIF_MAX_FRAMES` = 160 (80 on
+a phone); `delay = durSec × 1000 / frames` clamped 20–500 ms. So 182 d at
+10 d/s → 18.2 s → 182 frames → capped to 160 at 114 ms (choppier, same
+duration). At 5 d/s the same window is 36 s, 160 frames at 228 ms.
+
+**What made it fast** (XSA, 4 layers, 160 frames, headless swiftshader
+1280×720: **>4 min → ~25 s**; see the measurement in this section's commit):
+
+1. *The map is captured once.* Basemap and every static MapLibre layer are
+   identical in every frame; only Season renderings (fireseason.js GeoJSON
+   layers) move with the playhead. `!anySeasonOn()` → one `mapFrameInto()`
+   before the loop, reused as a bitmap; with a season on it is still
+   `mapFrameInto()` per frame on `idle` (the one-frame-behind rule above).
+2. *Encoding is in a worker.* `makeGifSink()` posts transferable RGBA buffers
+   to `gif_worker.js` (quantize + applyPalette + LZW), at most `ENC_INFLIGHT`
+   = 3 queued, so the draw of frame i+1 overlaps the encode of frame i. Falls
+   back inline if the module worker cannot load.
+3. *Render at output size.* `opts.scale: 'output'` sets `_exportScale` so the
+   fire canvas's backing store is the GIF's size for the duration of the
+   export (draw() works in CSS px; only the transform changes) — a 1:1 copy
+   instead of a 2–4× downsample. Off by default on screen (the live canvas
+   would blur during the export); the dev tool turns it on.
+
+**Palette.** `per-frame` (default) fits a 256-colour table to every frame —
+what the export always did, faithful to the ramp as the season brightens.
+`global` quantises once from the mid-window frame and writes a single global
+table: faster, a smaller file, slightly less faithful at the window's ends.
+
+**Dev tool:** `scripts/gif_export.py '<path+query with anim=…>' out.gif
+[--width 720] [--palette per-frame|global] [--wait 40]` /
+`make gif URL=… OUT=…`. Playwright Chromium (`--use-gl=angle
+--use-angle=swiftshader`), 1280×720 DPR 1, owner cookie from `secrets.env`
+`AOI_OWNER_PWD` (never printed), progress `frame 37/160` on stderr. The
+presentation's `reports/presentation/run_app.sh gif` uses it.
 
 **A module that throws at load looks like a CSS bug.** A pair of backticks in a
 comment *inside* anim.js's injected-CSS template literal ended the literal;
