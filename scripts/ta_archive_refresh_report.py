@@ -29,6 +29,11 @@ COPIES = {  # destination (relative to report/) : source
     "DEPLOY_MAP_2026-10.pdf": R / "DEPLOY_MAP_2026-10.pdf",
     "SITUATION_MAP_2026-09.png": R / "SITUATION_MAP_2026-09.png",
     "SITUATION_MAP_2026-09.pdf": R / "SITUATION_MAP_2026-09.pdf",
+    # gold-free share copies of Fig 1 / Fig 2 (build_map.py --no-gold; feedback B6): for readers outside AP
+    "DEPLOY_MAP_2026-10_nogold.png": R / "DEPLOY_MAP_2026-10_nogold.png",
+    "DEPLOY_MAP_2026-10_nogold.pdf": R / "DEPLOY_MAP_2026-10_nogold.pdf",
+    "SITUATION_MAP_2026-09_nogold.png": R / "SITUATION_MAP_2026-09_nogold.png",
+    "SITUATION_MAP_2026-09_nogold.pdf": R / "SITUATION_MAP_2026-09_nogold.pdf",
     "tex/refs.bib": PL / "refs.bib",
     "tex/plan/plan.yaml": BASE / "docs/plan/plan.yaml",
     "tex/plan/focus.yaml": BASE / "docs/plan/focus.yaml",
