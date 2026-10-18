@@ -14,6 +14,7 @@ Layers:
   corridor_branches    polygons  the corridor network: one band per origin–destination bundle + the through-route
   corridor_axes        lines     the least-cost axis of each branch (start → end), same attributes
   teams                points    FP / ECHO / TANGO placements with size, water, season and the reason
+  focus                polygons  role=focus: this phase's ground (South Sudan west of 28 E); role=veil: everything else in the frame, drawn white 74 % over the map (Figure 2)
   drawn_boundaries     polygons  what the authors sent (KML) + WDPA references, as the planner re-measured them
   mesh_features        lines     the legible mesh (rivers, swamp edges, ridges, roads, 1930s district lines …)
   beacons              points    point landmarks (1930s villages / water / hills, OSM villages) the boundary text cites
@@ -170,6 +171,8 @@ STYLES = {
                                         ("ECHO1", "ECHO team (5), year 1", rgba("#0b7285"), rgba("#ffffff"), "0.3", "square@3.2"), ("ECHO2", "ECHO team (5), year 2", rgba("#ffffff"), rgba("#0b7285"), "0.45", "square@3.2"),
                                         ("TANGO1", "TANGO team (5), year 1", rgba("#0b7285"), rgba("#ffffff"), "0.3", "triangle@3.8"), ("TANGO2", "TANGO team (5), year 2", rgba("#ffffff"), rgba("#0b7285"), "0.45", "triangle@3.8")], geom="point",
                                 label_expr="\"id\" || ' · ' || regexp_replace(replace(\"place\",'near ',''),' \\\\(.*','')"),
+ "focus": qml_categorized("role", [("veil", "Outside this phase's focus — veiled (white, translucent); zoning kept for other partners, no teams", rgba("#ffffff", 189), rgba("#ffffff", 0), "0", False),
+                                   ("focus", "This phase's focus (South Sudan west of 28 E; staffed conservancies whole)", "0,0,0,0", rgba("#3a3a3a"), "0.45", False)]),
  "deploy_reach": qml_categorized("kind", [("ECHO", "ECHO 25 km working disc", "0,0,0,0", rgba("#0b7285", 90), "0.25", "dot"), ("TANGO", "TANGO 25 km working disc", "0,0,0,0", rgba("#0b7285", 90), "0.25", "dot"), ("FP", "FP 25 km disc", "0,0,0,0", rgba("#0b7285", 60), "0.2", "dot")]),
 }
 
@@ -309,6 +312,10 @@ def main():
                 if disc.is_empty: continue
                 fr.append((mapping(disc), dict(kind=p_["kind"], id=p_["id"], year=int(p_.get("year") or 2), place=p_.get("place"))))
             layers["deploy_reach"] = ("MultiPolygon", fr, ["id", "kind", "year", "place"])
+        foc = D.parent / "solver" / "focus.geojson"   # written by build_map.py --planner (the veil Figure 2 draws), 2026-10-18
+        if foc.exists():
+            fz = rows_from(foc)
+            layers["focus"] = ("MultiPolygon", fz, ["role", "label", "east_lon", "iso3", "declared", "area_km2"])
 
     log(f"writing {gpkg}")
     for name, (gt, rows, cc) in layers.items():

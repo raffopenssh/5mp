@@ -102,6 +102,11 @@ def facts(P):
     threat = j(SOLVER / "threat.json"); frontier = j(SOLVER / "frontier.json")
     pip = j(ROOT / "data/eval/pip_facts.json")
     belt = j(SOLVER / "map_belt.json") if (SOLVER / "map_belt.json").exists() else None
+    # the focus veil of the deployment map (build_map.py focus.geojson): east meridian + the named, unstaffed zones under it
+    focus = None
+    if (SOLVER / "focus.geojson").exists():
+        _ff = [f["properties"] for f in j(SOLVER / "focus.geojson")["features"] if f["properties"].get("role") == "focus"]
+        if _ff: focus = dict(east_lon=_ff[0].get("east_lon"), iso3=_ff[0].get("iso3"), area_km2=_ff[0].get("area_km2"), other=_ff[0].get("other") or [])
     bnd = j(SOLVER / "boundaries.json")["zones"] if (SOLVER / "boundaries.json").exists() else {}   # plan_boundary.py: metes-and-bounds per zone
     N = len(P["year_labels"])
 
@@ -111,7 +116,8 @@ def facts(P):
         z = zones[t["zone_uids"][0]] if t["kind"] != "FP" else None
         d = dict(id=t["id"], kind=t["kind"], strand=t.get("strand", "SSD"), year=t["year"], place=re.sub(r"\*.*$", "", t["place"]).strip(),
                  place_unverified="*" in t["place"], site_people=t["site_people"], zone_uids=t["zone_uids"],
-                 lon=t["lon"], lat=t["lat"], water=t["water"], serves=t.get("serves"), pm=bool(t.get("pm")))
+                 lon=t["lon"], lat=t["lat"], water=t["water"], serves=t.get("serves"), pm=bool(t.get("pm")),
+                 reach_share=(t.get("reach") or {}).get("share"), marginal=t.get("marginal"), union_share=t.get("union_share"), given=t.get("given"))   # second corridor site: marginal coverage given the first (plan_deploy.py, B1)
         if z:
             hb = json.loads(z["herd_bundles"])
             d.update(area_ha=z["area_ha"], people=z["population_est"], country=z["country"], gold=z["mine_top05_cells"],
@@ -183,7 +189,7 @@ def facts(P):
         park=dict(area_km2=park["area_km2"], fires=park["fire_detections_2024_2025"], nov_feb=park["nov_feb_share"], people=park["people"],
                   clearing_km2=park["clearing_km2"], snp_fronts=pip["corridor"]["park_snp_shared_fronts"]),
         xsa=dict(area_km2=pip["xsa"]["area_km2"]),
-        belt=belt,
+        belt=belt, focus=focus,
     )
     # the drawn park's perimeter legibility comes from the planner's assess of the KML (validation) if present
     val = SOLVER.parent / "conservancy_units" / "validation.json"
