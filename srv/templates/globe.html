@@ -1168,7 +1168,10 @@ window.addEventListener('load', function () {
             // clearings, AOIs, historical sheets, geology) draws exactly as on
             // Dark -- only the tiles are gone. `kind: base` so it can be the
             // login's default but never what "satellite" means.
-            { id: 'none',         name: 'None (black)', short: 'Black',  kind: 'base',      icon: 'icon-square',    desc: 'No basemap — a plain black ground for presentations; all overlays still draw',
+            // `quiet`: a demo setting, listed LAST (after private sources) and
+            // drawn muted everywhere it appears, so it never competes with the
+            // maps an ordinary reader is choosing between.
+            { id: 'none',         name: 'None (black)', short: 'Black',  kind: 'base',      icon: 'icon-square',    desc: 'No basemap — a plain black ground for presentations and screenshots; all overlays still draw', quiet: true,
               preview: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2764%27%3E%3Crect width=%2764%27 height=%2764%27 fill=%27%23000%27/%3E%3C/svg%3E' },
             { id: 'satellite-s2', name: 'Sentinel-2', short: 'Sentinel', kind: 'satellite', icon: 'icon-satellite', desc: 'Sentinel-2 cloudless 2024 by EOX · 10 m · CC BY-NC-SA 4.0',
               preview: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/5/16/17.jpg', maxzoom: 18 }
@@ -1177,13 +1180,14 @@ window.addEventListener('load', function () {
         let mapPrefs = { default_base: '', default_satellite: '' };
 
         function basemapList() {
-            return BUILTIN_BASEMAPS.concat(privateTileSources.map(function (t) {
+            const quiet = BUILTIN_BASEMAPS.filter(function (b) { return b.quiet; });
+            return BUILTIN_BASEMAPS.filter(function (b) { return !b.quiet; }).concat(privateTileSources.map(function (t) {
                 return { id: t.basemap, name: t.name, short: t.name.length > 18 ? t.name.slice(0, 17) + '…' : t.name,
                          kind: t.kind === 'base' ? 'base' : 'satellite', icon: t.kind === 'base' ? 'icon-map' : 'icon-satellite',
                          desc: (t.attribution || t.host) + ' · private source · z' + t.min_zoom + '–' + t.max_zoom,
                          preview: t.tiles.replace('{z}', '5').replace('{x}', '17').replace('{y}', '16'),
                          maxzoom: t.max_zoom, private: true, source: t };
-            }));
+            }), quiet);
         }
         function basemapEntry(id) {
             return basemapList().find(function (b) { return b.id === id; }) || null;
@@ -1867,11 +1871,19 @@ window.addEventListener('load', function () {
                 const pins = [];
                 if (defBase === b.id) pins.push('<span class="bm-pin is-on" title="The globe opens on this map">opens here</span>');
                 if (b.kind === 'satellite' && defSat === b.id) pins.push('<span class="bm-pin is-on is-sat" title="What “switch to satellite” means for your login">satellite</span>');
-                const acts = canPin ? [
+                // The black ground's demo aside (hide outlines for a
+                // screenshot) rides in the same hover-revealed action row as
+                // the pins, so it is never a thing a reader has to decide
+                // about; a quiet pin says when it is in effect.
+                const noOut = b.id === 'none' && isCur && outlinesAreHidden();
+                if (noOut) pins.push('<span class="bm-pin is-off" title="Park and AOI boundaries are hidden on the black ground">outlines off</span>');
+                const acts = (canPin ? [
                     defBase === b.id ? '' : `<button class="bm-act" onclick="event.stopPropagation();setMapPref('default_base','${b.id}')" title="Open the globe on this map">Make default</button>`,
                     (b.kind === 'satellite' && defSat !== b.id) ? `<button class="bm-act" onclick="event.stopPropagation();setMapPref('default_satellite','${b.id}')" title="Use this when switching to satellite">Use as satellite</button>` : ''
-                ].join('') : '';
-                return `<button class="bm-card${isCur ? ' selected' : ''}${b.private ? ' is-private' : ''}" data-basemap="${b.id}" onclick="switchBasemap('${b.id}');renderBasemapGrid()" title="${escapeHtml(b.desc)}">
+                ] : []).concat(b.id === 'none' && isCur
+                    ? [`<button class="bm-act bm-act-quiet" onclick="event.stopPropagation();setOutlinesHidden(${!noOut});renderBasemapGrid();if(window.MapLegend)MapLegend.refresh()" title="${noOut ? 'Show park and AOI boundaries again' : 'Hide park and AOI boundaries for a screenshot of the data alone (they return with any other basemap)'}">${noOut ? 'Show outlines' : 'Hide outlines'}</button>`]
+                    : []).join('');
+                return `<button class="bm-card${isCur ? ' selected' : ''}${b.private ? ' is-private' : ''}${b.quiet ? ' bm-quiet' : ''}" data-basemap="${b.id}" onclick="switchBasemap('${b.id}');renderBasemapGrid()" title="${escapeHtml(b.desc)}">
                     <div class="bm-preview"><img src="${escapeHtml(b.preview)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('is-dead')"><span class="bm-dead">no tile</span>${b.private ? '<span class="bm-lock" title="Private source — only your login"><i class="icon-lock"></i></span>' : ''}</div>
                     <div class="bm-name">${escapeHtml(b.name)}</div>
                     <div class="bm-pins">${pins.join('')}</div>

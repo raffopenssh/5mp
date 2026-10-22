@@ -1107,8 +1107,19 @@
             overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
         .ml-strx-lift.unm { color: #6b7280; font-style: italic; }
 
-        /* The black ground's outline switch: indented under its radio, quieter. */
-        .ml-menu .ml-sub { padding-left: 28px; font-size: 11px; color: #9ca3af; }
+        /* The black ground's one aside: a muted text affordance at the right
+         * edge of its radio row. Dim until the row is hovered; it is a demo
+         * control, not a layer, and must not read as one. */
+        .ml-menu .ml-aside { margin-left: auto; padding-left: 14px; font-size: 10px; color: #6b7280;
+            letter-spacing: .2px; white-space: nowrap; opacity: 0.55; transition: opacity .12s, color .12s; }
+        .ml-menu .mode-opt:hover .ml-aside, .ml-menu .ml-aside:focus-visible, .ml-menu .ml-aside.on { opacity: 1; }
+        .ml-menu .ml-aside:hover { color: #e5e7eb; text-decoration: underline; text-underline-offset: 2px; }
+        .ml-menu .ml-aside.on { color: #9ca3af; }
+        /* The black ground itself: a demo setting, muted and smaller than the maps. */
+        .ml-menu .mode-opt.ml-quiet { font-size: 11px; color: #6b7280; padding-top: 4px; padding-bottom: 4px; }
+        .ml-menu .mode-opt.ml-quiet:hover { color: #d1d5db; }
+        .ml-menu .mode-opt.ml-quiet.on { color: #9ca3af; }
+        .ml-menu .mode-opt.ml-quiet .ml-mi { opacity: 0.6; }
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
@@ -4633,6 +4644,12 @@ body.is-guest .session-chip-logout:hover { opacity: 1; background: rgba(251,191,
 .bm-act { font: inherit; font-size: 10.5px; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.14);
     background: rgba(255,255,255,0.06); color: #9ca3af; cursor: pointer; }
 .bm-act:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.bm-act-quiet { border-style: dashed; color: #6b7280; }
+/* The black ground's card: a demo setting, drawn muted and a step smaller. */
+.bm-card.bm-quiet { opacity: 0.55; border-style: dashed; }
+.bm-card.bm-quiet:hover, .bm-card.bm-quiet.selected, .bm-card.bm-quiet:focus-within { opacity: 1; }
+.bm-card.bm-quiet .bm-name { font-weight: 500; color: #9ca3af; }
+.bm-pin.is-off { border-color: rgba(156,163,175,0.35); color: #9ca3af; background: rgba(156,163,175,0.08); }
 
 /* ===== Private tile sources ===== */
 .ts-empty { color: #9ca3af; font-size: 12px; padding: 10px 12px; border: 1px dashed rgba(255,255,255,0.12); border-radius: 9px; }

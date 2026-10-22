@@ -47,7 +47,7 @@
      * copied, so a source added in Map Settings is in this menu at once. */
     function BASEMAPS_() {
         var list = (typeof basemapList === 'function') ? basemapList() : [];
-        return list.map(function (b) { return [b.id, b.short || b.name, b.icon || 'icon-satellite', b.desc || '', b.private]; });
+        return list.map(function (b) { return [b.id, b.short || b.name, b.icon || 'icon-satellite', b.desc || '', b.private, b.quiet]; });
     }
 
     function bm() { return (typeof currentBasemap === 'string') ? currentBasemap : 'dark'; }
@@ -1174,17 +1174,22 @@
         var html = '<div class="mode-menu-head">Basemap</div>';
         var cur = bm();
         BASEMAPS_().forEach(function (b) {
-            html += row('', 'menuitemradio', cur === b[0], b[1] + (b[4] ? ' \u00b7 private' : ''), b[2], b[3],
+            html += row(b[5] ? ' ml-quiet' : '', 'menuitemradio', cur === b[0], b[1] + (b[4] ? ' \u00b7 private' : ''), b[2], b[3],
                 "MapLegend.pickBasemap('" + b[0] + "')", 'radio');
-            // The black ground's one option: outlines off, for a screenshot of
-            // the data alone. Only offered while Black is the chosen ground
-            // (it is an expert's presentation mode, not a map setting), and
-            // indented under its radio so it reads as belonging to it.
+            // The black ground's one option, as an aside on its own row: a
+            // muted "hide outlines" at the right edge, present only while
+            // Black is the chosen ground. It is a demo affordance for the
+            // few who screenshot the data alone, so it must not look like a
+            // layer -- no checkbox, no row of its own, nothing a first-time
+            // reader has to decide about.
             if (b[0] === 'none' && cur === 'none' && typeof setOutlinesHidden === 'function') {
                 var hid = typeof outlinesAreHidden === 'function' && outlinesAreHidden();
-                html += row(' ml-sub', 'menuitemcheckbox', !hid, 'Park outlines', 'icon-hexagon',
-                    'Park and AOI boundaries on the black ground \u2014 switch off for a screenshot of the data alone (they return with any other basemap)',
-                    'MapLegend.setOutlines(' + hid + ')', 'check');
+                html = html.replace(/<\/button>$/, '<span class="ml-aside' + (hid ? ' on' : '') +
+                    '" role="button" tabindex="0" aria-pressed="' + (hid ? 'true' : 'false') +
+                    '" title="' + (hid ? 'Park and AOI boundaries are hidden on the black ground \u2014 click to show them'
+                                      : 'Hide park and AOI boundaries for a screenshot of the data alone (they return with any other basemap)') +
+                    '" onclick="event.stopPropagation();MapLegend.setOutlines(' + hid + ')">' +
+                    (hid ? 'show outlines' : 'hide outlines') + '</span></button>');
             }
         });
         if (!window.IS_GUEST && !window.IS_TEST_ENV && window._tileSourcesMeta && window._tileSourcesMeta.can_add) {
@@ -4232,15 +4237,16 @@
          * wants to see the result and toggle back). */
         setOutlines: function (show) {
             if (typeof setOutlinesHidden === 'function') setOutlinesHidden(!show);
-            var btn = menuEl && menuEl.querySelector('.ml-sub');
-            if (btn) {
-                btn.classList.toggle('on', !!show);
-                btn.setAttribute('aria-checked', show ? 'true' : 'false');
-                btn.setAttribute('onclick', 'event.stopPropagation();MapLegend.setOutlines(' + (!show) + ')');
+            var a = menuEl && menuEl.querySelector('.ml-aside');
+            if (a) {
+                a.classList.toggle('on', !show);
+                a.setAttribute('aria-pressed', show ? 'false' : 'true');
+                a.textContent = show ? 'hide outlines' : 'show outlines';
+                a.setAttribute('onclick', 'event.stopPropagation();MapLegend.setOutlines(' + (!show) + ')');
             }
+            if (typeof renderBasemapGrid === 'function') renderBasemapGrid();
             render();
         },
-
         /* ── What this module contributes to a share link ─────────────────
          *
          * GeoMap.getShareParams() describes the DRAPE; this describes the
