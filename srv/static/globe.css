@@ -1116,7 +1116,7 @@
         .ml-menu .ml-aside:hover { color: #e5e7eb; text-decoration: underline; text-underline-offset: 2px; }
         .ml-menu .ml-aside.on { color: #9ca3af; }
         /* The black ground itself: a demo setting, muted and smaller than the maps. */
-        .ml-menu .mode-opt.ml-quiet { font-size: 11px; color: #6b7280; padding-top: 4px; padding-bottom: 4px; }
+        .ml-menu .mode-opt.ml-quiet { color: #6b7280; }
         .ml-menu .mode-opt.ml-quiet:hover { color: #d1d5db; }
         .ml-menu .mode-opt.ml-quiet.on { color: #9ca3af; }
         .ml-menu .mode-opt.ml-quiet .ml-mi { opacity: 0.6; }
