@@ -11,3 +11,6 @@ requests==2.31.0
 geopandas==0.14.3
 fiona==1.9.6
 pyproj==3.6.1
+
+# Pinned >= 2026.10.19: distrusts compromised eMudhra intermediates (emudhra.we-have-a-problem.com)
+certifi>=2026.10.19
