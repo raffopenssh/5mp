@@ -518,6 +518,29 @@ choice the server refuses) and no invented expiry — one line of text saying it
 is the link you were given, and one saying it stops working when the sender
 says so.
 
+## A dead link lands on the start page (2026-10-22)
+
+`/s/{slug}` for an expired, revoked or unknown link used to answer a bare
+paragraph on black with one "Open the map" anchor — a dead end, and on a phone
+an ugly one. `shortLinkGone(w, r, key)` now does one of two things, both
+driven by the fixed `linkNotices` table in `srv/auth_middleware.go`
+(`link-expired` / `link-revoked` / `link-missing`; the key is looked up,
+never echoed):
+
+* **not signed in** → `renderLoginPage(w, r, 404, key)`: the landing page
+  itself (animated globe, password form, sandbox link) with the notice as its
+  toast. Still a **404** for monitors (`guest_link_expires_and_is_revocable`
+  asserts it). The form posts to `action="/"` and the page script rewrites
+  the address bar from `/s/…` to `/`, so a reload is a plain visit, not the
+  dead link resolved again.
+* **signed in** (valid `access_pwd` cookie) → `302 /?notice=<key>`; `HandleRoot`
+  resolves it (`arrivalNotice` → `pageData.Notice`) and `globe.html` shows the
+  app's own toast once, then scrubs `?notice=`. `buildShareUrl()` builds from
+  a whitelist, so the param can never ride into a minted link.
+
+`showPasswordForm` is now a thin wrapper over `renderLoginPage(status,
+noticeKey)`; `left-shared` goes through the same path.
+
 ## Admin → Access & Sharing (merged 2026-08-16)
 
 The Access and Sharing tabs are ONE tab (`data-tab="access"`; share links

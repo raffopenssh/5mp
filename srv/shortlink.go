@@ -364,8 +364,7 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 	slug := strings.ToLower(strings.Trim(r.PathValue("slug"), "/"))
 	l, ok := s.loadShortLink(slug)
 	if !ok {
-		s.shortLinkGone(w, "That short link does not exist",
-			"It may have been cleared, or the name mistyped &mdash; they are lowercase letters, digits and hyphens.")
+		s.shortLinkGone(w, r, "link-missing")
 		return
 	}
 	w.Header().Set("Cache-Control", "private, no-store")
@@ -386,13 +385,11 @@ func (s *Server) HandleShortLink(w http.ResponseWriter, r *http.Request) {
 
 	if l.Guest {
 		if l.Revoked {
-			s.shortLinkGone(w, "This shared link has been switched off",
-				"Whoever sent it revoked access. Ask them for a new link.")
+			s.shortLinkGone(w, r, "link-revoked")
 			return
 		}
 		if l.Expired {
-			s.shortLinkGone(w, "This shared link has expired",
-				"Shared links are time-limited on purpose. Ask whoever sent it for a fresh one.")
+			s.shortLinkGone(w, r, "link-expired")
 			return
 		}
 		// The capability becomes a cookie so it survives the dozens of /api
@@ -478,8 +475,23 @@ func forwardQuery(target string, q url.Values) string {
 	return u.String()
 }
 
-func (s *Server) shortLinkGone(w http.ResponseWriter, head, body string) {
-	s.noticePage(w, http.StatusNotFound, head, body, `<p><a style="color:#4ade80" href="/">Open the map</a></p>`)
+// shortLinkGone: a share link that no longer resolves. Two readers, two
+// answers to the same fact (the notice table is linkNotices):
+//
+//   - a reader already signed in with a password is sent INTO the map
+//     (302 to /?notice=…), where the app's own toast says the link is dead --
+//     a dead-end page would be a wall between them and a map they can open;
+//   - anyone else gets the landing page (globe, password form, sandbox) with
+//     the notice as its toast, under a 404 so monitors still see a miss. The
+//     form posts to / and the address bar is rewritten to /, so the reader is
+//     effectively on the start page -- just told why.
+func (s *Server) shortLinkGone(w http.ResponseWriter, r *http.Request, key string) {
+	w.Header().Set("Cache-Control", "private, no-store")
+	if c, err := r.Cookie("access_pwd"); err == nil && isValidPassword(c.Value) {
+		http.Redirect(w, r, "/?notice="+key, http.StatusFound)
+		return
+	}
+	s.renderLoginPage(w, r, http.StatusNotFound, key)
 }
 
 // noticePage: the one dead-end page. Status is a parameter because the same

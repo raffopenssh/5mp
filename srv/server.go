@@ -73,6 +73,10 @@ type pageData struct {
 	// -- script on this page can read everything the key grants anyway -- but
 	// it must never be written into a URL by anything except a deliberate copy.
 	GuestSlug string
+	// Notice: an arrival notice (linkNotices key) for a signed-in reader who
+	// followed a dead share link -- shown as a toast, then scrubbed from the
+	// URL. Empty for a plain visit.
+	Notice *linkNotice
 }
 
 // AOIHomeJSON renders AOIHome for the page script. `null` when there is none,
@@ -132,12 +136,22 @@ func New(dbPath, hostname string) (*Server, error) {
 	return srv, nil
 }
 
+// arrivalNotice resolves ?notice= against the fixed table (nil for unknown or
+// absent); the key is never echoed into the page.
+func arrivalNotice(r *http.Request) *linkNotice {
+	if n, ok := linkNotices[r.URL.Query().Get("notice")]; ok {
+		return &n
+	}
+	return nil
+}
+
 func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 	user := s.Auth.GetUserFromRequest(r)
 
 	// Session chip label: prefer real user identity (future user management),
-	// fall back to the alpha access password.
-	authLabel := RequestPwd(r)
+	// fall back to the login's NAME (PASSWORD_LABELS, srv/tenant.go) -- never
+	// the password itself, which is a credential and not a name.
+	authLabel := labelForPwd(RequestPwd(r))
 	if user != nil && user.Email != "" {
 		authLabel = user.Email
 	}
@@ -167,6 +181,7 @@ func (s *Server) HandleRoot(w http.ResponseWriter, r *http.Request) {
 		IsGuest:   guest != nil,
 		AOIHome:   s.aoiHomeView(s.RequestPrincipalID(r)),
 		GuestSlug: guestSlug(guest),
+		Notice:    arrivalNotice(r),
 		OG:        template.HTML(ogTags(s.ogForURL(r.URL))),
 	}
 

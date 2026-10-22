@@ -604,6 +604,19 @@ maptip.js's own CSS block). The stats panel is **not** a stack member — it has
 its own mobile grid at the top.
 
 
+## The `none` basemap (2026-10-22)
+
+`BUILTIN_BASEMAPS` has a third built-in, `none` ("None (black)", `kind:
+base`): a style with no sources and one `background` layer, `#000`. For
+presentations and recordings where a cartographic base competes with the
+overlays — everything else (fires, settlements, clearings, AOIs, HistMap,
+GeoMap, FireSeason) reattaches exactly as on Dark. Its style lives in
+`satelliteStyles['none']` only because every lookup is `id === 'dark' ?
+darkStyle : satelliteStyles[id]`; nothing treats membership there as "is
+imagery" (that is `startsWith('satellite-')`). `?basemap=none` restores it,
+`builtinBasemaps` in `srv/tile_sources.go` accepts it as `default_base` and
+refuses it as `default_satellite`.
+
 ## Base-map tiles are proxied: the CARTO key is ours (`srv/basemap.go`)
 
 CARTO began requiring an API key on its raster (PNG) basemaps in August 2026
