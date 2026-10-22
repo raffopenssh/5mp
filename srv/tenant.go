@@ -130,3 +130,57 @@ func pwdForTenant(env string) string {
 	}
 	return ""
 }
+
+// ── Login labels ──────────────────────────────────────────────────────────
+//
+// The session chip used to print the access password itself, which is both a
+// credential on screen (in every screenshot and over every shoulder) and
+// unprofessional in front of a partner. PASSWORD_LABELS (env var or
+// secrets.env) names each login:
+//
+//	PASSWORD_LABELS=<pwd>:Jean,<pwd>:APN,test2026:Demo
+//
+// It is keyed by password rather than by ref so secrets.env stays the one
+// place a password appears; an unlabelled password falls back to a neutral
+// placeholder, never to the password — once the chip stops showing the
+// secret it must not start again because a line was forgotten.
+var (
+	labelOnce sync.Once
+	labelMap  map[string]string // password -> display name
+)
+
+func loadLabels() {
+	labelOnce.Do(func() {
+		labelMap = map[string]string{}
+		raw := os.Getenv("PASSWORD_LABELS")
+		if raw == "" {
+			raw = secretsEnv("PASSWORD_LABELS")
+		}
+		for _, pair := range strings.Split(raw, ",") {
+			pwd, name, ok := strings.Cut(strings.TrimSpace(pair), ":")
+			if !ok {
+				continue
+			}
+			pwd, name = strings.TrimSpace(pwd), strings.TrimSpace(name)
+			if pwd != "" && name != "" {
+				labelMap[pwd] = name
+			}
+		}
+	})
+}
+
+// labelForPwd is what the UI calls a login. Never the password.
+func labelForPwd(pwd string) string {
+	if pwd == "" {
+		return ""
+	}
+	loadLabels()
+	if name, ok := labelMap[pwd]; ok {
+		return name
+	}
+	if pwd == "test2026" {
+		return "Demo"
+	}
+	// Unlabelled: a stable, non-secret handle derived from the ref.
+	return "login " + principalRef(pwd)[:4]
+}

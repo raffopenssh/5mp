@@ -128,6 +128,15 @@ Pinned by `go test ./srv/ -run 'Tenant|RequestEnv'` and the
 is *"does not see THESE pixels"*, not "sees nothing": a tenant with its own
 patrols is the normal case.
 
+### The session chip shows a NAME, never the password (2026-10-22)
+
+`PASSWORD_LABELS=<pwd>:Name,…` in `secrets.env` (placeholder in the example)
+maps each access password to the label the chip shows (`labelForPwd`,
+`srv/tenant.go`; `HandleRoot` → `AuthLabel`). Unlisted: `test2026` → "Demo",
+anything else → `login <ref4>` — never the password, so forgetting a line
+cannot put a credential back on screen. A new password needs a line here as
+well as in `ACCESS_PASSWORDS`/`PASSWORD_ENVS`.
+
 ### Unauthenticated Endpoints
 
 These paths bypass password check (see `srv/auth_middleware.go`):

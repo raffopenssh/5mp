@@ -57,6 +57,16 @@ window.IS_GUEST = {{if .IsGuest}}true{{else}}false{{end}};
 // it came in through — sharelink.js copies THAT rather than 400 characters of
 // view state that would ask the recipient for a password nobody gave them.
 window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
+// An arrival notice (a dead share link followed while signed in): shown once as
+// a toast after the UI is up, and ?notice= scrubbed so a reload does not repeat
+// it. buildShareUrl() never carries it.
+{{if .Notice}}window.ARRIVAL_NOTICE = { title: {{.Notice.Title}}, body: {{.Notice.Body}} };
+window.addEventListener('load', function () {
+    setTimeout(function () {
+        if (typeof showToast === 'function') showToast(window.ARRIVAL_NOTICE.body.replace(/&mdash;/g, '\u2014'), 'warning', { title: window.ARRIVAL_NOTICE.title, duration: 12000 });
+    }, 900);
+    try { var u = new URL(location.href); if (u.searchParams.has('notice')) { u.searchParams.delete('notice'); history.replaceState({}, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams : '') + u.hash); } } catch (e) {}
+});{{end}}
 </script>
     <!-- Skip to content -->
     <a href="#map" class="skip-link">Skip to map</a>
@@ -1111,6 +1121,18 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         // runtime by registerTileSource() under the id `src:<id>`. Nothing in
         // this file names a provider.
         const satelliteStyles = {
+            // 'none' is not a satellite; it lives in this table because every
+            // style lookup in this file is `id === 'dark' ? darkStyle :
+            // satelliteStyles[id]`, and a third table would mean a third
+            // branch at each of them. Nothing keys on membership here to
+            // decide "is imagery" -- that is `startsWith('satellite-')`.
+            'none': {
+                version: 8,
+                name: 'None (black)',
+                glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                sources: {},
+                layers: [{ id: 'bg-black', type: 'background', paint: { 'background-color': '#000000' } }]
+            },
             'satellite-s2': {
                 version: 8,
                 name: 'Satellite (Sentinel-2)',
@@ -1140,6 +1162,14 @@ window.GUEST_SLUG = {{if .IsGuest}}"{{.GuestSlug}}"{{else}}''{{end}};
         const BUILTIN_BASEMAPS = [
             { id: 'dark',         name: 'Dark',       short: 'Dark',     kind: 'base',      icon: 'icon-moon',      desc: 'The default cartographic basemap (OSM · CARTO)',
               preview: '/api/basemap/dark_all/5/17/16@2x.png' },
+            // No basemap at all: a black ground for presentations and screen
+            // recordings, where the roads and labels of a cartographic base
+            // compete with the overlays. Every overlay (fires, settlements,
+            // clearings, AOIs, historical sheets, geology) draws exactly as on
+            // Dark -- only the tiles are gone. `kind: base` so it can be the
+            // login's default but never what "satellite" means.
+            { id: 'none',         name: 'None (black)', short: 'Black',  kind: 'base',      icon: 'icon-square',    desc: 'No basemap — a plain black ground for presentations; all overlays still draw',
+              preview: 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2764%27 height=%2764%27%3E%3Crect width=%2764%27 height=%2764%27 fill=%27%23000%27/%3E%3C/svg%3E' },
             { id: 'satellite-s2', name: 'Sentinel-2', short: 'Sentinel', kind: 'satellite', icon: 'icon-satellite', desc: 'Sentinel-2 cloudless 2024 by EOX · 10 m · CC BY-NC-SA 4.0',
               preview: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2024_3857/default/g/5/16/17.jpg', maxzoom: 18 }
         ];

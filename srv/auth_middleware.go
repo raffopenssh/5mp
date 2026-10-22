@@ -287,22 +287,58 @@ func isValidPassword(pwd string) bool {
 }
 
 func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
+	// Pages: 200 (not 401) so social-media link scrapers (Facebook, Slack,
+	// WhatsApp, Twitter) parse the Open Graph tags on this page; most refuse
+	// non-2xx responses. API paths keep a proper 401 for clients.
+	status := http.StatusOK
+	if strings.HasPrefix(r.URL.Path, "/api/") {
+		status = http.StatusUnauthorized
+	}
+	s.renderLoginPage(w, r, status, r.URL.Query().Get("notice"))
+}
+
+// linkNotice: the fixed table of arrival notices the landing page can show.
+// A `?notice=` value is looked up here and never echoed; an unknown value
+// renders nothing. The same table feeds the in-app toast (HandleRoot) for a
+// reader who is already signed in, so both surfaces say the same words.
+type linkNotice struct {
+	Title, Body string
+	Kind        string // "warn" | "error" -- picks the icon/colour
+}
+
+var linkNotices = map[string]linkNotice{
+	"link-expired": {Title: "This shared link has expired",
+		Body: "Shared links are time-limited on purpose. Ask whoever sent it for a fresh one &mdash; or sign in below if you have a password.", Kind: "warn"},
+	"link-revoked": {Title: "This shared link has been switched off",
+		Body: "Whoever sent it has revoked access. Ask them for a new link &mdash; or sign in below if you have a password.", Kind: "warn"},
+	"link-missing": {Title: "That shared link does not exist",
+		Body: "It may have been cleared, or the name mistyped &mdash; link names are lowercase letters, digits and hyphens.", Kind: "warn"},
+}
+
+// renderLoginPage draws the landing page (the animated globe, the password
+// form) with an optional arrival notice. It is ALSO the dead-end page for a
+// share link that no longer resolves: rather than a bare paragraph on black,
+// the reader lands on the same page a fresh visitor sees, told in the app's
+// own toast what happened and offered the two real ways forward (a password,
+// or the sandbox). The status is the caller's -- a dead link stays a 404 for
+// monitors even though the body is the landing page.
+func (s *Server) renderLoginPage(w http.ResponseWriter, r *http.Request, status int, noticeKey string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	// A Set-Cookie added after WriteHeader is dropped, and the way-back slug is
 	// consumed by a Set-Cookie -- so read it here, before the status is written,
 	// not down where the notice HTML is built.
 	leftSlug := ""
-	if r.URL.Query().Get("notice") == "left-shared" {
+	if noticeKey == "left-shared" {
 		leftSlug = takeLeftGuestSlug(w, r)
 	}
-	// Pages: 200 (not 401) so social-media link scrapers (Facebook, Slack,
-	// WhatsApp, Twitter) parse the Open Graph tags on this page; most refuse
-	// non-2xx responses. API paths keep a proper 401 for clients.
-	if strings.HasPrefix(r.URL.Path, "/api/") {
-		w.WriteHeader(http.StatusUnauthorized)
-	} else {
-		w.WriteHeader(http.StatusOK)
+	// A dead share link is rendered under /s/<slug>; the form must not post
+	// back there (it would resolve the dead link again), and the address bar
+	// is rewritten to / by the script below so a reload is a plain visit.
+	formAction := ""
+	if _, isLink := linkNotices[noticeKey]; isLink {
+		formAction = ` action="/"`
 	}
+	w.WriteHeader(status)
 
 	// Build hidden fields for existing query params (preserve through login)
 	var hiddenFields string
@@ -379,7 +415,18 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
 	// the page opens at the top and the reader taps the field themselves.
 	autofocusAttr := " autofocus"
 	noticeToast := ""
-	switch r.URL.Query().Get("notice") {
+	switch noticeKey {
+	case "link-expired", "link-revoked", "link-missing":
+		n := linkNotices[noticeKey]
+		noticeToast = `<div class="notice-toast is-` + n.Kind + `" role="alert" aria-live="assertive">
+            <svg class="notice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><path d="m3 3 18 18"/></svg>
+            <div class="notice-text">
+                <span class="notice-title">` + n.Title + `</span>
+                <span class="notice-body">` + n.Body + `</span>
+            </div>
+            <button type="button" class="notice-close" aria-label="Dismiss">&times;</button>
+        </div>`
+		autofocusAttr = ""
 	case "left-shared":
 		// The slug is offered back for the × that was a mistake. Read once from
 		// the short-lived cookie (takeLeftGuestSlug) -- if it is gone, the body
@@ -736,6 +783,8 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         @keyframes noticeIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: none; } }
         @keyframes noticeOut { to { opacity: 0; transform: translateY(-10px); height: 0; margin: 0; padding: 0; border-width: 0; } }
         .notice-icon { flex: none; width: 18px; height: 18px; margin-top: 1px; color: #fbbf24; }
+        .notice-toast.is-error { border-color: rgba(239,68,68,0.45); }
+        .notice-toast.is-error .notice-icon { color: #f87171; }
         .notice-text { flex: 1 1 auto; min-width: 0; }
         .notice-title { display: block; font-size: 13.5px; font-weight: 600; color: #fff; }
         .notice-body { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.45; color: #a8adb5; overflow-wrap: anywhere; }
@@ -901,7 +950,7 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         <div class="subtitle">Conservation Tracker</div>
         ` + intro + `
         <div class="alpha-line"><span class="alpha-badge">Alpha</span><span>` + prompt + `</span></div>
-        <form method="GET">
+        <form method="GET"` + formAction + `>
             ` + hiddenFields + `
             <div class="form-group">
                 <input type="password" name="pwd" placeholder="Enter password"` + autofocusAttr + ` required` + inputClass + `>
@@ -942,7 +991,13 @@ func (s *Server) showPasswordForm(w http.ResponseWriter, r *http.Request) {
         if (window.history && history.replaceState) {
             try {
                 var u = new URL(window.location.href);
-                if (u.searchParams.has('pwd') || u.searchParams.has('notice')) {
+                // A dead share link's address is rewritten to the landing
+                // page: the notice has been delivered, and a reload or a
+                // bookmark of this page must be a plain visit, not the dead
+                // link resolved again.
+                if (form.getAttribute('action') === '/' && u.pathname.indexOf('/s/') === 0) {
+                    history.replaceState(null, '', '/');
+                } else if (u.searchParams.has('pwd') || u.searchParams.has('notice')) {
                     u.searchParams.delete('pwd');
                     u.searchParams.delete('notice');
                     history.replaceState(null, '', u.pathname + (u.searchParams.toString() ? '?' + u.searchParams : '') + u.hash);

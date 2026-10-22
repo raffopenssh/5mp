@@ -618,7 +618,7 @@ func (s *Server) mapPrefs(ref string) MapPrefs {
 
 // builtinBasemaps are the ids the frontend always has. A preference naming
 // anything else must name a source the login owns.
-var builtinBasemaps = map[string]bool{"dark": true, "satellite-s2": true}
+var builtinBasemaps = map[string]bool{"dark": true, "none": true, "satellite-s2": true}
 
 func (s *Server) basemapIDValid(id, ref string) bool {
 	if id == "" || builtinBasemaps[id] {
@@ -661,7 +661,7 @@ func (s *Server) HandleAPIMapPrefs(w http.ResponseWriter, r *http.Request) {
 		cur.DefaultBase = *v
 	}
 	if v, ok := b["default_satellite"]; ok && v != nil {
-		if *v == "dark" || !s.basemapIDValid(*v, ref) {
+		if *v == "dark" || *v == "none" || !s.basemapIDValid(*v, ref) {
 			writeJSON(w, http.StatusUnprocessableEntity, map[string]string{"error": "unknown satellite basemap"})
 			return
 		}
