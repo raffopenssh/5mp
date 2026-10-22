@@ -1176,6 +1176,16 @@
         BASEMAPS_().forEach(function (b) {
             html += row('', 'menuitemradio', cur === b[0], b[1] + (b[4] ? ' \u00b7 private' : ''), b[2], b[3],
                 "MapLegend.pickBasemap('" + b[0] + "')", 'radio');
+            // The black ground's one option: outlines off, for a screenshot of
+            // the data alone. Only offered while Black is the chosen ground
+            // (it is an expert's presentation mode, not a map setting), and
+            // indented under its radio so it reads as belonging to it.
+            if (b[0] === 'none' && cur === 'none' && typeof setOutlinesHidden === 'function') {
+                var hid = typeof outlinesAreHidden === 'function' && outlinesAreHidden();
+                html += row(' ml-sub', 'menuitemcheckbox', !hid, 'Park outlines', 'icon-hexagon',
+                    'Park and AOI boundaries on the black ground \u2014 switch off for a screenshot of the data alone (they return with any other basemap)',
+                    'MapLegend.setOutlines(' + hid + ')', 'check');
+            }
         });
         if (!window.IS_GUEST && !window.IS_TEST_ENV && window._tileSourcesMeta && window._tileSourcesMeta.can_add) {
             html += row('', 'menuitem', false, 'Add imagery source\u2026', 'icon-plus',
@@ -3704,6 +3714,7 @@
                 ' \u2014 tap to choose the basemap" ' +
                 'onclick="event.stopPropagation();MapLegend.menu(this.parentNode)">' +
                 '<i class="' + e[2] + '"></i><span class="ml-chip-label">' + esc(e[1]) + '</span>' +
+                (typeof outlinesAreHidden === 'function' && outlinesAreHidden() ? '<em>no outlines</em>' : '') +
                 '<i class="icon-chevron-down ml-caret"></i></button>' +
                 '<button type="button" class="ml-chip-x" aria-label="Back to the dark basemap" ' +
                 'title="Back to the dark basemap" ' +
@@ -4214,6 +4225,20 @@
             closeMenu();
             if (typeof switchBasemap === 'function') switchBasemap(id);
             setTimeout(render, 0);
+        },
+
+        /* Black ground only: park/AOI outlines on or off. The menu stays
+         * open (it is a checkbox, and a reader toggling for a screenshot
+         * wants to see the result and toggle back). */
+        setOutlines: function (show) {
+            if (typeof setOutlinesHidden === 'function') setOutlinesHidden(!show);
+            var btn = menuEl && menuEl.querySelector('.ml-sub');
+            if (btn) {
+                btn.classList.toggle('on', !!show);
+                btn.setAttribute('aria-checked', show ? 'true' : 'false');
+                btn.setAttribute('onclick', 'event.stopPropagation();MapLegend.setOutlines(' + (!show) + ')');
+            }
+            render();
         },
 
         /* ── What this module contributes to a share link ─────────────────

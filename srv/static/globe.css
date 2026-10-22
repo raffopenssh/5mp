@@ -1107,6 +1107,8 @@
             overflow: hidden; text-overflow: ellipsis; max-width: 55%; }
         .ml-strx-lift.unm { color: #6b7280; font-style: italic; }
 
+        /* The black ground's outline switch: indented under its radio, quieter. */
+        .ml-menu .ml-sub { padding-left: 28px; font-size: 11px; color: #9ca3af; }
         .ml-menu .ml-more { color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.07); margin-top: 2px; gap: 7px; }
         .ml-menu .ml-more em { font-style: normal; color: #6b7280; margin-left: auto; font-size: 10px; }
         .stats-trend { font-size: 10px; margin-left: 4px; }
