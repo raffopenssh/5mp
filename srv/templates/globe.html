@@ -1544,6 +1544,31 @@ window.addEventListener('load', function () {
             window._holdURLView = _hold;
         }
         
+        // ── Outlines off, for a screenshot ────────────────────────────────
+        //
+        // On the black ground the park/AOI boundaries are the one remaining
+        // piece of cartography between the reader and the data, and a slide
+        // of "just the fires" wants them gone too. Hidden via layout
+        // `visibility` rather than paint, because five different places set
+        // these layers' paint (highlight, focus, fire-active) and every one of
+        // them would have to know. Scoped to the black basemap on purpose:
+        // outlines come back the moment any other ground is chosen, so a
+        // reader cannot be left with a dark basemap and silently missing parks.
+        let outlinesHidden = false;
+        const OUTLINE_LAYERS = ['areas-fill', 'areas-outline', 'aois-fill', 'aois-outline'];
+        function applyOutlineVisibility() {
+            if (!map || !map.getLayer) return;
+            const hide = outlinesHidden && currentBasemap === 'none';
+            OUTLINE_LAYERS.forEach(function (id) {
+                if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', hide ? 'none' : 'visible');
+            });
+        }
+        function setOutlinesHidden(hide) {
+            outlinesHidden = !!hide;
+            applyOutlineVisibility();
+        }
+        function outlinesAreHidden() { return outlinesHidden && currentBasemap === 'none'; }
+
         // Basemap switching function
         function switchBasemap(basemapId) {
             // Anything that is not a registered style — a retired provider id
@@ -1636,6 +1661,7 @@ window.addEventListener('load', function () {
                 
                 // Adjust park polygon fill visibility based on basemap
                 updateParkFillForBasemap();
+                applyOutlineVisibility();
 
                 // The generic custom-layer restore above replays the historical
                 // overlay's captured spec, which puts it back on TOP of the park
