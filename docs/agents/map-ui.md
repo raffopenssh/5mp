@@ -617,6 +617,23 @@ imagery" (that is `startsWith('satellite-')`). `?basemap=none` restores it,
 `builtinBasemaps` in `srv/tile_sources.go` accepts it as `default_base` and
 refuses it as `default_satellite`.
 
+**It is a demo setting and is drawn as one.** `quiet: true` on the entry:
+`basemapList()` lists it **last** (after private sources) and the menu row
+(`.ml-quiet`) and admin card (`.bm-quiet`) are muted/smaller.
+
+**Outlines off (Black only).** While `none` is chosen, the Black radio row
+carries a muted right-edge aside, "hide outlines" / "show outlines"
+(`.ml-aside`, `MapLegend.setOutlines`) — not a checkbox and not a row of its
+own. The admin grid's Black card shows the same as a hover action
+(`.bm-act-quiet`) and an `outlines off` pin while in effect. Both call
+`setOutlinesHidden` (globe.html), which sets layout `visibility: none` on
+`areas-fill`, `areas-outline`, `aois-fill`, `aois-outline` — layout, not
+paint, because five places rewrite those layers' paint. Session-only, not in
+share links, applied only when `currentBasemap === 'none'`
+(`applyOutlineVisibility`, re-run after every style switch): any other
+basemap shows the outlines again; returning to Black re-hides them. The Black
+chip says `no outlines` while it is in effect.
+
 ## Base-map tiles are proxied: the CARTO key is ours (`srv/basemap.go`)
 
 CARTO began requiring an API key on its raster (PNG) basemaps in August 2026
