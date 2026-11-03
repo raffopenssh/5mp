@@ -45,7 +45,6 @@
     // Hence the accessor is called theMap(), not map(): a local function named
     // `map` would shadow the very binding it is trying to read.
     function theMap() { return typeof map !== 'undefined' ? map : null; }
-    function pwd() { return (typeof getPwd === 'function' ? getPwd() : ''); }
 
     // ---------------------------------------------------------- geometry
 
@@ -153,7 +152,7 @@
         if (!g || !box) return;
         const w = currentWindow();
         try {
-            const r = await fetch(`/api/aois/estimate?pwd=${encodeURIComponent(pwd())}`, {
+            const r = await fetch(`/api/aois/estimate`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ geometry: g, from_date: w.from, to_date: w.to })
             });
@@ -455,8 +454,8 @@
         // the common case because the window comes from the slider.
         const geomChanged = editing && !S.ringLocked && geometryDiffers();
         const url = editing
-            ? `/api/aois/${encodeURIComponent(S.editID)}/edit?pwd=${encodeURIComponent(pwd())}`
-            : `/api/aois?pwd=${encodeURIComponent(pwd())}`;
+            ? `/api/aois/${encodeURIComponent(S.editID)}/edit`
+            : `/api/aois`;
         const body = editing
             ? { name, from_date: w.from, to_date: w.to,
                 ...(geomChanged ? { geometry: geometry() } : {}) }

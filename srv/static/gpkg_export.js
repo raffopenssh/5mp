@@ -28,7 +28,6 @@
     const cache = new Map();     // job id -> last payload
     const TERMINAL = { ready: 1, failed: 1, expired: 1 };
 
-    function pwd() { return (typeof getPwd === 'function' ? getPwd() : ''); }
     function esc(s) {
         return (typeof escapeHtml === 'function') ? escapeHtml(s)
             : String(s == null ? '' : s).replace(/[&<>"']/g, c =>
@@ -40,7 +39,7 @@
     async function start(areaId, areaName, opts) {
         opts = opts || {};
         const base = opts.aoi ? 'aois' : 'parks';
-        const qs = new URLSearchParams({ pwd: pwd() });
+        const qs = new URLSearchParams();
         if (typeof dateFrom !== 'undefined' && dateFrom) qs.set('from', dateFrom);
         if (typeof dateTo !== 'undefined' && dateTo) qs.set('to', dateTo);
         if (opts.refresh) qs.set('refresh', '1');
@@ -96,7 +95,7 @@
     async function startView(opts) {
         opts = opts || {};
         if (!opts.bbox || opts.bbox.length !== 4) return null;
-        const qs = new URLSearchParams({ pwd: pwd() });
+        const qs = new URLSearchParams();
         qs.set('bbox', opts.bbox.map(v => Number(v).toFixed(4)).join(','));
         if (opts.from) qs.set('from', opts.from);
         if (opts.to) qs.set('to', opts.to);
@@ -147,7 +146,7 @@
     async function peek(areaId, opts) {
         opts = opts || {};
         const base = opts.aoi ? 'aois' : 'parks';
-        const qs = new URLSearchParams({ pwd: pwd(), peek: '1' });
+        const qs = new URLSearchParams({ peek: '1' });
         if (typeof dateFrom !== 'undefined' && dateFrom) qs.set('from', dateFrom);
         if (typeof dateTo !== 'undefined' && dateTo) qs.set('to', dateTo);
         if (opts.raw === false) qs.set('raw', '0');
@@ -174,7 +173,7 @@
     // Content-Disposition then keeps the page in place.
     function download(id) {
         const a = document.createElement('a');
-        a.href = `/api/geopackage/${encodeURIComponent(id)}/download?pwd=${encodeURIComponent(pwd())}`;
+        a.href = `/api/geopackage/${encodeURIComponent(id)}/download`;
         a.rel = 'noopener';
         a.style.display = 'none';
         document.body.appendChild(a);
@@ -184,7 +183,7 @@
 
     async function poll(id) {
         try {
-            const r = await fetch(`/api/geopackage/${encodeURIComponent(id)}?pwd=${encodeURIComponent(pwd())}`,
+            const r = await fetch(`/api/geopackage/${encodeURIComponent(id)}`,
                                   { cache: 'no-store' });
             if (r.status === 404) {
                 // The job is gone (cancelled elsewhere, swept, or orphaned by a
@@ -356,7 +355,7 @@
             if (nd && typeof loadNotifications === 'function') loadNotifications();
             return;
         }
-        const qs = new URLSearchParams({ pwd: pwd(), refresh: '1' });
+        const qs = new URLSearchParams({ refresh: '1' });
         if (d.from_date) qs.set('from', d.from_date);
         if (d.to_date) qs.set('to', d.to_date);
         if (d.raw_fire === false) qs.set('raw', '0');
@@ -388,7 +387,7 @@
     async function extend(id) {
         let r;
         try {
-            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}/extend?pwd=${encodeURIComponent(pwd())}`,
+            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}/extend`,
                             { method: 'POST', headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ days: 30 }) });
         } catch (e) { r = null; }
@@ -414,7 +413,7 @@
         stop(id);
         let r;
         try {
-            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}?pwd=${encodeURIComponent(pwd())}`,
+            r = await fetch(`/api/geopackage/${encodeURIComponent(id)}`,
                             { method: 'DELETE' });
         } catch (e) {
             r = null;
@@ -455,8 +454,6 @@
         const u = new URL(window.location.href);
         u.search = '';
         const p = u.searchParams;
-        const cur = new URLSearchParams(window.location.search).get('pwd');
-        if (cur) p.set('pwd', cur);
         p.set('gpkg', id);
         if (d.area_id) p.set(d.is_aoi ? 'aoi' : 'popup', d.area_id);
         const url = u.toString();

@@ -41,7 +41,6 @@
     function toast(msg, type) {
         if (typeof showToast === 'function') showToast(msg, type || 'info');
     }
-    function pwd() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function isGuest() { return !!window.IS_GUEST; }
 
     // ── the link a guest already holds ───────────────────────────────────
@@ -133,7 +132,7 @@
 
     function create(url, opts) {
         opts = opts || {};
-        return fetch('/api/shortlink' + (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
+        return fetch('/api/shortlink', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -492,8 +491,7 @@
         state.tags = next.slice();
         state.tag = next[0] || '';
         if (!state.slug) return Promise.resolve(state.tags);
-        return fetch('/api/shortlink/' + encodeURIComponent(state.slug) + '/retag' +
-            (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
+        return fetch('/api/shortlink/' + encodeURIComponent(state.slug) + '/retag', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tags: next })
@@ -512,7 +510,7 @@
 
     function renameEverywhere(oldT, next) {
         if (!state) return Promise.resolve([]);
-        return fetch('/api/shortlinks/retag' + (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
+        return fetch('/api/shortlinks/retag', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tag: oldT, new_tag: next })
@@ -984,8 +982,7 @@
             .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
         if (!want || want === state.slug) { renderSlug(); return; }
         var from = state.slug;
-        fetch('/api/shortlink/' + encodeURIComponent(from) + '/rename' +
-            (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''), {
+        fetch('/api/shortlink/' + encodeURIComponent(from) + '/rename', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slug: want })

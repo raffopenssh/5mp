@@ -128,7 +128,6 @@
     // answers.
     var DETAIL_MODES = ['auto', 'shapes', 'fast'];
 
-    function pwd() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
 
     function viewBBox() {
         if (typeof currentBbox !== 'undefined' && currentBbox && currentBbox.length === 4) return currentBbox;
@@ -528,7 +527,7 @@
 
     function fetchDetail(id, layerId) {
         if (detailPending.has(id)) return detailPending.get(id);
-        var p = fetch('/api/feature-detail?id=' + encodeURIComponent(id) + '&pwd=' + encodeURIComponent(pwd()))
+        var p = fetch('/api/feature-detail?id=' + encodeURIComponent(id))
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (f) {
                 if (f && f.properties) {
@@ -616,8 +615,7 @@
             bbox: bbox.map(function (v) { return v.toFixed(4); }).join(','),
             mode: 'auto',
             limit: String(LIMIT_POINTS),
-            geom_budget: String(budget),
-            pwd: pwd()
+            geom_budget: String(budget)
         });
         // A path's cheap tier is a chord, not a centroid — see SEG_TYPES.
         if (SEG_TYPES[s.featureType]) qs.set('seg', '1');

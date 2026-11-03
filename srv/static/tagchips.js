@@ -51,7 +51,6 @@
         return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
             .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-    function pwd() { return (typeof window.getPwd === 'function' ? window.getPwd() : '') || ''; }
     function toast(msg, type) {
         if (typeof window.showToast === 'function') window.showToast(msg, type || 'info');
     }
@@ -73,7 +72,7 @@
     var vocabCache = null;
     function vocab() {
         if (vocabCache) return Promise.resolve(vocabCache);
-        return fetch('/api/shortlink-tags' + (pwd() ? '?pwd=' + encodeURIComponent(pwd()) : ''))
+        return fetch('/api/shortlink-tags')
             .then(function (r) { return r.ok ? r.json() : {}; })
             .then(function (d) {
                 var detail = (d && d.detail) || [];

@@ -10,6 +10,15 @@ Most endpoints require password via:
 - Cookie: `access_pwd=test2026`
 - Query param: `?pwd=test2026`
 
+**The frontend never sends `?pwd=`** (2026-11-03). `getPwd()` was removed
+from `globe.html`; every XHR, tile URL, download anchor and copy-link rides
+on the HttpOnly cookie (MapLibre's same-origin fetch sends it). The query
+param is only the *login gesture* (a link, curl, a feed reader) and the gate
+scrubs it from page URLs. RSS item links no longer echo the caller's `pwd`.
+Don't reintroduce a JS accessor for the password: `grep -rn 'pwd=' srv/static
+srv/templates` should find only `searchParams.delete('pwd')` and
+`test_pinning.html`.
+
 Valid passwords: loaded from `ACCESS_PASSWORDS` env var or `secrets.env` (fallback: `test2026`)
 
 ### ⚠️ Patrol data is scoped to a TENANT, not shared across passwords
