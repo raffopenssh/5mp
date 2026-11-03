@@ -26116,8 +26116,14 @@ ${starredItems.narratives.map(n => {
             narratives: urlNarratives
         };
         
-        // These will be processed after map loads
-        console.log('[URL Restore] Deferred starred items restoration - will process after map loads');
+        // These will be processed after map loads — unless the areas source
+        // already loaded (warm cache), in which case its one-shot sourcedata
+        // hook already ran with no params and nothing would ever consume them.
+        if (window._areasLoaded && (urlParks || urlBboxes || urlCountries || urlNarratives)) {
+            restoreStarredItemsFromURL();
+        } else {
+            console.log('[URL Restore] Deferred starred items restoration - will process after map loads');
+        }
         
         // Process pinned layers and narratives that don't need park data
         const starredNarratives = params.get('starred_narratives');

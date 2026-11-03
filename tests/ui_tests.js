@@ -58,7 +58,7 @@ const UI_TESTS = [
         wait: 2000,
         assertions: [
             { type: 'visible', selector: '#star-modal', msg: 'Star modal visible' },
-            { type: 'countMin', selector: '.starred-park-item', n: 2, msg: 'At least 2 starred parks' },
+            { type: 'countMin', selector: '.starred-item[data-type="park"]', n: 2, msg: 'At least 2 starred parks' },
         ]
     },
     
@@ -134,8 +134,8 @@ const UI_TESTS = [
         wait: 3500,
         assertions: [
             { type: 'hasClass', selector: '#fire-section-COD_Virunga', className: 'open', msg: 'Fire section open' },
-            { type: 'hasClass', selector: '#deforestation-section-COD_Virunga', className: 'open', msg: 'Deforestation section open' },
-            { type: 'hasClass', selector: '#settlement-section-COD_Virunga', className: 'open', msg: 'Settlement section open' },
+            { type: 'hasClass', selector: '#deforest-section-COD_Virunga', className: 'open', msg: 'Deforestation section open' },
+            { type: 'hasClass', selector: '#ghsl-section-COD_Virunga', className: 'open', msg: 'Settlement section open' },
         ]
     },
     
@@ -145,11 +145,11 @@ const UI_TESTS = [
         url: '&pinned=CAF_Chinko:fire_trajectory',
         wait: 3000,
         assertions: [
-            { type: 'exists', selector: '.pinned-layer-item', msg: 'Pinned layer item exists' },
-            { type: 'countMin', selector: '.pinned-layer-item', n: 1, msg: 'At least 1 pinned layer' },
+            { type: 'fn', fn: () => TEST.isPinned('CAF_Chinko', 'fire_trajectory'), msg: 'Fire trajectory pinned' },
+            { type: 'countMin', selector: '.pinned-layer-chip', n: 1, msg: 'At least 1 pinned layer' },
             // A chevron is a claim about day order; only supported/weak
             // chains may carry one (docs/agents/fire.md "Link evidence").
-            { type: 'fn', fn: () => { const d = TEST.fireDirection(); return d.length >= 1 && d.every(x => x.gated); }, msg: 'Every fire arrow layer is gated on the evidence tier' },
+            { type: 'fn', fn: async () => { await TEST.waitFor(() => TEST.fireDirection().length >= 1, 8000); const d = TEST.fireDirection(); return d.length >= 1 && d.every(x => x.gated); }, msg: 'Every fire arrow layer is gated on the evidence tier' },
         ]
     },
 
@@ -327,7 +327,8 @@ const UI_TESTS = [
         url: '&bbox=20,-5,30,5',
         wait: 2000,
         assertions: [
-            { type: 'visible', selector: '#active-filter-bbox', msg: 'Bbox filter indicator visible' },
+            { type: 'visible', selector: '#filter-area', msg: 'Bbox filter indicator visible' },
+            { type: 'fn', fn: () => Array.isArray(currentBbox) && currentBbox.join(',') === '20,-5,30,5', msg: 'Bbox applied' },
         ]
     },
     

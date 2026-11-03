@@ -66,7 +66,7 @@ test.describe('Star Modal', () => {
         
         await expect(page.locator('#star-modal')).toHaveClass(/active/);
         // Should have starred park items rendered
-        const parkItems = page.locator('.starred-park-item, .starred-section');
+        const parkItems = page.locator('.starred-item[data-type="park"]');
         await expect(parkItems.first()).toBeVisible();
     });
 });
@@ -124,8 +124,8 @@ test.describe('Park Popup', () => {
         await page.waitForTimeout(4500);
         
         await expect(page.locator('#fire-section-COD_Virunga')).toHaveClass(/open/);
-        await expect(page.locator('#deforestation-section-COD_Virunga')).toHaveClass(/open/);
-        await expect(page.locator('#settlement-section-COD_Virunga')).toHaveClass(/open/);
+        await expect(page.locator('#deforest-section-COD_Virunga')).toHaveClass(/open/);
+        await expect(page.locator('#ghsl-section-COD_Virunga')).toHaveClass(/open/);
     });
 });
 
@@ -134,14 +134,14 @@ test.describe('Pinned Layers', () => {
         await page.goto(url('&pinned=CAF_Chinko:fire_trajectory'));
         await page.waitForTimeout(3500);
         
-        await expect(page.locator('.pinned-layer-item')).toBeVisible();
+        await expect(page.locator('.pinned-layer-chip')).toBeVisible();
     });
     
     test('restores multiple pinned layers', async ({ page }) => {
         await page.goto(url('&pinned=CAF_Chinko:fire_trajectory,COD_Virunga:settlement'));
         await page.waitForTimeout(4000);
         
-        const pinnedItems = page.locator('.pinned-layer-item');
+        const pinnedItems = page.locator('.pinned-layer-chip');
         await expect(pinnedItems).toHaveCount(2);
     });
 });
@@ -160,7 +160,7 @@ test.describe('Filters', () => {
         await page.goto(url('&bbox=20,-5,30,5'));
         await page.waitForTimeout(2000);
         
-        await expect(page.locator('#active-filter-bbox')).toBeVisible();
+        await expect(page.locator('#filter-area')).toHaveCSS('display', 'flex');   // inside the (closed) filter panel
     });
     
     test('restores keystones toggle from URL', async ({ page }) => {
