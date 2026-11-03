@@ -228,7 +228,6 @@
         return !!A.on[name];
     }
 
-    function getPwdSafe() { return (typeof getPwd === 'function' ? getPwd() : '') || ''; }
     function toast(msg, type, opts) { if (typeof showToast === 'function') showToast(msg, type || 'info', opts); }
     function fmtDate(ms) { return new Date(ms).toISOString().slice(0, 10); }
     function fmtDateHuman(ms) {
@@ -766,7 +765,6 @@
     // caller may see it (aoiScopeParam re-checks visibility; it never trusts
     // this parameter).
     async function loadLayer(name) {
-        const pwd = encodeURIComponent(getPwdSafe());
         const aoiQ = A.aoiID ? '&aoi=' + encodeURIComponent(A.aoiID) : '';
         const bb = A.fetchBbox.map(v => v.toFixed(4)).join(',');
         const fromISO = A.fromISO, toISO = A.toISO;
@@ -789,7 +787,7 @@
                 // probe must never cost the user the better rendering.
                 if (wantPoints(A.fetchBbox, res) && !(A.ptsFeas && A.ptsFeas.ok === false)) {
                     try {
-                        const p = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
+                        const p = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day`);
                         if (p.mode === 'points') {
                             const p0 = parseD(p.from);
                             D.fireGrid = { asPoints: true, res: 0, step: 'day',
@@ -798,7 +796,7 @@
                         }
                     } catch (e) { /* fall through to the grid */ }
                 }
-                const j = await fetchJSON(`/api/fire-frames?bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/fire-frames?bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}`);
                 D.fireGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step };
                 break;
             }
@@ -808,7 +806,7 @@
                 // ~10 ms), which is the number that actually matters — 40 deg²
                 // of Namibian desert and 40 deg² of an Angolan dry season are
                 // three orders of magnitude apart. Ask, then say what it said.
-                const j = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/fire-frames?mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&step=day`);
                 if (j.mode !== 'points') {
                     D.firePts = null;
                     const u = j.points_unavailable || {};
@@ -829,7 +827,7 @@
                 // what the browser can draw at 60 fps, and the server spreads
                 // the selection across the view so a truncated answer is still
                 // a picture of the whole area rather than of its hottest corner.
-                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${TRAJ_LIMIT}&pwd=${pwd}${aoiQ}`);
+                const j = await fetchJSON(`/api/fire-anim-trajectories?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${TRAJ_LIMIT}${aoiQ}`);
                 D.trajs = (j.groups || []).map(g => {
                     const base = parseD(g.t0 || g.start);
                     const pts = g.pts.map(p => [p[0], p[1], base + p[2] * DAY]);
@@ -858,7 +856,7 @@
                 // them either. The `vanguard` flag of the plain trajectories
                 // is NOT used for drawing any more: the population is one.
                 try {
-                    const v = await fetchJSON(`/api/fire-vanguard?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=6000&pwd=${pwd}${aoiQ}`);
+                    const v = await fetchJSON(`/api/fire-vanguard?bbox=${bb}&from=${fromISO}&to=${toISO}&limit=6000${aoiQ}`);
                     const ids = new Set();
                     const vans = (v.groups || []).map(g => {
                         const base = parseD(g.t0 || g.start);
@@ -878,13 +876,13 @@
                 break;
             }
             case 'effortGrid': {
-                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}`);
                 D.effortGrid = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step, off: j.align === 'center' ? 0.5 : 0 };
                 break;
             }
             case 'effortPts': {
                 // same aggregated effort frames as effortGrid, rendered as circles
-                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}&pwd=${pwd}`);
+                const j = await fetchJSON(`/api/fire-frames?layer=effort&bbox=${bb}&from=${fromISO}&to=${toISO}&step=${step}&res=${res}`);
                 D.effortPts = { frames: (j.frames || []).map(f => ({ t: parseD(f.d), pts: f.p })), res: j.res || res, step: j.step || step, off: j.align === 'center' ? 0.5 : 0 };
                 if (D.effortGrid === undefined) D.effortGrid = D.effortPts; // share
                 break;
@@ -894,7 +892,7 @@
                 // polygon rings meant parsing ~1 MB of geometry to recover
                 // 1,500 centroids. Points come back as [lon, lat, dayOffset,
                 // value] against j.from.
-                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
+                const j = await fetchJSON(`/api/features-in-bbox?type=deforestation&mode=points&bbox=${bb}&from=${fromISO}&to=${toISO}&limit=${FEATURE_POINT_LIMIT}${aoiQ}`);
                 const base = parseD(j.from || fromISO);
                 // The row id rides along so a dot stays a FEATURE: a paused
                 // frame's hover asks /api/feature-detail for the same narrative
@@ -911,7 +909,7 @@
                 break;
             }
             case 'settlements': {
-                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&mode=points&bbox=${bb}&limit=${FEATURE_POINT_LIMIT}&pwd=${pwd}${aoiQ}`);
+                const j = await fetchJSON(`/api/features-in-bbox?type=settlement&mode=points&bbox=${bb}&limit=${FEATURE_POINT_LIMIT}${aoiQ}`);
                 const sIds = j.ids || [];
                 D.settlements = (j.points || []).map((p, i) => ({ lon: p[0], lat: p[1], rid: sIds[i] }));
                 if (j.truncated) truncNote('settlements', 'settlements', j.count, j.total);
@@ -3382,8 +3380,7 @@
         if (A.ptsFeas && A.ptsFeas.key === key) return;
         const my = (A._feasSeq = (A._feasSeq || 0) + 1);
         try {
-            const j = await fetchJSON(`/api/fire-frames?mode=estimate&bbox=${bb}&from=${A.fromISO}&to=${A.toISO}`
-                + `&pwd=${encodeURIComponent(getPwdSafe())}`);
+            const j = await fetchJSON(`/api/fire-frames?mode=estimate&bbox=${bb}&from=${A.fromISO}&to=${A.toISO}`);
             if (!A || my !== A._feasSeq) return;
             A.ptsFeas = { key, ok: !!j.points_ok, estimate: j.estimate || 0, max: j.max || 0 };
         } catch (e) {
@@ -4218,8 +4215,7 @@
                 let a = window._aois && window._aois[wantAOI];
                 if (!a || !a.geometry) {
                     try {
-                        const r = await fetch(`/api/aois/${encodeURIComponent(wantAOI)}?geometry=1&pwd=`
-                            + encodeURIComponent(getPwdSafe()));
+                        const r = await fetch(`/api/aois/${encodeURIComponent(wantAOI)}?geometry=1`);
                         if (r.ok) { const j = await r.json(); a = j.aoi || j; }
                     } catch (e) { /* fall through: animate as bbox */ }
                     if (stale()) return;

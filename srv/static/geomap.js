@@ -191,8 +191,7 @@
     }
 
     function api(path) {
-        return path + (path.indexOf('?') >= 0 ? '&' : '?') +
-            'pwd=' + encodeURIComponent(getPwd());
+        return path;
     }
 
     function st(id) {

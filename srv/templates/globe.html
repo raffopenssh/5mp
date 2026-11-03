@@ -737,10 +737,10 @@ window.addEventListener('load', function () {
             });
         }
 
-        // Get current password from URL
-        function getPwd() {
-            return new URLSearchParams(window.location.search).get('pwd') || '';
-        }
+        // There is deliberately no getPwd(). Every request authenticates with
+        // the HttpOnly access_pwd cookie (or a guest cookie); a password in a
+        // URL leaks into proxy logs, history and copied links
+        // (AGENTS.md invariant 14). The gate scrubs ?pwd= from page URLs.
 
         // ── Areas of interest ────────────────────────────────────────────
         // An AOI is a user-drawn polygon promoted to a first-class object: its
@@ -1230,7 +1230,7 @@ window.addEventListener('load', function () {
         async function loadTileSources() {
             if (window.IS_GUEST) return mapPrefs;
             try {
-                const r = await fetch('/api/tile-sources?pwd=' + encodeURIComponent(getPwd()));
+                const r = await fetch('/api/tile-sources');
                 if (!r.ok) return mapPrefs;
                 const d = await r.json();
                 privateTileSources = [];
@@ -1845,11 +1845,10 @@ window.addEventListener('load', function () {
         })();
         window.HistMap = HistMap;
 
-        // Password travels as a query param on every API call in this app
-        // (cookie is set too, but share links carry ?pwd=), and the tile URL
-        // template is handed straight to MapLibre, so it has to be baked in.
+        // Auth rides on the access_pwd cookie (MapLibre's same-origin fetch
+        // sends it), never on the URL — see docs/agents/auth.md.
         function histMapUrl(path) {
-            return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
+            return path;
         }
 
         // ── Map Settings: basemap grid + private sources ─────────────────
@@ -1862,7 +1861,7 @@ window.addEventListener('load', function () {
         function renderBasemapGrid() {
             const grid = document.getElementById('basemap-grid');
             if (!grid) return;
-            const canPin = !window.IS_GUEST && !!getPwd();
+            const canPin = !window.IS_GUEST;  // a non-guest page is a password session
             const cur = currentBasemap;
             const defBase = mapPrefs.default_base || 'dark';
             const defSat = defaultSatelliteId();
@@ -1894,7 +1893,7 @@ window.addEventListener('load', function () {
         async function setMapPref(key, value) {
             const body = {}; body[key] = value;
             try {
-                const r = await fetch('/api/map-prefs?pwd=' + encodeURIComponent(getPwd()), { method: 'PUT',
+                const r = await fetch('/api/map-prefs', { method: 'PUT',
                     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
                 mapPrefs = await r.json();
@@ -1986,7 +1985,7 @@ window.addEventListener('load', function () {
             };
         }
         async function tsPost(body) {
-            const r = await fetch('/api/tile-sources?pwd=' + encodeURIComponent(getPwd()), { method: 'POST',
+            const r = await fetch('/api/tile-sources', { method: 'POST',
                 headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const d = await r.json().catch(() => ({}));
             if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
@@ -2034,7 +2033,7 @@ window.addEventListener('load', function () {
         }
         async function tsUpdate(id, patch) {
             try {
-                const r = await fetch(`/api/tile-sources/${id}?pwd=` + encodeURIComponent(getPwd()) + (patch.attribution === '' ? '&clear_attribution=1' : ''),
+                const r = await fetch(`/api/tile-sources/${id}` + (patch.attribution === '' ? '?clear_attribution=1' : ''),
                     { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
                 if (!r.ok) throw new Error(r.status);
                 const d = await r.json();
@@ -2046,7 +2045,7 @@ window.addEventListener('load', function () {
         }
         async function tsVerify(id) {
             try {
-                const r = await fetch(`/api/tile-sources/${id}/verify?pwd=` + encodeURIComponent(getPwd()), { method: 'POST' });
+                const r = await fetch(`/api/tile-sources/${id}/verify`, { method: 'POST' });
                 const d = await r.json();
                 if (d.ok) { registerTileSource(d.source); showToast(`A tile came back (${Math.round(d.probe.bytes/1024)} KB)`, 'success'); }
                 else showToast('No tile came back: ' + d.error, 'error');
@@ -2056,10 +2055,10 @@ window.addEventListener('load', function () {
         async function tsDelete(id, name) {
             if (!confirm(`Remove ${name}? Offline tiles already built from it stay in your shared files.`)) return;
             try {
-                const r = await fetch(`/api/tile-sources/${id}?pwd=` + encodeURIComponent(getPwd()), { method: 'DELETE' });
+                const r = await fetch(`/api/tile-sources/${id}`, { method: 'DELETE' });
                 if (!r.ok) throw new Error(r.status);
                 unregisterTileSource(id);
-                mapPrefs = (await (await fetch('/api/map-prefs?pwd=' + encodeURIComponent(getPwd()))).json()) || mapPrefs;
+                mapPrefs = (await (await fetch('/api/map-prefs')).json()) || mapPrefs;
                 renderBasemapGrid(); renderTileSourcesPanel();
                 if (window.MapLegend) MapLegend.refresh();
             } catch (e) { showToast('Could not remove (' + e.message + ')', 'error'); }
@@ -2092,7 +2091,7 @@ window.addEventListener('load', function () {
             let labelsHtml = '';
             if (ld.gpkg || ld.geojson || ld.kml) {
                 const nlab = d => d.count ? d.count.toLocaleString() + ' labels' : 'labels';
-                const pwdQ = u => u + ((typeof getPwd === 'function' && getPwd()) ? (u.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd()) : '');
+                const pwdQ = u => u;
                 labelsHtml = `
                     <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
                         <div style="color:#aaa;font-size:11px;font-weight:600;margin-bottom:6px;">Map labels (vector)</div>
@@ -2917,7 +2916,7 @@ window.addEventListener('load', function () {
         // quietly ship without it.
         function geoMapUrl(path) {
             if (!path) return '#';
-            return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(getPwd());
+            return path;
         }
 
         // The whole-catalogue download used to be a bare anchor here, four
@@ -4387,7 +4386,7 @@ window.addEventListener('load', function () {
                     popup.on('close', () => { window._currentPixelPopup = null; window._currentPixelId = null; });
                     // Lazy-load nearby place names
                     const plat = lngLat.lat, plng = lngLat.lng;
-                    fetch(`/api/nearby-places?pwd=${encodeURIComponent(getPwd())}&lat=${plat.toFixed(4)}&lon=${plng.toFixed(4)}`)
+                    fetch(`/api/nearby-places?lat=${plat.toFixed(4)}&lon=${plng.toFixed(4)}`)
                         .then(r => r.json())
                         .then(data => {
                             const el = document.getElementById(popupId);
@@ -4713,7 +4712,7 @@ window.addEventListener('load', function () {
             const foot = document.getElementById('mbtiles-foot');
             estimateEl.classList.add('is-loading');
             try {
-                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?pwd=${encodeURIComponent(getPwd())}&maxZoom=${mbtilesMaxZoom}&source=${encodeURIComponent(getSelectedSource())}`);
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles/estimate?maxZoom=${mbtilesMaxZoom}&source=${encodeURIComponent(getSelectedSource())}`);
                 // Error bodies are plain text ("invalid park id"), not JSON.
                 const raw = await resp.text();
                 let data = {};
@@ -4761,7 +4760,7 @@ window.addEventListener('load', function () {
             updateMBTilesButton();
             btnText.textContent = 'Starting…';
             try {
-                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles?source=${encodeURIComponent(getSelectedSource())}&maxZoom=${mbtilesMaxZoom}&pwd=${encodeURIComponent(getPwd())}`, { method: 'POST' });
+                const resp = await fetch(`${apiBase(currentMBTilesParkId)}/mbtiles?source=${encodeURIComponent(getSelectedSource())}&maxZoom=${mbtilesMaxZoom}`, { method: 'POST' });
                 const data = await resp.json().catch(() => ({}));
                 if (!resp.ok) throw new Error(data.error || (await resp.text()));
                 currentMBTilesJobId = data.job_id;
@@ -4777,7 +4776,7 @@ window.addEventListener('load', function () {
         }
         async function cancelMBTiles() {
             if (!currentMBTilesJobId) return;
-            try { await fetch(`/api/mbtiles/${currentMBTilesJobId}?pwd=${encodeURIComponent(getPwd())}`, { method: 'DELETE' }); } catch (e) {}
+            try { await fetch(`/api/mbtiles/${currentMBTilesJobId}`, { method: 'DELETE' }); } catch (e) {}
             clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null;
             mbtilesState = 'idle'; currentMBTilesJobId = null;
             updateMBTilesButton(); hideMBTilesNotificationHint(); fetchMBTilesEstimate();
@@ -4788,7 +4787,7 @@ window.addEventListener('load', function () {
             const btnText = document.getElementById('mbtiles-btn-text');
             const btnProgress = document.getElementById('mbtiles-btn-progress');
             try {
-                const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/mbtiles/${currentMBTilesJobId}/status`);
                 if (resp.status === 404) { clearInterval(mbtilesPollingInterval); mbtilesPollingInterval = null; mbtilesState = 'idle'; currentMBTilesJobId = null; updateMBTilesButton(); return; }
                 const job = await resp.json();
                 mbtilesLastJob = job;
@@ -4816,7 +4815,7 @@ window.addEventListener('load', function () {
         }
         function downloadMBTiles() {
             if (!mbtilesLastJob || !mbtilesLastJob.download_url) return;
-            window.location.href = `${mbtilesLastJob.download_url}?pwd=${encodeURIComponent(getPwd())}`;
+            window.location.href = `${mbtilesLastJob.download_url}`;
         }
 
         async function handleLogin(e) {
@@ -5304,8 +5303,6 @@ window.addEventListener('load', function () {
                 // Build URL with filters
                 var url = '/api/stats';
                 var params = [];
-                var pwd = getPwd();
-                if (pwd) params.push('pwd=' + encodeURIComponent(pwd));
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
                 
@@ -5612,7 +5609,7 @@ window.addEventListener('load', function () {
         async function ensureAreasCache() {
             if (window._cachedAreasGeoJSON) return window._cachedAreasGeoJSON;
             try {
-                const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/areas`);
                 if (resp.ok) window._cachedAreasGeoJSON = await resp.json();
             } catch (e) { console.warn('Failed to fetch areas:', e); }
             return window._cachedAreasGeoJSON;
@@ -5687,7 +5684,7 @@ window.addEventListener('load', function () {
             }
             const pad = 0.05;
             bbox = [bbox[0] - pad, bbox[1] - pad, bbox[2] + pad, bbox[3] + pad];
-            let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(getPwd())}`;
+            let url = `/api/grid?bbox=${bbox.join(',')}`;
             if (from) url += `&from=${from}`;
             if (to) url += `&to=${to}`;
             try {
@@ -5781,7 +5778,6 @@ window.addEventListener('load', function () {
         }
 
         async function _buildParkMapSvgUncached(parkId, parkName, layers) {
-            const pwd = getPwd();
             await ensureAreasCache();
             const geom = getReportGeom(parkId);
             if (!geom) return null;
@@ -5793,7 +5789,7 @@ window.addEventListener('load', function () {
 
             const fetchFeatures = async (type, extra = '') => {
                 try {
-                    const resp = await fetch(`${apiBase(parkId)}/features?type=${type}&pwd=${encodeURIComponent(pwd)}${extra}`);
+                    const resp = await fetch(`${apiBase(parkId)}/features?type=${type}${extra}`);
                     if (!resp.ok) return [];
                     return (await resp.json()).features || [];
                 } catch (e) { return []; }
@@ -7246,7 +7242,6 @@ window.addEventListener('load', function () {
         // Comprehensive KML Export V2 - with park boundaries and all spatial data
         // Export combined KML by fetching server-generated KML for each park
         async function exportFullReportKmlV2(progress = (m) => showToast(m, 'info', { key: 'export', sticky: true, spinner: true })) {
-            const pwd = getPwd();
             const dateParams = (dateFrom ? '&from=' + dateFrom : '') + (dateTo ? '&to=' + dateTo : '');
 
             // All report parks and AOIs: starred, in starred areas, starred
@@ -7265,7 +7260,7 @@ window.addEventListener('load', function () {
             let processed = 0;
             const kmlDocs = (await Promise.all([...parkIDs].map(async (parkID) => {
                 try {
-                    const resp = await fetch(`${apiBase(parkID)}/export.kml?pwd=${encodeURIComponent(pwd)}${dateParams}`);
+                    const resp = await fetch(`${apiBase(parkID)}/export.kml?${dateParams}`);
                     processed++;
                     progress(`Building KML ${processed}/${parkIDs.size}...`);
                     if (resp.ok) return { parkID, kml: await resp.text() };
@@ -7759,7 +7754,7 @@ window.addEventListener('load', function () {
             // Fetch areas data for lookups
             if (!window._cachedAreasGeoJSON) {
                 try {
-                    const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                    const resp = await fetch(`/api/areas`);
                     if (resp.ok) {
                         window._cachedAreasGeoJSON = await resp.json();
                         console.log(`[URL Restore] Loaded ${window._cachedAreasGeoJSON.features?.length || 0} areas`);
@@ -8344,7 +8339,7 @@ window.addEventListener('load', function () {
                 // Non-critical: load in parallel batch (fewer concurrent)
                 const [uploadRes, mbtilesRes, pubRes, fireDownloadRes, aoiRes, gpkgRes] = await Promise.all([
                     fetchRetry('/api/notifications?type=new_upload&limit=10'),
-                    fetchRetry(`/api/mbtiles?pwd=${encodeURIComponent(getPwd())}`),
+                    fetchRetry(`/api/mbtiles`),
                     fetchRetry('/api/notifications?type=new_publication&limit=10'),
                     // Every nightly-job status row, matched by shape server-side
                     // (cronStatusSQL). This used to be a hardcoded list of six
@@ -9143,7 +9138,7 @@ window.addEventListener('load', function () {
             if (featureId) {
                 // Fetch the specific fire directly from features API (no date filters)
                 try {
-                    const response = await fetch(`${apiBase(parkId)}/features?type=fire_trajectory&pwd=${encodeURIComponent(getPwd())}`);
+                    const response = await fetch(`${apiBase(parkId)}/features?type=fire_trajectory`);
                     if (response.ok) {
                         const geojson = await response.json();
                         // Find the specific feature by feature_id
@@ -9154,7 +9149,7 @@ window.addEventListener('load', function () {
                             let displayName = groupName;
                             if (!displayName) {
                                 try {
-                                    const realtimeResponse = await fetch(`${apiBase(parkId)}/fire-realtime?pwd=${encodeURIComponent(getPwd())}&days=28`);
+                                    const realtimeResponse = await fetch(`${apiBase(parkId)}/fire-realtime?days=28`);
                                     if (realtimeResponse.ok) {
                                         const realtimeData = await realtimeResponse.json();
                                         const fireGroup = realtimeData.groups?.find(g => g.feature_id === featureId);
@@ -9602,7 +9597,7 @@ window.addEventListener('load', function () {
         
         // Wrapper for MBTiles download
         function handleMBTilesDownload(jobId) {
-            window.location.href = `/api/mbtiles/${jobId}/download?pwd=${encodeURIComponent(getPwd())}`;
+            window.location.href = `/api/mbtiles/${jobId}/download`;
         }
 
         function showNotificationBadge() {
@@ -9820,7 +9815,7 @@ window.addEventListener('load', function () {
         async function checkForNewNotifications() {
             try {
                 // Quick check for any notification newer than our last check
-                const resp = await fetch(`/api/notifications?limit=1&pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/notifications?limit=1`);
                 if (!resp.ok) return;
                 const data = await resp.json();
                 const notifs = data.notifications || [];
@@ -9919,7 +9914,7 @@ window.addEventListener('load', function () {
                 const [keystonesRes, wdpaRes, aoiRes, onboardRows] = await Promise.all([
                     fetch(`/api/areas/search?q=${encodeURIComponent(query)}`),
                     fetch(`/api/wdpa/search?q=${encodeURIComponent(query)}`),
-                    fetch(`/api/aois/search?q=${encodeURIComponent(query)}&pwd=${encodeURIComponent(getPwd())}`),
+                    fetch(`/api/aois/search?q=${encodeURIComponent(query)}`),
                     getOnboardingStatus()
                 ]);
                 indexOnboarding(onboardRows);
@@ -10659,7 +10654,7 @@ window.addEventListener('load', function () {
 
         async function loadAOIs() {
             try {
-                const r = await fetch(`/api/aois?geometry=1&pwd=${encodeURIComponent(getPwd())}`);
+                const r = await fetch(`/api/aois?geometry=1`);
                 if (!r.ok) return;
                 const data = await r.json();
                 const list = data.aois || [];
@@ -10780,7 +10775,7 @@ window.addEventListener('load', function () {
                 const val = inp.value.trim();
                 if (!save || !val || val === old) { updateAOITagsDisplay(); return; }
                 try {
-                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename?pwd=${encodeURIComponent(getPwd())}`,
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename`,
                         { method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ name: val }) });
                     if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -10951,7 +10946,7 @@ window.addEventListener('load', function () {
         async function aoiFocusParkIDs(id) {
             if (window._aoiFocusParks[id]) return window._aoiFocusParks[id];
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`);
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0`);
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const d = await r.json();
                 window._aoiFocusParks[id] = (d.parks || []).map(p => p.park_id);
@@ -11135,7 +11130,7 @@ window.addEventListener('load', function () {
             const name = window._aois?.[id]?.name || id;
             fadeAOILayer(id, true);
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/archive?pwd=${encodeURIComponent(getPwd())}`,
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/archive`,
                                       { method: 'POST' });
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 if (aoiFocusID === id) await setAOIFocus(null);
@@ -11155,7 +11150,7 @@ window.addEventListener('load', function () {
         // Bring one back — the Undo path, and what the search result's ★ does.
         async function unhideAOI(id) {
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore?pwd=${encodeURIComponent(getPwd())}`,
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore`,
                                       { method: 'POST' });
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 await loadAOIs();
@@ -11214,7 +11209,7 @@ window.addEventListener('load', function () {
                 if (!save || !val || val === old) { span.textContent = old; return; }
                 span.textContent = val;           // optimistic: the field is gone already
                 try {
-                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename?pwd=${encodeURIComponent(getPwd())}`,
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}/rename`,
                         { method: 'POST', headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ name: val }) });
                     if (!r.ok) throw new Error(await r.text() || ('HTTP ' + r.status));
@@ -11318,7 +11313,7 @@ window.addEventListener('load', function () {
             let geom = window._aois?.[id]?.geometry;
             if (!geom) {
                 try {
-                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=1&pwd=${encodeURIComponent(getPwd())}`);
+                    const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=1`);
                     // GET /api/aois/{id} wraps the record: {aoi, datasets, parks}.
                     if (r.ok) { const j = await r.json(); geom = (j.aoi || j).geometry; }
                 } catch (e) { /* fall through: startEdit reports it */ }
@@ -11336,7 +11331,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`aoi-versions-content-${id}`);
             if (!el) return;
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/versions?pwd=${encodeURIComponent(getPwd())}`);
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/versions`);
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const d = await r.json();
                 const vs = d.versions || [];
@@ -11366,7 +11361,7 @@ window.addEventListener('load', function () {
 
         async function restoreAOIVersion(id) {
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore?pwd=${encodeURIComponent(getPwd())}`,
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}/restore`,
                                       { method: 'POST' });
                 if (!r.ok) throw new Error(await r.text() || ('HTTP ' + r.status));
                 if (currentAOIPopup) currentAOIPopup.remove();
@@ -11415,7 +11410,7 @@ window.addEventListener('load', function () {
                     const cov = window._aoiCoverage[p.id];
                     if (cov === undefined) {
                         window._aoiCoverage[p.id] = null;   // in flight; don't refetch
-                        fetch(`/api/aois/${encodeURIComponent(p.id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`)
+                        fetch(`/api/aois/${encodeURIComponent(p.id)}?geometry=0`)
                             .then(r => r.ok ? r.json() : null)
                             .then(d => {
                                 const ds = (d?.datasets || []).filter(x => x.enabled);
@@ -11594,8 +11589,6 @@ window.addEventListener('load', function () {
             const u = new URL(window.location.href);
             u.search = '';
             const p = u.searchParams;
-            const pwd = new URLSearchParams(window.location.search).get('pwd');
-            if (pwd) p.set('pwd', pwd);
             const aoi = typeof isAOI === 'function' && isAOI(id);
             p.set(aoi ? 'aoi' : 'popup', id);
             p.set('aoi_menu', id);
@@ -11632,7 +11625,6 @@ window.addEventListener('load', function () {
         //
         // The route prefix is the only real difference, and isAOI() knows it.
         function exportMenuItems(id, name) {
-            const pwd = encodeURIComponent(getPwd());
             const eid = encodeURIComponent(id);
             const aoi = typeof isAOI === 'function' && isAOI(id);
             const base = `/api/${aoi ? 'aois' : 'parks'}/${eid}`;
@@ -11647,7 +11639,7 @@ window.addEventListener('load', function () {
             const safeName = escapeHtml(name).replace(/'/g, "\\'");
             // GeoJSON is the AOI's own polygon — a park's boundary is already
             // public geography served elsewhere, so the entry would be noise.
-            const geojsonURL = aoi ? `${base}/export.geojson?pwd=${pwd}` : '';
+            const geojsonURL = aoi ? `${base}/export.geojson` : '';
             // Two GeoPackages, not one with a checkbox. The difference is a
             // gigabyte and several minutes, which is a choice between two
             // downloads rather than a setting on one; and naming what is left
@@ -11669,8 +11661,8 @@ window.addEventListener('load', function () {
                 ? `<button class="aoi-menu-copy" title="Copy this download link" aria-label="Copy this download link"`
                   + ` onclick="return copyExportLink(event, this)" data-url="${escapeHtml(url)}"><i class="icon-copy"></i></button>`
                 : '') + `</div>`;
-            const kmlURL = `${base}/export.kml?pwd=${pwd}&effort=0${dp}`;
-            const locusURL = `${base}/export.locus?pwd=${pwd}${dp}`;
+            const kmlURL = `${base}/export.kml?effort=0${dp}`;
+            const locusURL = `${base}/export.locus?${dp}`;
             return `
                 ${geojsonURL ? row(`<a class="aoi-menu-item" data-item="geojson" href="${geojsonURL}"><i class="icon-globe"></i><span>GeoJSON</span><em>the polygon itself</em></a>`, geojsonURL) : ''}
                 ${row(`<a class="aoi-menu-item" data-item="kml" href="${kmlURL}"><i class="icon-map"></i><span>KML</span><em>Google Earth</em></a>`, kmlURL)}
@@ -11986,7 +11978,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`aoi-overview-content-${id}`);
             if (!el) return;
             try {
-                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0&pwd=${encodeURIComponent(getPwd())}`);
+                const r = await fetch(`/api/aois/${encodeURIComponent(id)}?geometry=0`);
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const d = await r.json();
                 const parks = d.parks || [];
@@ -12485,7 +12477,7 @@ window.addEventListener('load', function () {
             try {
                 // Use fire-narrative endpoint with time slider range for richer data
                 let url = `${apiBase(paId)}/fire-narrative`;
-                const params = ['pwd=' + encodeURIComponent(getPwd())];
+                const params = [];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
                 url += '?' + params.join('&');
@@ -12496,10 +12488,10 @@ window.addEventListener('load', function () {
                 // cannot say a fourth thing).
                 const [data, realtimeData, seasonData] = await Promise.all([
                     fetch(url).then(r => r.json()),
-                    fetch(`${apiBase(paId)}/fire-realtime?days=28&pwd=${encodeURIComponent(getPwd())}`)
+                    fetch(`${apiBase(paId)}/fire-realtime?days=28`)
                         .then(r => r.ok ? r.json() : null).catch(() => { console.log('Fire realtime not available'); return null; }),
                     (typeof fetchFireSeasonDirect === 'function')
-                        ? fetchFireSeasonDirect(paId, { from: dateFrom, to: dateTo, pwd: getPwd() }).catch(() => null)
+                        ? fetchFireSeasonDirect(paId, { from: dateFrom, to: dateTo }).catch(() => null)
                         : Promise.resolve(null),
                 ]);
 
@@ -12690,7 +12682,7 @@ window.addEventListener('load', function () {
                     // Async weekly fire trend sparkline (fires vs groups + prior-years avg).
                     // Fetch full history (2020+) so we can compute the prior-years
                     // average per ISO week client-side, then subset to the filter range.
-                    fetch(`${apiBase(paId)}/fire-trend?pwd=${encodeURIComponent(getPwd())}`)
+                    fetch(`${apiBase(paId)}/fire-trend`)
                         .then(r => r.json())
                         .then(td => {
                             const div = document.getElementById(`fire-trend-${paId}`);
@@ -12809,7 +12801,7 @@ window.addEventListener('load', function () {
             if (!el) return;
             try {
                 // Use settlement-narrative endpoint for rich data
-                const resp = await fetch(`${apiBase(paId)}/settlement-narrative?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`${apiBase(paId)}/settlement-narrative`);
                 const data = await resp.json();
                 
                 // Update count in header
@@ -13475,7 +13467,7 @@ window.addEventListener('load', function () {
             if (!el) return;
             try {
                 let url = `${apiBase(paId)}/deforestation-narrative`;
-                const params = ['pwd=' + encodeURIComponent(getPwd())];
+                const params = [];
                 if (dateFrom) params.push('from=' + dateFrom);
                 if (dateTo) params.push('to=' + dateTo);
                 url += '?' + params.join('&');
@@ -13802,13 +13794,13 @@ window.addEventListener('load', function () {
                 // under its bare id. `stats` stays park-only on purpose -- an
                 // AOI has no per-protected-area facts to average
                 // (docs/AOI_HANDOVER.md 2).
-                const base = apiBase(paId), pw = encodeURIComponent(getPwd());
+                const base = apiBase(paId);
                 const [statsResp, infraResp, learnedResp, basinResp] = await Promise.all([
                     isAOI(paId) ? Promise.resolve(null)
-                                : fetch(`/api/parks/${encodeURIComponent(paId)}/stats?pwd=${pw}`),
-                    fetch(`${base}/infrastructure?pwd=${pw}`),
-                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}&pwd=${pw}`),
-                    fetch(`${base}/basin?pwd=${pw}`)
+                                : fetch(`/api/parks/${encodeURIComponent(paId)}/stats`),
+                    fetch(`${base}/infrastructure`),
+                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}`),
+                    fetch(`${base}/basin`)
                 ]);
                 const basin = basinResp.ok ? await basinResp.json() : { basins: [] };
                 
@@ -13979,7 +13971,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`species-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/species?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/species`);
                 if (!resp.ok) throw new Error('Species data not available');
                 const data = await resp.json();
                 
@@ -14042,7 +14034,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`climate-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/climate?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/climate`);
                 if (!resp.ok) throw new Error('Climate data not available');
                 const data = await resp.json();
                 
@@ -14128,7 +14120,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`research-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/publications`);
                 const pubs = await resp.json();
                 if (pubs && pubs.length > 0) {
                     const INITIAL = 10;
@@ -14157,7 +14149,7 @@ window.addEventListener('load', function () {
             const el = document.getElementById(`mining-content-${paId}`);
             if (!el) return;
             try {
-                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/turbidity?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/parks/${encodeURIComponent(paId)}/turbidity`);
                 if (!resp.ok) throw new Error('Not available');
                 const data = await resp.json();
                 const scan = data.scan;
@@ -14380,7 +14372,7 @@ window.addEventListener('load', function () {
         // plume network). Plume points carry dates and are filtered by the
         // global time slider window.
         async function buildTurbidityGeoJSON(parkId) {
-            const response = await fetch(`/api/parks/${parkId}/turbidity?pwd=${window.getPwd() || ''}`);
+            const response = await fetch(`/api/parks/${parkId}/turbidity`);
             if (!response.ok) throw new Error('Failed to fetch turbidity data');
             const t = await response.json();
             const features = [];
@@ -14530,7 +14522,7 @@ window.addEventListener('load', function () {
                 
                 // FAOLEX documents (new data source)
                 try {
-                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal?pwd=${window.getPwd() || ''}`);
+                    const faolexResp = await fetch(`/api/parks/${encodeURIComponent(paId)}/legal`);
                     if (faolexResp.ok) {
                         const faolexData = await faolexResp.json();
                         if (faolexData.documents && faolexData.documents.length > 0) {
@@ -17489,7 +17481,7 @@ window.addEventListener('load', function () {
         // Fetch all areas from API (cached after first call)
         if (!window._cachedAreasGeoJSON) {
             try {
-                const resp = await fetch(`/api/areas?pwd=${encodeURIComponent(getPwd())}`);
+                const resp = await fetch(`/api/areas`);
                 if (resp.ok) {
                     window._cachedAreasGeoJSON = await resp.json();
                 }
@@ -19435,19 +19427,17 @@ window.addEventListener('load', function () {
     
     // Fetch all nested data for a park - COMPREHENSIVE VERSION
     async function fetchParkFullData(parkId) {
-        const pwd = new URLSearchParams(window.location.search).get('pwd');
-        const pwdParam = pwd ? `?pwd=${pwd}` : '';
         const dateParams = (dateFrom ? `&from=${dateFrom}` : '') + (dateTo ? `&to=${dateTo}` : '');
         
         // Fetch narratives, stats, and metadata
         const [fire, deforestation, settlement, stats, species, climate, publications] = await Promise.all([
-            fetch(`${apiBase(parkId)}/fire-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`${apiBase(parkId)}/deforestation-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`${apiBase(parkId)}/settlement-narrative${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/stats${pwdParam}${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/species${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/climate${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`/api/parks/${parkId}/publications${pwdParam}`).then(r => r.ok ? r.json() : null).catch(() => null)
+            fetch(`${apiBase(parkId)}/fire-narrative?${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${apiBase(parkId)}/deforestation-narrative?${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`${apiBase(parkId)}/settlement-narrative?${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/stats?${dateParams}`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/species`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/climate`).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch(`/api/parks/${parkId}/publications`).then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
         // Fetch ALL feature layer GeoJSON data
@@ -19456,7 +19446,7 @@ window.addEventListener('load', function () {
         
         await Promise.all(featureTypes.map(async type => {
             try {
-                const response = await fetch(`${apiBase(parkId)}/features?type=${type}${pwdParam}${dateParams}`);
+                const response = await fetch(`${apiBase(parkId)}/features?type=${type}${dateParams}`);
                 if (response.ok) {
                     const geojson = await response.json();
                     if (geojson && geojson.features && geojson.features.length > 0) {
@@ -19470,7 +19460,7 @@ window.addEventListener('load', function () {
         
         // Fetch learned infrastructure (airstrips, etc.)
         try {
-            const infraResponse = await fetch(`/api/admin/learned-features?park_id=${parkId}${pwdParam}`);
+            const infraResponse = await fetch(`/api/admin/learned-features?park_id=${parkId}`);
             if (infraResponse.ok) {
                 const infraData = await infraResponse.json();
                 if (infraData && infraData.features && infraData.features.length > 0) {
@@ -19492,7 +19482,6 @@ window.addEventListener('load', function () {
      */
     async function fetchParkReportData(parkId, options = {}) {
         const {from, to} = options;
-        const pwd = getPwd();
         // An AOI has no species/climate/legal/publications/stats: those are
         // per-protected-area facts (docs/AOI_HANDOVER.md §2) and the routes
         // deliberately do not exist under /api/aois, so asking would be five
@@ -19510,21 +19499,21 @@ window.addEventListener('load', function () {
         try {
             // Fetch all data in parallel (same as popups do)
             const [fire, ghsl, deforest, settlement, road, species, climate, research, legal, grid, stats, turbidity, season] = await Promise.all([
-                fetchFireDataDirect(parkId, {from, to, pwd}),
-                fetchGHSLDataDirect(parkId, {pwd}),
-                fetchDeforestDataDirect(parkId, {pwd}),
-                fetchSettlementNarrativeDirect(parkId, {pwd}),
-                fetchRoadDataDirect(parkId, {pwd}),
-                forAOI ? none() : fetchSpeciesDataDirect(parkId, {pwd}),
-                forAOI ? none() : fetchClimateDataDirect(parkId, {pwd}),
-                forAOI ? none() : fetchResearchDataDirect(parkId, {pwd}),
-                forAOI ? none() : fetchLegalDataDirect(parkId, {pwd}),
-                fetchGridDataDirect(parkId, {from, to, pwd}),
-                forAOI ? none() : fetchStatsDirect(parkId, {pwd}),
+                fetchFireDataDirect(parkId, {from, to}),
+                fetchGHSLDataDirect(parkId),
+                fetchDeforestDataDirect(parkId),
+                fetchSettlementNarrativeDirect(parkId),
+                fetchRoadDataDirect(parkId),
+                forAOI ? none() : fetchSpeciesDataDirect(parkId),
+                forAOI ? none() : fetchClimateDataDirect(parkId),
+                forAOI ? none() : fetchResearchDataDirect(parkId),
+                forAOI ? none() : fetchLegalDataDirect(parkId),
+                fetchGridDataDirect(parkId, {from, to}),
+                forAOI ? none() : fetchStatsDirect(parkId),
                 // mining/turbidity retired (§10): resolve empty rather than
                 // hitting the now-disabled endpoint
-                (MINING_ENABLED && !forAOI) ? fetchTurbidityDataDirect(parkId, {pwd}) : Promise.resolve({}),
-                fetchFireSeasonDirect(parkId, {from, to, pwd})
+                (MINING_ENABLED && !forAOI) ? fetchTurbidityDataDirect(parkId) : Promise.resolve({}),
+                fetchFireSeasonDirect(parkId, {from, to})
             ]);
             
             return {
@@ -19558,9 +19547,9 @@ window.addEventListener('load', function () {
     // area whose front is not built answers {status}, and the report says so
     // rather than printing nothing (invariant 1). Parks AND AOIs: the route
     // is area-agnostic, visibility is enforced server-side (404 → {}).
-    async function fetchFireSeasonDirect(parkId, {from, to, pwd}) {
+    async function fetchFireSeasonDirect(parkId, {from, to}) {
         try {
-            const params = [`area=${encodeURIComponent(parkId)}`, 'summary=1', 'leads=200', `pwd=${encodeURIComponent(pwd)}`];
+            const params = [`area=${encodeURIComponent(parkId)}`, 'summary=1', 'leads=200'];
             if (from) params.push(`from=${from}`);
             if (to) { params.push(`to=${to}`); params.push(`at=${to}`); }
             const resp = await fetch(`/api/fire-season?${params.join('&')}`);
@@ -19570,10 +19559,10 @@ window.addEventListener('load', function () {
     }
 
     // Fire data - Uses fire-narrative API (same as popup)
-    async function fetchFireDataDirect(parkId, {from, to, pwd}) {
+    async function fetchFireDataDirect(parkId, {from, to}) {
         try {
             let url = `${apiBase(parkId)}/fire-narrative`;
-            const params = [`pwd=${encodeURIComponent(pwd)}`];
+            const params = [];
             if (from) params.push(`from=${from}`);
             if (to) params.push(`to=${to}`);
             url += '?' + params.join('&');
@@ -19586,7 +19575,7 @@ window.addEventListener('load', function () {
             // Also fetch realtime data for current status
             let realtimeData = null;
             try {
-                const rtResp = await fetch(`${apiBase(parkId)}/fire-realtime?days=28&pwd=${encodeURIComponent(pwd)}`);
+                const rtResp = await fetch(`${apiBase(parkId)}/fire-realtime?days=28`);
                 if (rtResp.ok) realtimeData = await rtResp.json();
             } catch (e) {
                 // Realtime not critical
@@ -19633,13 +19622,13 @@ window.addEventListener('load', function () {
     // off /features?type=settlement, which carries NEITHER field (it has
     // population_est and extent_m2) and truncates at 1000 features — so it
     // computed a confident 0 from a truncated list (invariants 1, 8, 15).
-    async function fetchGHSLDataDirect(parkId, {pwd}) {
+    async function fetchGHSLDataDirect(parkId) {
         return {};
     }
     // Settlement narrative data (rich data with classified settlements)
-    async function fetchSettlementNarrativeDirect(parkId, {pwd}) {
+    async function fetchSettlementNarrativeDirect(parkId) {
         try {
-            const url = `${apiBase(parkId)}/settlement-narrative?pwd=${encodeURIComponent(pwd)}`;
+            const url = `${apiBase(parkId)}/settlement-narrative`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', settlement_count: 0};
             
@@ -19668,13 +19657,13 @@ window.addEventListener('load', function () {
     }
 
     // Deforestation data (with narrative for classified events)
-    async function fetchDeforestDataDirect(parkId, {pwd}) {
+    async function fetchDeforestDataDirect(parkId) {
         try {
             // Fetch both narrative and features
             const [narrative, features] = await Promise.all([
-                fetch(`${apiBase(parkId)}/deforestation-narrative?pwd=${encodeURIComponent(pwd)}`)
+                fetch(`${apiBase(parkId)}/deforestation-narrative`)
                     .then(r => r.ok ? r.json() : {}).catch(() => ({})),
-                fetch(`${apiBase(parkId)}/features?type=deforestation&pwd=${encodeURIComponent(pwd)}`)
+                fetch(`${apiBase(parkId)}/features?type=deforestation`)
                     .then(r => r.ok ? r.json() : {features: []}).catch(() => ({features: []}))
             ]);
             
@@ -19709,12 +19698,12 @@ window.addEventListener('load', function () {
     }
     
     // Road/infrastructure data (same APIs as the popup's Roads/Rivers/Places section)
-    async function fetchRoadDataDirect(parkId, {pwd}) {
+    async function fetchRoadDataDirect(parkId) {
         try {
             const [infra, learned] = await Promise.all([
-                fetch(`${apiBase(parkId)}/infrastructure?pwd=${encodeURIComponent(pwd)}`).then(r => r.ok ? r.json() : {}),
+                fetch(`${apiBase(parkId)}/infrastructure`).then(r => r.ok ? r.json() : {}),
                 isAOI(parkId) ? Promise.resolve({}) :
-                fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkId)}&pwd=${encodeURIComponent(pwd)}`)
+                fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(parkId)}`)
                     .then(r => (r.ok && (r.headers.get('content-type') || '').includes('json')) ? r.json() : {})
                     .catch(() => ({}))
             ]);
@@ -19743,9 +19732,9 @@ window.addEventListener('load', function () {
     }
     
     // Turbidity / mining data (same API the popup Mining & Water Quality section uses)
-    async function fetchTurbidityDataDirect(parkId, {pwd}) {
+    async function fetchTurbidityDataDirect(parkId) {
         try {
-            const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/turbidity?pwd=${encodeURIComponent(pwd)}`);
+            const resp = await fetch(`/api/parks/${encodeURIComponent(parkId)}/turbidity`);
             if (!resp.ok) return {error: 'API error'};
             const d = await resp.json();
             const scan = d.scan || {};
@@ -19766,9 +19755,9 @@ window.addEventListener('load', function () {
     }
     
     // Species data
-    async function fetchSpeciesDataDirect(parkId, {pwd}) {
+    async function fetchSpeciesDataDirect(parkId) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/species?pwd=${encodeURIComponent(pwd)}`;
+            const url = `/api/parks/${encodeURIComponent(parkId)}/species`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', count: 0};
             
@@ -19793,9 +19782,9 @@ window.addEventListener('load', function () {
     }
     
     // Climate data
-    async function fetchClimateDataDirect(parkId, {pwd}) {
+    async function fetchClimateDataDirect(parkId) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/climate?pwd=${encodeURIComponent(pwd)}`;
+            const url = `/api/parks/${encodeURIComponent(parkId)}/climate`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error'};
             
@@ -19819,9 +19808,9 @@ window.addEventListener('load', function () {
     }
     
     // Research/publications data
-    async function fetchResearchDataDirect(parkId, {pwd}) {
+    async function fetchResearchDataDirect(parkId) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/publications?pwd=${encodeURIComponent(pwd)}`;
+            const url = `/api/parks/${encodeURIComponent(parkId)}/publications`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', count: 0};
             
@@ -19844,9 +19833,9 @@ window.addEventListener('load', function () {
     }
     
     // Legal documents data
-    async function fetchLegalDataDirect(parkId, {pwd}) {
+    async function fetchLegalDataDirect(parkId) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/legal?pwd=${encodeURIComponent(pwd)}`;
+            const url = `/api/parks/${encodeURIComponent(parkId)}/legal`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error', count: 0};
             
@@ -19868,7 +19857,7 @@ window.addEventListener('load', function () {
     }
     
     // Grid/patrol data - Use park bbox + 30km buffer
-    async function fetchGridDataDirect(parkId, {from, to, pwd}) {
+    async function fetchGridDataDirect(parkId, {from, to}) {
         try {
             // Find park feature to get geometry
             let feature = null;
@@ -19909,7 +19898,7 @@ window.addEventListener('load', function () {
                     lat + bufferDeg
                 ];
                 
-                let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
+                let url = `/api/grid?bbox=${bbox.join(',')}`;
                 if (from) url += `&from=${from}`;
                 if (to) url += `&to=${to}`;
                 
@@ -19947,7 +19936,7 @@ window.addEventListener('load', function () {
                     lat + bufferDeg
                 ];
                 
-                let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
+                let url = `/api/grid?bbox=${bbox.join(',')}`;
                 if (from) url += `&from=${from}`;
                 if (to) url += `&to=${to}`;
                 
@@ -19979,7 +19968,7 @@ window.addEventListener('load', function () {
                 maxLat + bufferDeg
             ];
             
-            let url = `/api/grid?bbox=${bbox.join(',')}&pwd=${encodeURIComponent(pwd)}`;
+            let url = `/api/grid?bbox=${bbox.join(',')}`;
             if (from) url += `&from=${from}`;
             if (to) url += `&to=${to}`;
             
@@ -20027,9 +20016,9 @@ window.addEventListener('load', function () {
     }
 
     // Stats data
-    async function fetchStatsDirect(parkId, {pwd}) {
+    async function fetchStatsDirect(parkId) {
         try {
-            const url = `/api/parks/${encodeURIComponent(parkId)}/stats?pwd=${encodeURIComponent(pwd)}`;
+            const url = `/api/parks/${encodeURIComponent(parkId)}/stats`;
             const resp = await fetch(url);
             if (!resp.ok) return {error: 'API error'};
             
@@ -20726,8 +20715,6 @@ ${starredItems.narratives.map(n => {
     function generateRssFeed() {
         // Build RSS feed URL for notifications
         const params = new URLSearchParams();
-        const pwd = new URLSearchParams(window.location.search).get('pwd');
-        if (pwd) params.set('pwd', pwd);
         
         const feedUrl = window.location.origin + '/api/feed?' + params.toString();
         
@@ -21162,7 +21149,7 @@ ${starredItems.narratives.map(n => {
                 ? `event_id=${encodeURIComponent(featureId.slice(6))}`
                 : `feature_id=${encodeURIComponent(featureId)}`;
             // First try to fetch the specific feature by ID (efficient)
-            let response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&${idParam}&pwd=${window.getPwd() || ''}`);
+            let response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&${idParam}`);
             let allFeatures = response.ok ? await response.json() : { features: [] };
             
             // Find the specific feature(s)
@@ -21171,7 +21158,7 @@ ${starredItems.narratives.map(n => {
             // If found by direct ID query, we're done
             // If not found, fall back to searching in all features
             if (features.length === 0) {
-                response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&limit=5000&pwd=${window.getPwd() || ''}`);
+                response = await fetch(`${apiBase(parkId)}/features?type=${featureType}&limit=5000`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 allFeatures = await response.json();
                 
@@ -21794,7 +21781,7 @@ ${starredItems.narratives.map(n => {
                 geojson = await buildTurbidityGeoJSON(parkId);
             } else if (type === 'visits') {
                 // Patrol-visited locations learned from GPX uploads (camps, outposts, gates)
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&type=places&pwd=${window.getPwd() || ''}`);
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&type=places`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 const features = [];
@@ -21816,7 +21803,7 @@ ${starredItems.narratives.map(n => {
                 });
                 geojson = { type: 'FeatureCollection', features };
             } else if (type === 'infrastructure') {
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&pwd=${window.getPwd() || ''}`);
+                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 
@@ -21848,7 +21835,7 @@ ${starredItems.narratives.map(n => {
                 // setting that exists).
                 const detailParam = GEO_DETAIL_LAYERS.includes(featureType)
                     ? `&detail=${window.geoDetail}` : '';
-                const response = await fetch(`${apiBase(parkId)}/features?type=${featureType}${dateParams}${detailParam}&limit=5000&pwd=${window.getPwd() || ''}`);
+                const response = await fetch(`${apiBase(parkId)}/features?type=${featureType}${dateParams}${detailParam}&limit=5000`);
                 if (!response.ok) throw new Error('Failed to fetch features');
                 geojson = await response.json();
             }
@@ -22695,7 +22682,7 @@ ${starredItems.narratives.map(n => {
                     }
                     
                     // Fetch updated data
-                    const response = await fetch(`${apiBase(layer.parkId)}/features?type=${featureType}${dateParams}&limit=5000&pwd=${window.getPwd() || ''}`);
+                    const response = await fetch(`${apiBase(layer.parkId)}/features?type=${featureType}${dateParams}&limit=5000`);
                     if (!response.ok) continue;
                     
                     geojson = await response.json();
@@ -23341,7 +23328,7 @@ ${starredItems.narratives.map(n => {
         const badge = document.getElementById('pipeline-status-badge');
         if (!badge) return;
         try {
-            const res = await fetch(`/api/pipeline-status?pwd=${getPwd()}`);
+            const res = await fetch(`/api/pipeline-status`);
             pipelineStatusData = await res.json();
         } catch (e) {
             pipelineStatusData = { status: 'unknown', stale: true, message: 'status unreachable: ' + e };
@@ -23501,7 +23488,7 @@ ${starredItems.narratives.map(n => {
         box.innerHTML = 'Loading&hellip;';
         let d;
         try {
-            const res = await fetch(`/api/shortlinks?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+            const res = await fetch(`/api/shortlinks`);
             if (!res.ok) throw new Error(res.status);
             d = await res.json();
         } catch (e) {
@@ -23593,7 +23580,7 @@ ${starredItems.narratives.map(n => {
     // we draw — it sanitises, dedupes and caps, so a UI that painted its own
     // request could show a refused tag as accepted.
     async function sharingPostTags(slug, body) {
-        const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+        const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/retag`,
             { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const d = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
@@ -23608,7 +23595,7 @@ ${starredItems.narratives.map(n => {
     // one row when the user expected twelve must not read like success
     // (AGENTS.md invariant 1).
     async function sharingRenameTag(oldTag, next) {
-        const res = await fetch(`/api/shortlinks/retag?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+        const res = await fetch(`/api/shortlinks/retag`,
             { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: oldTag, new_tag: next }) });
         const d = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
@@ -23682,7 +23669,7 @@ ${starredItems.narratives.map(n => {
     // happen from here.
     async function sharingExtend(slug) {
         try {
-            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}/extend`,
                 { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 30 }) });
             if (!res.ok) throw new Error(res.status);
             const d = await res.json();
@@ -23697,7 +23684,7 @@ ${starredItems.narratives.map(n => {
     // links" button.
     async function sharingExtendTag(tag) {
         try {
-            const res = await fetch(`/api/shortlinks/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            const res = await fetch(`/api/shortlinks/extend`,
                 { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tag: tag, days: 30 }) });
             if (!res.ok) throw new Error(res.status);
             const d = await res.json();
@@ -23716,7 +23703,7 @@ ${starredItems.narratives.map(n => {
             : `Clear /s/${slug}? Anyone who has this link will get a “not found” page.`;
         if (!confirm(msg)) return;
         try {
-            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            const res = await fetch(`/api/shortlink/${encodeURIComponent(slug)}`,
                 { method: 'DELETE' });
             if (!res.ok) throw new Error(res.status);
             showToast(guest ? 'Shared link switched off' : 'Link cleared', 'info');
@@ -23738,7 +23725,7 @@ ${starredItems.narratives.map(n => {
         if (!box) return;
         let d;
         try {
-            const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+            const res = await fetch(`/api/files`);
             if (!res.ok) throw new Error(res.status);
             d = await res.json();
         } catch (e) {
@@ -23931,7 +23918,7 @@ ${starredItems.narratives.map(n => {
             await new Promise(r => setTimeout(r, attempt ? 2500 : 400));
             let d = null;
             try {
-                const res = await fetch(`/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+                const res = await fetch(`/api/files`,
                     { cache: 'no-store' });
                 if (res.ok) d = await res.json();
             } catch (e) { /* still offline; try again */ }
@@ -24063,7 +24050,7 @@ ${starredItems.narratives.map(n => {
 
         const fd = new FormData();
         fd.append('file', file);
-        xhr.open('POST', `/api/files?pwd=${encodeURIComponent(window.getPwd() || '')}`);
+        xhr.open('POST', `/api/files`);
         xhr.timeout = 0;   // the server's own idle deadline governs; a wall-clock
                            // cap here would kill a legitimate slow 1 GB upload
         xhr.send(fd);
@@ -24090,7 +24077,7 @@ ${starredItems.narratives.map(n => {
 
     async function filesExtend(id) {
         try {
-            const res = await fetch(`/api/files/${encodeURIComponent(id)}/extend?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            const res = await fetch(`/api/files/${encodeURIComponent(id)}/extend`,
                 { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ days: 30 }) });
             if (!res.ok) throw new Error(res.status);
             const d = await res.json();
@@ -24107,7 +24094,7 @@ ${starredItems.narratives.map(n => {
     async function filesDelete(id, name) {
         if (!confirm(`Delete ${name}? Any shared key pointing at it is switched off too.`)) return;
         try {
-            const res = await fetch(`/api/files/${encodeURIComponent(id)}?pwd=${encodeURIComponent(window.getPwd() || '')}`,
+            const res = await fetch(`/api/files/${encodeURIComponent(id)}`,
                 { method: 'DELETE' });
             if (!res.ok) throw new Error(res.status);
             showToast('File deleted', 'info');
@@ -24132,7 +24119,7 @@ ${starredItems.narratives.map(n => {
         box.innerHTML = 'Loading&hellip;';
         let d;
         try {
-            const res = await fetch(`/api/admin/access?pwd=${window.getPwd() || ''}`);
+            const res = await fetch(`/api/admin/access`);
             if (!res.ok) throw new Error(res.status);
             d = await res.json();
         } catch (e) {
@@ -24223,7 +24210,7 @@ ${starredItems.narratives.map(n => {
     async function setAOIDataset(aoiId, dataset, enabled) {
         try {
             const body = new URLSearchParams({aoi: aoiId, dataset, enabled: String(enabled)});
-            const res = await fetch(`/api/admin/aoi-dataset?pwd=${window.getPwd() || ''}`,
+            const res = await fetch(`/api/admin/aoi-dataset`,
                 {method: 'POST', body});
             if (!res.ok) throw new Error(res.status);
             showToast(`${dataset} ${enabled ? 'enabled' : 'disabled'}`, 'success');
@@ -24235,7 +24222,7 @@ ${starredItems.narratives.map(n => {
 
     async function kickAOIRunner(aoiId) {
         try {
-            const res = await fetch(`/api/aois/${encodeURIComponent(aoiId)}/kick?pwd=${window.getPwd() || ''}`,
+            const res = await fetch(`/api/aois/${encodeURIComponent(aoiId)}/kick`,
                 {method: 'POST'});
             if (!res.ok) throw new Error(res.status);
             showToast('Runner started — it works one unit at a time', 'info');
@@ -24435,7 +24422,7 @@ ${starredItems.narratives.map(n => {
     }
     
     function downloadLearnedKML(scope, parkId) {
-        let url = `/api/admin/learned-features-kml?pwd=${encodeURIComponent(getPwd())}`;
+        let url = `/api/admin/learned-features-kml?`;
         if (scope === 'pending') url += '&scope=pending';
         else if (parkId) url += `&park_id=${encodeURIComponent(parkId)}`;
         window.location.href = url;
@@ -24478,7 +24465,7 @@ ${starredItems.narratives.map(n => {
 
         try {
             const parkParam = parkCode ? `&park_id=${encodeURIComponent(parkCode)}` : '';
-            const res = await fetch(`/api/admin/learned-features?pwd=${encodeURIComponent(getPwd())}${parkParam || '&park_id=__none__'}`);
+            const res = await fetch(`/api/admin/learned-features?${parkParam || '&park_id=__none__'}`);
             // Without a park the endpoint requires park_id; fall back to pending-approvals view
             let data;
             if (parkCode) {
@@ -24671,7 +24658,7 @@ ${starredItems.narratives.map(n => {
     }
 
     async function afPost(path, body) {
-        const res = await fetch(`/api/admin/autofetch/${path}?pwd=${getPwd()}`, {
+        const res = await fetch(`/api/admin/autofetch/${path}`, {
             method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
         let data = {};
         try { data = await res.json(); } catch (_) {}
@@ -24808,7 +24795,7 @@ ${starredItems.narratives.map(n => {
         const list = document.getElementById('af-list');
         if (!list) return;
         try {
-            const res = await fetch('/api/admin/autofetch?pwd=' + getPwd());
+            const res = await fetch('/api/admin/autofetch');
             const data = await res.json();
             _afSources = data.sources || [];
             if (data.readonly) {
@@ -24861,7 +24848,7 @@ ${starredItems.narratives.map(n => {
     async function autofetchDisable(id) {
         if (!confirm('Pause this source? Fetching stops and the stored server password is purged; you will re-enter it to resume.')) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/disable?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/disable?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Source paused', 'info');
             loadAutofetchSources();
@@ -24881,7 +24868,7 @@ ${starredItems.narratives.map(n => {
     async function autofetchDelete(id) {
         if (!confirm('Delete this source? Its credentials and sharing list are removed. Already-fetched pixels stay on record but are no longer shown to anyone.')) return;
         try {
-            const res = await fetch(`/api/admin/autofetch/delete?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/delete?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Source deleted', 'info');
             loadAutofetchSources();
@@ -24890,7 +24877,7 @@ ${starredItems.narratives.map(n => {
 
     async function autofetchRunNow(id) {
         try {
-            const res = await fetch(`/api/admin/autofetch/run?pwd=${getPwd()}&id=${id}`, {method: 'POST'});
+            const res = await fetch(`/api/admin/autofetch/run?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
             showToast('Fetch started in the background', 'success');
             setTimeout(loadAutofetchSources, 4000);
@@ -24908,7 +24895,7 @@ ${starredItems.narratives.map(n => {
             if (!details.open || _afSourceLoaded) return;
             _afSourceLoaded = true;
             try {
-                const res = await fetch('/api/admin/autofetch/script?pwd=' + getPwd());
+                const res = await fetch('/api/admin/autofetch/script');
                 if (!res.ok) throw new Error('Failed to load script');
                 const text = await res.text();
                 const codeEl = document.getElementById('af-source-text');
@@ -25150,7 +25137,7 @@ ${starredItems.narratives.map(n => {
     }
     
     async function bulkApprove() {
-        if (!confirm(`Approve ${adminSelectedItems.length} items?`)) return;
+        if (!confirm(`Approve ${adminSelectedItems.length} items`)) return;
         try {
             const res = await fetch('/api/admin/bulk-approve', {
                 method: 'POST',
@@ -25169,7 +25156,7 @@ ${starredItems.narratives.map(n => {
     }
     
     async function bulkReject() {
-        if (!confirm(`Reject ${adminSelectedItems.length} items?`)) return;
+        if (!confirm(`Reject ${adminSelectedItems.length} items`)) return;
         try {
             const res = await fetch('/api/admin/bulk-reject', {
                 method: 'POST',
@@ -25254,10 +25241,7 @@ ${starredItems.narratives.map(n => {
     function buildShareUrl(includePwd = false) {
         const params = new URLSearchParams();
 
-        // `includePwd` is opt-in and no caller in this file opts in. Kept as a
-        // parameter rather than deleted so a future need has to state itself.
-        const pwd = new URLSearchParams(window.location.search).get('pwd');
-        if (includePwd === true && pwd) params.set('pwd', pwd);
+        // `includePwd` is ignored: a share URL never carries a password.
         
         // Add map center and zoom
         if (typeof map !== 'undefined') {

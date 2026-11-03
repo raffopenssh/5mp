@@ -81,7 +81,6 @@
     var moveTimer = null, inflight = 0;
     var listeners = [];
 
-    function pwd() { return encodeURIComponent((typeof getPwd === 'function' ? getPwd() : '') || ''); }
     function focusId() { return (typeof aoiFocusID !== 'undefined' && aoiFocusID) ? aoiFocusID : ''; }
     function dates() {
         var f = (typeof dateFrom !== 'undefined' && dateFrom) ? dateFrom : '';
@@ -499,7 +498,7 @@
     /* ── front ──────────────────────────────────────────────────────────── */
     function frontURL() {
         var f = focusId(), c = map.getCenter();
-        var u = '/api/fire-season?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
+        var u = '/api/fire-season?' + (f ? '&area=' + encodeURIComponent(f)
             : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
         var d = dates();
         if (d.to) u += '&at=' + d.to;   // the season the window ends in
@@ -521,7 +520,7 @@
         var key = areaId + '|' + d.from + '|' + d.to;
         if (key in sumCache) return sumCache[key];
         sumCache[key] = null;   // in flight
-        var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(areaId) + '&summary=1';
+        var u = '/api/fire-season?area=' + encodeURIComponent(areaId) + '&summary=1';
         if (d.to) u += '&at=' + d.to + '&to=' + d.to;
         if (d.from) u += '&from=' + d.from;
         fetch(u).then(function (r) { return r.ok ? r.json() : { status: 'not available' }; })
@@ -666,7 +665,7 @@
         return feats;
     }
     function othersURL(bb, at, lines) {
-        var u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + speedParam();
+        var u = '/api/fire-season?bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + speedParam();
         if (at) u += '&at=' + at;
         if (front && front.area) u += '&exclude=' + encodeURIComponent(front.area);
         return u;
@@ -779,7 +778,7 @@
         if (!missing.length) { build(); return; }
         hist.loading = true; inflight++; emit();
         Promise.all(missing.map(function (lbl) {
-            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
+            var u = '/api/fire-season?area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
             return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
         })).then(function () { inflight--; build(); refreshStrip(); });
     }
@@ -852,7 +851,7 @@
         if (!missing.length) { buildCompareFeatures(); return; }
         inflight++; emit();
         Promise.all(missing.map(function (lbl) {
-            var u = '/api/fire-season?pwd=' + pwd() + '&area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
+            var u = '/api/fire-season?area=' + encodeURIComponent(front.area) + '&season=' + encodeURIComponent(lbl) + speedParam();
             return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { cmpData[lbl] = j || { contours: [] }; }).catch(function () { cmpData[lbl] = { contours: [] }; });
         })).then(function () { inflight--; buildCompareFeatures(); refreshStrip(); });
     }
@@ -889,7 +888,7 @@
     }
     function patrolURL(from, to, area) {
         var f = area || focusId(), c = map.getCenter();
-        var u = '/api/patrol-isochrones?pwd=' + pwd() + (f ? '&area=' + encodeURIComponent(f)
+        var u = '/api/patrol-isochrones?' + (f ? '&area=' + encodeURIComponent(f)
             : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
         var d = dates();
         from = from || d.from; to = to || d.to;
@@ -969,7 +968,7 @@
     var pothers = { key: '', areas: {}, feats: [], prsFeats: [], loading: false, truncated: false, total: 0 };
     var pothersHist = { key: '', periods: [], loading: false };
     function pothersURL(bb, from, to, lines, visits) {
-        var u = '/api/patrol-isochrones?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + '&clip=1';
+        var u = '/api/patrol-isochrones?bbox=' + bb.join(',') + '&lines=' + lines + '&limit=' + othersLimit() + '&clip=1';
         if (from) u += '&from=' + from;
         if (to) u += '&to=' + to;
         if (visits) u += '&visits=1';
@@ -1548,7 +1547,7 @@
     function entryHex(share) { var c = entryRGB(share); return hex(c[0], c[1], c[2]); }
     function entryURL() {
         var f = focusId(), c = map.getCenter();
-        var u = '/api/fire-season?pwd=' + pwd() + '&summary=1&early=1' + (f ? '&area=' + encodeURIComponent(f)
+        var u = '/api/fire-season?summary=1&early=1' + (f ? '&area=' + encodeURIComponent(f)
             : '&lon=' + c.lng.toFixed(3) + '&lat=' + c.lat.toFixed(3));
         var d = dates();
         if (d.to) u += '&at=' + d.to;
@@ -1720,7 +1719,7 @@
     var eothers = { key: '', loading: false, truncated: false, total: 0 };
     function entryOthersActive() { return st.entry && !focusId(); }
     function eothersURL(bb) {
-        var d = dates(), u = '/api/fire-season?pwd=' + pwd() + '&bbox=' + bb.join(',') + '&early=1&summary=1&limit=' + othersLimit();
+        var d = dates(), u = '/api/fire-season?bbox=' + bb.join(',') + '&early=1&summary=1&limit=' + othersLimit();
         if (d.to) u += '&at=' + d.to;
         if (entry && entry.area) u += '&exclude=' + encodeURIComponent(entry.area);
         return u;
@@ -1879,7 +1878,7 @@
     function vanURL() {
         var b = map.getBounds(), d = dates(), f = focusId();
         var bb = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map(function (v) { return v.toFixed(3); }).join(',');
-        var u = '/api/fire-vanguard?bbox=' + bb + '&pwd=' + pwd() + '&limit=6000';
+        var u = '/api/fire-vanguard?bbox=' + bb + '&limit=6000';
         if (d.from) u += '&from=' + d.from;
         if (d.to) u += '&to=' + d.to;
         if (f && typeof focusIsAOI === 'function' && focusIsAOI(f)) u += '&aoi=' + encodeURIComponent(f);

@@ -2030,9 +2030,7 @@
 
     function dlUrl(path) {
         if (!path) return '#';
-        var pwd = (typeof window.getPwd === 'function') ? (window.getPwd() || '') : '';
-        if (!pwd) return path;
-        return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'pwd=' + encodeURIComponent(pwd);
+        return path;
     }
 
     var dlEl = null;

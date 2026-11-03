@@ -3817,11 +3817,9 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 
 	// Build RSS feed
 	now := time.Now().UTC()
+	// Item links never carry the caller's ?pwd=: a reader stores and
+	// forwards them, and the site authenticates by cookie (invariant 14).
 	baseURL := "https://" + r.Host
-	pwd := r.URL.Query().Get("pwd")
-	if pwd != "" {
-		baseURL += "?pwd=" + pwd
-	}
 
 	items := []string{}
 
@@ -3835,12 +3833,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		link := baseURL
-		if pwd != "" {
-			link = baseURL + "&popup=" + id
-		} else {
-			link = baseURL + "?popup=" + id
-		}
+		link := baseURL + "?popup=" + id
 
 		// Fetch recent notifications for this park (last 7 days)
 		since := now.AddDate(0, 0, -7)
@@ -3902,11 +3895,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 
 		link := baseURL
 		if parkId != "" {
-			if pwd != "" {
-				link = baseURL + "&popup=" + parkId
-			} else {
-				link = baseURL + "?popup=" + parkId
-			}
+			link = baseURL + "?popup=" + parkId
 		}
 
 		items = append(items, fmt.Sprintf(`
@@ -3933,12 +3922,7 @@ func (s *Server) HandleAPIFeed(w http.ResponseWriter, r *http.Request) {
 
 		bboxStr := fmt.Sprintf("%.2f,%.2f,%.2f,%.2f", coords[0], coords[1], coords[2], coords[3])
 
-		link := baseURL
-		if pwd != "" {
-			link = baseURL + "&bbox=" + bboxStr
-		} else {
-			link = baseURL + "?bbox=" + bboxStr
-		}
+		link := baseURL + "?bbox=" + bboxStr
 
 		items = append(items, fmt.Sprintf(`
 		<item>
@@ -3999,13 +3983,10 @@ func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request)
 	}
 	defer rows.Close()
 
+	// Item links never carry the caller's ?pwd=: a reader stores and
+	// forwards them, and the site authenticates by cookie (invariant 14).
 	baseURL := "https://" + r.Host
-	pwd := r.URL.Query().Get("pwd")
 	pwdParam := ""
-	if pwd != "" {
-		pwdParam = "?pwd=" + pwd
-		baseURL += pwdParam
-	}
 
 	items := []string{}
 	for rows.Next() {
@@ -4031,11 +4012,7 @@ func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request)
 		// Build link
 		link := baseURL
 		if parkID.Valid && parkID.String != "" {
-			if pwdParam != "" {
-				link = baseURL + "&popup=" + parkID.String
-			} else {
-				link = baseURL + "?popup=" + parkID.String
-			}
+			link = baseURL + "?popup=" + parkID.String
 		} else if refURL.Valid && refURL.String != "" {
 			link = refURL.String
 		}
@@ -4063,12 +4040,6 @@ func (s *Server) handleNotificationsFeed(w http.ResponseWriter, r *http.Request)
 	}
 
 	now := time.Now().UTC()
-	feedURL := baseURL
-	if pwdParam == "" {
-		feedURL += "?feed=1"
-	} else {
-		feedURL += "&feed=1"
-	}
 
 	rss := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">

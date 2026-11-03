@@ -46,7 +46,6 @@
         }
     }
 
-    function pwd() { return (typeof getPwd === 'function' ? getPwd() : ''); }
 
     function esc(s) {
         return (typeof escapeHtml === 'function') ? escapeHtml(s)
@@ -65,7 +64,7 @@
 
     async function poll(id) {
         try {
-            const r = await fetch(`/api/aois/${encodeURIComponent(id)}/progress?pwd=${encodeURIComponent(pwd())}`,
+            const r = await fetch(`/api/aois/${encodeURIComponent(id)}/progress`,
                                   { cache: 'no-store' });
             if (!r.ok) { stop(id); return null; }
             const d = await r.json();
@@ -221,9 +220,8 @@
     }
 
     async function post(id, action, okMsg) {
-        const sep = action.includes('?') ? '&' : '?';
         try {
-            const r = await fetch(`/api/aois/${encodeURIComponent(id)}/${action}${sep}pwd=${encodeURIComponent(pwd())}`,
+            const r = await fetch(`/api/aois/${encodeURIComponent(id)}/${action}`,
                                   { method: 'POST' });
             if (!r.ok) throw new Error('HTTP ' + r.status);
             if (typeof showToast === 'function') showToast(okMsg, 'success');
