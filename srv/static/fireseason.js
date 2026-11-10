@@ -1980,7 +1980,8 @@
         var h = '<div style="font-weight:600;margin-bottom:3px">Vanguard fire chain' + (p.tracker === 'kf' ? ' <span style="opacity:.6;font-weight:400">\u00b7 Kalman-tracked</span>' : '') + '</div>';
         if (p.part === 'head') h += '<div style="color:#fde047;font-weight:600">Live head</div>';
         h += '<div>Began <b>' + esc(ls) + ' days ahead</b> of the ' + (p.lead_basis === 'usual' ? 'usual' : 'season') +
-             ' front' + (p.lead_basis === 'usual' ? ' <span style="opacity:.7">(this season\u2019s front had not arrived yet)</span>' : '') + '</div>';
+             ' front' + (p.lead_basis === 'usual' ? ' <span style="opacity:.7">(this season\u2019s front had not arrived yet)</span>' :
+              p.lead_basis === 'nowcast' ? ' <span style="opacity:.7">(its expected arrival, from how far the season has come nearby)</span>' : '') + '</div>';
         if (p.ahead_km) h += '<div>Ran <b>' + Number(p.ahead_km).toFixed(0) + ' km</b> over ' + esc(p.ahead_days) + ' d ' +
             (p.end_cause === 'season' || (!p.end_cause && p.part === 'after') ? 'before the season caught up' : 'ahead of the season' + (p.end_cause === 'ongoing' ? ' so far' : '')) + '</div>';
         if (p.part === 'after') h += '<div style="color:#9ca3af">Here the season had caught up ' + esc(-p.lead) + ' d earlier \u2014 one fire among the field\u2019s</div>';

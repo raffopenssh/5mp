@@ -357,6 +357,7 @@ def write_groups(conn, area_id, season, s0, s1, groups):
             "fire_season": g.get('season'), "lead_start": g.get('lead_start'),
             "lead_basis": g.get('lead_basis'), "lead_max": g.get('lead_max'), "leads": g.get('leads'),
             "ahead_km": g.get('ahead_km'), "ahead_days": g.get('ahead_days'), "vanguard": True,
+            **({"lead_start_usual": g['lead_start_usual']} if g.get('lead_start_usual') is not None else {}),
             "tracker": 'kf', "tracker_version": TRACKER_VERSION, "seed_lead": g.get('seed_lead'),
             "end_cause": g.get('end_cause'), "heading_deg": g.get('heading_deg'),
             "speed_kmd": g.get('speed_kmd'), "kf_hits": g.get('kf_hits'),

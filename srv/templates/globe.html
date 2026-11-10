@@ -12337,7 +12337,7 @@ window.addEventListener('load', function () {
         }
         function fireVanTitle(n) {
             if (!n || n.lead_start == null) return '';
-            const basis = n.lead_basis === 'usual' ? 'usual front' : 'season front';
+            const basis = n.lead_basis === 'usual' ? 'usual front' : n.lead_basis === 'nowcast' ? 'season front\u2019s expected arrival' : 'season front';
             if (n.vanguard) return `\nVanguard: began ${n.lead_start} d ahead of the ${basis}${n.ahead_km ? `, ran ${Math.round(n.ahead_km)} km before it caught up` : ''}.`;
             return n.lead_start >= 0 ? `\nBegan ${n.lead_start} d ahead of the ${basis}.` : `\nBegan ${-n.lead_start} d into the season.`;
         }
@@ -20126,7 +20126,7 @@ window.addEventListener('load', function () {
     function fireSeasonLine(props, fs) {
         const L = props.lead_start;
         if (L === undefined || L === null) return '';
-        const basis = props.lead_basis === 'usual' ? 'usual front (this season\u2019s had not arrived)' : 'season front';
+        const basis = props.lead_basis === 'usual' ? 'usual front (this season\u2019s had not arrived)' : props.lead_basis === 'nowcast' ? 'season front\u2019s expected arrival' : 'season front';
         let words, color = '#6b7280';
         if (props.vanguard) {
             words = `Vanguard \u2014 began ${L} days ahead of the ${basis}`;

@@ -429,6 +429,19 @@ else
 fi
 
 echo
+echo "--- Live lead nowcast (fire_front_nowcast, docs/agents/fire.md) ---"
+# A derived state must be compared with its input (invariant 5): every area
+# with a live season and the two complete seasons the stage medians need must
+# hold a nowcast for exactly that season — or say "insufficient", never be
+# silently absent (the lead would fall back to `usual` and look like an answer).
+test_query "front nowcast: live areas all hold a row" \
+    "SELECT COUNT(*) FROM (SELECT area_id FROM fire_season_front GROUP BY area_id HAVING SUM(complete=0)>=1) a LEFT JOIN fire_front_nowcast n USING(area_id) WHERE n.area_id IS NULL" "0"
+test_query "front nowcast: ok rows name the live season" \
+    "SELECT COUNT(*) FROM fire_front_nowcast n WHERE json_extract(n.stats_json,'\$.status')='ok' AND NOT EXISTS (SELECT 1 FROM fire_season_front f WHERE f.area_id=n.area_id AND f.season=n.season AND f.nx=n.nx AND f.ny=n.ny)" "0"
+test_query "front nowcast: some area is ok" \
+    "SELECT COUNT(*) FROM fire_front_nowcast WHERE json_extract(stats_json,'\$.status')='ok' AND nowcast IS NOT NULL" "nonempty"
+
+echo
 echo "======================================="
 if [[ $FAILED -eq 0 ]]; then
     green "All database tests passed! ($PASSED passed, $FAILED failed)"

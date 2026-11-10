@@ -780,6 +780,69 @@ data here" — `ui_tests.js season_compare_and_patrol_scope` branches on it.
 Tests: api `patrol_isochrones_*` (pressure ladder sorted, text == level,
 visits == patrol_days), ui as above.
 
+### Live lead: the staged nowcast (shipped 2026-11-10)
+
+**The weak spot.** Everything above was measured on *finished* seasons, where
+the front is known. Live — the case the flights act on — a cell the front has
+not reached gets its lead from `usual`, and `eval_usual_shift.py` already said
+`usual` misses the season that then happens by ~15 d: more than the 10 d
+vanguard threshold it is compared with. Nobody had scored the live *label*.
+`scripts/eval_front_nowcast.py` does (rolling origin: season *s* sees only
+seasons < *s* and of itself only days ≤ d; sample = every cell on the day of
+its first burn while the front had not arrived; truth = the final front; 30
+areas, 166 area-seasons, medians; `data/eval/front_nowcast.json`):
+
+| live lead from | MAE d | bias | vanguard precision / recall / F1 |
+|---|---|---|---|
+| `usual` (production until now) | 13.0 | +5.2 | 0.69 / 0.71 / 0.67 |
+| `usual` given the front is not here yet (censored) | 12.8 | +9.2 | 0.62 / 0.80 / 0.68 |
+| **staged nowcast** (ships) | **6.7** | +0.4 | **0.80 / 0.85 / 0.82** |
+| no history at all: "< 10 % of burnable land within 60 km burned" | – | – | 0.76 / 0.71 / 0.73 |
+
+Paired against `usual`: MAE −5.3 d, better in 87 % of area-seasons; F1 +0.13,
+better in 86 %. One in three live "vanguard" flags was wrong; now one in five.
+
+**The rule.** The causal sweep that dates the front (20 % of the burnable land
+in the window burned) dates the earlier **stages** in the same pass
+(`STAGE_FRACTIONS` 1 / 2.5 / 5 / 7.5 / 10 / 15 %, `stage_grids`). For the
+highest stage a cell has passed this season (day t_j, unsmoothed, so strictly
+causal), previous complete seasons give the median stage → front time
+(`rem_j`); expected front = `max(t_j + rem_j, tomorrow)` (`nowcast_grid`).
+Seasons are aligned by **progress, not calendar** — which is why it works
+where every calendar shift failed (the shift was fitted on the biased early
+cells; here each cell is compared with its own stage). No stage passed, or
+< `NOWCAST_MIN_SEASONS` (2) complete seasons → `usual` as before, and the row
+says `insufficient` with the reason.
+
+**Kept for comparison.** `usual` is computed and stored exactly as before
+(front and usual blobs verified unchanged); `fire_front.LIVE_LEAD = 'usual'`
+or `FrontSet.lead(..., live='usual')` is the old rule; a group whose start is
+measured on the nowcast carries `lead_basis: 'nowcast'` **and**
+`lead_start_usual` (the old number) in `properties_json` — not on any wire.
+Compare live: `SELECT json_extract(properties_json,'$.lead_start'),
+json_extract(properties_json,'$.lead_start_usual') FROM feature_geometries
+WHERE vanguard=1 AND properties_json LIKE '%lead_start_usual%'`.
+
+**Storage** (`fire_front_nowcast`, migration 072, one row per area, written by
+`build_area` beside the live season's row): `rem` zlib uint8 [stages, ny, nx]
+and `nowcast` zlib int16 — Chinko 28 KB + 7 KB for 20,139 cells; no
+per-season history (the plain all-season median scored the same as the
+per-season conditional one, 6.7 vs 6.8). `rem` is reused while calendar,
+ladder, grid and season list are unchanged, so `--current` adds one sweep
+(< 1 s of Chinko's 14 s, which is SQL). No new endpoint, no extra bytes to the
+client; tips/notifications word the basis as "the season front's expected
+arrival". `tests/db_tests.sh` "Live lead nowcast".
+
+**Measured alongside, not adopted.** Ladder ablation: {5, 10} 8.0 d / 0.78;
+{1, 2.5, 5, 10} 7.5 / 0.80; {2.5 … 15} 7.1 / 0.82; shipped union 6.7 / 0.82.
+Pace scaling (this season's stage-to-stage time ÷ usual) made it worse (7.9 –
+11.0 d). A gradient-boosted regressor on the same causal features,
+leave-areas-out: **5.2 d / F1 0.84** — the ceiling, at the cost of a fitted
+model in the cron; not adopted, re-measure before proposing. The history-free
+"< 10 % burned" rule (F1 0.73) beats `usual` and is the candidate for areas
+with < 2 seasons (new AOIs) — not wired. Not drawn: the nowcast as dashed
+"expected" isochrones ahead of the front.
+
 ## Kalman seed-ahead chains — the vanguard layer's population (shipped 2026-09-15)
 
 **What and why, in plain words.** The plain tracker runs over the whole

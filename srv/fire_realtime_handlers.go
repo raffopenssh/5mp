@@ -1244,6 +1244,8 @@ func (s *Server) handleFireRealtimeFromFeatures(w http.ResponseWriter, r *http.R
 				basis := "season"
 				if group.LeadBasis == "usual" {
 					basis = "usual"
+				} else if group.LeadBasis == "nowcast" {
+					basis = "expected season"
 				}
 				group.StatusDetail += fmt.Sprintf(" • began %d d ahead of the %s front — early movement ahead of the season", l, basis)
 				if group.Priority > 20 {

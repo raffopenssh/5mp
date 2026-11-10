@@ -6242,6 +6242,10 @@ func fireSeasonWords(props map[string]interface{}) string {
 	basis := "season front"
 	if b, _ := props["lead_basis"].(string); b == "usual" {
 		basis = "usual front (this season's had not arrived)"
+	} else if b == "nowcast" {
+		// fire_front.py LIVE_LEAD: the front is not here yet; its arrival is
+		// estimated from how far the season has progressed around the fire.
+		basis = "season front's expected arrival"
 	}
 	if v, _ := props["vanguard"].(bool); v {
 		w := fmt.Sprintf("Vanguard — began %d days ahead of the %s", l, basis)

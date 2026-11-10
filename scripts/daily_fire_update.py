@@ -880,7 +880,7 @@ class DailyFireUpdater:
             # the season", not who lit it or why. Ranked just below the
             # boundary statuses so it survives the per-park cap.
             if props.get('vanguard') and props.get('lead_start') is not None:
-                basis = 'usual' if props.get('lead_basis') == 'usual' else 'season'
+                basis = {'usual': 'usual', 'nowcast': 'expected season'}.get(props.get('lead_basis'), 'season')
                 status_detail += (f" \u2022 began {props['lead_start']} d ahead of the {basis} front "
                                   f"\u2014 early movement ahead of the season")
                 priority = min(priority, 20)

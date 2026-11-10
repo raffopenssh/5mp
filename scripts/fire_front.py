@@ -112,6 +112,22 @@ EARLY_MIN_SEASONS = 2      # fewer complete seasons -> an explicit 'insufficient
 EARLY_MIN_EARLY = 2        # ...and a cell must be early in at least this many: with 2 seasons held,
                            # "1 of 2" (3,868 XSA cells) is BELOW chance (5,528); "2 of 2" (881) is 8.7x it
 LABEL_STEP_DAYS = 15
+# LIVE LEAD (2026-11). Where this season's front has not arrived, a lead needs
+# a date in the future. Until 2026-11 `usual` (median front of previous
+# seasons) stood in; replayed as-if-live it is off by a median 13 d — more
+# than the 10 d vanguard threshold it is compared with. The NOWCAST aligns
+# seasons by PROGRESS instead of by calendar: the same causal sweep that finds
+# the front also dates the earlier STAGES (1 … 15 % of the burnable
+# land within the window burned); from the highest stage a cell has passed
+# this season, previous seasons say how long stage -> front usually takes.
+# scripts/eval_front_nowcast.py (rolling origin, 166 area-seasons): MAE
+# 13.0 -> 6.7 d, live vanguard F1 0.67 -> 0.82 (numbers: data/eval/front_nowcast.json).
+# 'usual' restores the old rule everywhere; both are always computed and a
+# group tagged on the nowcast also carries `lead_start_usual`, so the two can
+# be compared on the live data.
+LIVE_LEAD = "nowcast"                       # 'nowcast' | 'usual'
+STAGE_FRACTIONS = (0.01, 0.025, 0.05, 0.075, 0.10, 0.15)  # stages below FRONT_FRACTION (ladder ablation: fire.md)
+NOWCAST_MIN_SEASONS = 2                      # complete seasons the stage->front medians need (as measured)
 COMPLETE_AFTER_DAYS = 330  # a season with data this far in is complete
 MIN_SEASON_DETECTIONS = 200
 
@@ -315,6 +331,114 @@ def front_grid(onset, burnable, lat_mid):
         sm = np.where(den > 0.3, num / np.maximum(den, 1e-9), np.nan)
         front = np.where(np.isfinite(front), sm, np.nan)
     return front
+
+
+def stage_grids(onset, burnable, lat_mid, fractions, smooth=True):
+    """front_grid() for several fractions in ONE causal sweep: (len(fractions),
+    ny, nx) of the day the burned share of the burnable land in the window
+    first reached each fraction (NaN = never / too little land). With
+    fractions == (FRONT_FRACTION,) and smooth=True this is front_grid()."""
+    from scipy import ndimage
+    km_per_cell_y = 111.0 * RES_DEG
+    km_per_cell_x = 111.0 * math.cos(math.radians(lat_mid)) * RES_DEG
+    size = (2 * int(round(WINDOW_KM / km_per_cell_y)) + 1,
+            2 * int(round(WINDOW_KM / km_per_cell_x)) + 1)
+    area = size[0] * size[1]
+    denom = ndimage.uniform_filter(burnable.astype(float), size=size, mode="constant") * area
+    ok = denom >= MIN_BURNABLE_CELLS
+    out = np.full((len(fractions),) + onset.shape, np.nan)
+    fin = onset[np.isfinite(onset)]
+    if not ok.any() or fin.size == 0:
+        return out
+    pend = np.repeat(ok[None], len(fractions), 0)
+    for t in np.unique(fin.astype(int)):       # the share only moves on a day something first burns
+        num = ndimage.uniform_filter((onset <= t).astype(float), size=size, mode="constant") * area
+        frac = np.where(denom > 0, num / np.maximum(denom, 1), 0.0)
+        for j, q in enumerate(fractions):
+            hit = pend[j] & (frac >= q)
+            if hit.any():
+                out[j][hit] = t
+                pend[j] &= ~hit
+        if not pend.any():
+            break
+    if smooth and SMOOTH_SIGMA_CELLS > 0:
+        for j in range(len(fractions)):
+            g = out[j]
+            w = np.isfinite(g).astype(float)
+            num = ndimage.gaussian_filter(np.where(w > 0, g, 0.0), SMOOTH_SIGMA_CELLS)
+            den = ndimage.gaussian_filter(w, SMOOTH_SIGMA_CELLS)
+            out[j] = np.where((w > 0) & (den > 0.3), num / np.maximum(den, 1e-9), np.nan)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Live nowcast: stage -> front
+# ---------------------------------------------------------------------------
+
+def ensure_nowcast_table(conn):
+    """One row per area (db/migrations/072): the stage->front medians of the
+    complete seasons (`rem`, zlib uint8 [stages, ny, nx], 255 = none) and the
+    live season's nowcast front (`nowcast`, zlib int16 day-of-season, -1 =
+    none). ~1 byte per cell after zlib; nothing per season is kept."""
+    conn.execute("""CREATE TABLE IF NOT EXISTS fire_front_nowcast (
+        area_id TEXT PRIMARY KEY, start_month INTEGER NOT NULL,
+        fractions_json TEXT NOT NULL, seasons_json TEXT NOT NULL,
+        res REAL NOT NULL, x0 REAL NOT NULL, y0 REAL NOT NULL, nx INTEGER NOT NULL, ny INTEGER NOT NULL,
+        rem BLOB, season TEXT, as_of TEXT, nowcast BLOB, stats_json TEXT, computed_at TEXT NOT NULL)""")
+
+
+def _rem_pack(rem):
+    import zlib
+    return zlib.compress(np.where(np.isfinite(rem), np.clip(np.round(rem), 0, 254), 255).astype(np.uint8).tobytes(), 6)
+
+
+def _rem_unpack(blob, n, ny, nx):
+    import zlib
+    a = np.frombuffer(zlib.decompress(blob), dtype=np.uint8).reshape(n, ny, nx).astype(float)
+    a[a == 255] = np.nan
+    return a
+
+
+def stage_rem(conn, area_id, grid, sm, labels, onsets_p, burnable_p, lat_mid, crop):
+    """Median days from each stage to the front over the complete seasons
+    `labels` — (len(STAGE_FRACTIONS), ny, nx), NaN where fewer than one season
+    passed both. Reused from fire_front_nowcast while the calendar, the
+    stages, the grid and the season list are unchanged (it changes once a
+    year), so the nightly --current run does not re-sweep the archive."""
+    labels = [l for l in labels if l in onsets_p]
+    if len(labels) < NOWCAST_MIN_SEASONS:
+        return None, labels
+    row = conn.execute("SELECT start_month, fractions_json, seasons_json, nx, ny, x0, y0, rem "
+                       "FROM fire_front_nowcast WHERE area_id=?", (area_id,)).fetchone()
+    if row and row[7] is not None and row[0] == sm and json.loads(row[1]) == list(STAGE_FRACTIONS) \
+            and json.loads(row[2]) == labels and (row[3], row[4]) == (grid.nx, grid.ny) \
+            and abs(row[5] - grid.x0) < 1e-9 and abs(row[6] - grid.y0) < 1e-9:
+        return _rem_unpack(row[7], len(STAGE_FRACTIONS), grid.ny, grid.nx), labels
+    fr = STAGE_FRACTIONS + (FRONT_FRACTION,)
+    rems = []
+    for l in labels:
+        T = stage_grids(onsets_p[l], burnable_p, lat_mid, fr)[(slice(None),) + crop]
+        rems.append(T[-1][None] - T[:-1])
+    import warnings as _w
+    with np.errstate(all="ignore"), _w.catch_warnings():
+        _w.simplefilter("ignore")
+        rem = np.nanmedian(np.stack(rems), axis=0)
+    return rem, labels
+
+
+def nowcast_grid(raw_stages, rem, front, today):
+    """The live season's expected front where it has not arrived: from the
+    highest stage a cell has passed (day t_j, causal), t_j + the usual
+    stage->front time, and never earlier than tomorrow — the front is known
+    not to be here yet. NaN where the front is measured, where no stage has
+    passed, or where previous seasons never ran that stage here."""
+    out = np.full(front.shape, np.nan)
+    open_ = ~np.isfinite(front)
+    for j in range(len(STAGE_FRACTIONS) - 1, -1, -1):
+        t = raw_stages[j]
+        take = open_ & ~np.isfinite(out) & np.isfinite(t) & (t <= today) & np.isfinite(rem[j])
+        out[take] = np.maximum(t[take] + rem[j][take], today + 1)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -528,6 +652,8 @@ def build_area(conn, area_id, current_only=False, verbose=True):
     # Usual front needs the previous complete seasons: process in order and
     # keep the completed fronts in hand.
     completed = []
+    completed_labels = []
+    ensure_nowcast_table(conn)
     existing = {r[0]: r for r in conn.execute(
         "SELECT season, complete, front, start_month FROM fire_season_front WHERE area_id=?", (area_id,))}
     written = []
@@ -545,6 +671,8 @@ def build_area(conn, area_id, current_only=False, verbose=True):
             if row and row[1] and row[3] == sm:
                 f = unpack(row[2], grid.ny, grid.nx) if len(row[2]) == grid.ny * grid.nx * 2 else None
                 completed.append(f)
+                if f is not None:
+                    completed_labels.append(s)
                 if f is not None and s in onsets_p:
                     for_early[s] = dict(start=s0, complete=True, front=f, lat_mid=lat_mid,
                                         onset=onsets_p[s][crop])
@@ -598,6 +726,15 @@ def build_area(conn, area_id, current_only=False, verbose=True):
         for_early[s] = dict(start=s0, complete=complete, front=front, onset=onset, lat_mid=lat_mid)
         if complete:
             completed.append(front)
+            completed_labels.append(s)
+        else:
+            # The live season: where the front has not arrived, say when it is
+            # expected (LIVE LEAD above). A separate statement from the front's
+            # own row, which stays exactly what it was.
+            nc_stats = write_nowcast(conn, area_id, grid, sm, s, s0, min(latest, s1), completed_labels,
+                                     onsets_p, burnable_p, lat_mid, crop, front)
+            if verbose:
+                log(f"{area_id} {s}: nowcast {nc_stats}")
         if verbose:
             log(f"{area_id} {s}{'' if complete else ' (live)'}: {stats['detections']:,} det, "
                 f"front on {stats['cells_with_front']:,} cells ({stats['cells_burned']:,} burned), "
@@ -614,11 +751,40 @@ def build_area(conn, area_id, current_only=False, verbose=True):
                              (area_id, sm)).fetchone()[0]
         if stale:
             conn.execute("DELETE FROM fire_season_front WHERE area_id=? AND start_month != ?", (area_id, sm))
+            conn.execute("DELETE FROM fire_front_nowcast WHERE area_id=? AND start_month != ?", (area_id, sm))
             if verbose:
                 log(f"{area_id}: dropped {stale} season row(s) on another calendar (start month != {sm})")
     if verbose:
         log(f"{area_id}: season starts month {sm}; {len(written)} season(s) in {time.time() - t0:.1f}s")
     return written
+
+
+def write_nowcast(conn, area_id, grid, sm, season, s0, as_of, labels, onsets_p, burnable_p, lat_mid, crop, front):
+    """Compute + store the area's nowcast row for its live season. Returns the
+    stats dict; `status` says why there is none (never an empty grid posing
+    as "nothing expected")."""
+    import zlib
+    rem, used = stage_rem(conn, area_id, grid, sm, labels, onsets_p, burnable_p, lat_mid, crop)
+    stats = {"seasons": used, "fractions": list(STAGE_FRACTIONS), "min_seasons": NOWCAST_MIN_SEASONS}
+    blob_rem = blob_nc = None
+    if rem is None:
+        stats.update(status="insufficient", reason=f"{len(used)} complete season(s) with a front; the stage medians need {NOWCAST_MIN_SEASONS}")
+    else:
+        today = (as_of - s0).days
+        raw = stage_grids(onsets_p[season], burnable_p, lat_mid, STAGE_FRACTIONS, smooth=False)[(slice(None),) + crop]
+        nc = nowcast_grid(raw, rem, front, today)
+        n = int(np.isfinite(nc).sum())
+        stats.update(status="ok", cells=n, cells_open=int((~np.isfinite(front)).sum()),
+                     median_days_out=round(float(np.median(nc[np.isfinite(nc)]) - today), 1) if n else None)
+        blob_rem, blob_nc = _rem_pack(rem), zlib.compress(pack(nc), 6)
+    conn.execute("""INSERT OR REPLACE INTO fire_front_nowcast
+        (area_id, start_month, fractions_json, seasons_json, res, x0, y0, nx, ny, rem, season, as_of, nowcast,
+         stats_json, computed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 (area_id, sm, json.dumps(list(STAGE_FRACTIONS)), json.dumps(used), grid.res, grid.x0, grid.y0,
+                  grid.nx, grid.ny, blob_rem, season, as_of.isoformat(), blob_nc, json.dumps(stats),
+                  datetime.now().astimezone().isoformat(timespec="seconds")))
+    conn.commit()
+    return stats
 
 
 # ---------------------------------------------------------------------------
@@ -641,15 +807,28 @@ class FrontSet:
                                    latest=date.fromisoformat(latest) if latest else None,
                                    grid=g, front=unpack(fb, ny, nx), usual=unpack(ub, ny, nx))
             self.start_month = sm
+        # The live season's nowcast (fire_front_nowcast), where one is stored
+        # for exactly this season and grid. Absent = the old rule (`usual`).
+        try:
+            r = conn.execute("SELECT season, nx, ny, nowcast FROM fire_front_nowcast WHERE area_id=?",
+                             (area_id,)).fetchone()
+        except sqlite3.OperationalError:
+            r = None
+        if r and r[3] is not None and r[0] in self.seasons and not self.seasons[r[0]]["complete"]:
+            S = self.seasons[r[0]]
+            if (S["grid"].nx, S["grid"].ny) == (r[1], r[2]):
+                import zlib
+                S["nowcast"] = unpack(zlib.decompress(r[3]), r[2], r[1])
 
     def __bool__(self):
         return bool(self.seasons)
 
-    def lead(self, lon, lat, d):
+    def lead(self, lon, lat, d, live=None):
         """(lead_days, basis) for a point burning on date `d` ('YYYY-MM-DD').
-        basis 'front' = this season's measured front, 'usual' = the median of
-        previous seasons where this season's front has not arrived (yet),
-        None = nothing to measure against."""
+        basis 'front' = this season's measured front; where it has not arrived
+        (yet): 'nowcast' = its expected arrival from the stage the cell has
+        passed, else 'usual' = the median of previous seasons; None = nothing
+        to measure against. `live='usual'` forces the pre-nowcast rule."""
         if not self.seasons:
             return None, None
         s = season_of(d, self.start_month)
@@ -666,14 +845,22 @@ class FrontSet:
         # usual front stands in.
         if S["complete"]:
             return None, None
+        if live is None:
+            live = LIVE_LEAD
+        if live == "nowcast" and "nowcast" in S:
+            n = S["nowcast"][iy[0], ix[0]]
+            if np.isfinite(n):
+                return int(round(n - dos)), "nowcast"
         u = S["usual"][iy[0], ix[0]]
         if np.isfinite(u):
             return int(round(u - dos)), "usual"
         return None, None
 
-    def lead_array(self, lon, lat, dates):
+    def lead_array(self, lon, lat, dates, live=None):
         """Vectorised lead(): float array (NaN = nothing to measure against)
         for detections of ONE season. Same rule as lead()."""
+        if live is None:
+            live = LIVE_LEAD
         lon = np.asarray(lon, float); lat = np.asarray(lat, float)
         out = np.full(lon.shape, np.nan)
         if not self.seasons or len(lon) == 0:
@@ -691,6 +878,9 @@ class FrontSet:
             v = f - dos
             if not S["complete"]:
                 u = S["usual"][iy, ix] - dos
+                if live == "nowcast" and "nowcast" in S:
+                    n = S["nowcast"][iy, ix] - dos
+                    u = np.where(np.isfinite(n), n, u)
                 v = np.where(np.isfinite(v), v, u)
             out[m] = v
         return out
@@ -733,6 +923,13 @@ def tag_group(g, fs):
         g["vanguard"] = False
         return g
     first = next(l for l in leads if l is not None)
+    # The pre-nowcast number, kept beside the new one wherever they can differ
+    # (a start measured on the nowcast) so the two rules stay comparable on
+    # live data. Absent otherwise.
+    g.pop("lead_start_usual", None)
+    i0 = next(i for i, l in enumerate(leads) if l is not None)
+    if fs.lead(traj[i0][0], traj[i0][1], str(traj[i0][2]))[1] == "nowcast":
+        g["lead_start_usual"] = fs.lead(traj[i0][0], traj[i0][1], str(traj[i0][2]), live="usual")[0]
     g["lead_start"] = first
     g["lead_basis"] = basis
     g["lead_max"] = max(known)
@@ -794,7 +991,7 @@ def tag_file(area_id, conn=None):
 
 
 LEAD_PROPS = ("fire_season", "lead_start", "lead_basis", "lead_max", "leads",
-              "ahead_km", "ahead_days", "vanguard")
+              "ahead_km", "ahead_days", "vanguard", "lead_start_usual")
 
 
 def patch_feature_properties(conn, area_id, groups, batch=500):
@@ -812,7 +1009,8 @@ def patch_feature_properties(conn, area_id, groups, batch=500):
             props = {"fire_season": g.get("season"), "lead_start": g.get("lead_start"),
                      "lead_basis": g.get("lead_basis"), "lead_max": g.get("lead_max"),
                      "leads": g.get("leads"), "ahead_km": g.get("ahead_km"),
-                     "ahead_days": g.get("ahead_days"), "vanguard": bool(g.get("vanguard"))}
+                     "ahead_days": g.get("ahead_days"), "vanguard": bool(g.get("vanguard")),
+                     "lead_start_usual": g.get("lead_start_usual")}
             conn.execute(
                 "UPDATE feature_geometries SET properties_json = json_patch(COALESCE(properties_json,'{}'), ?), "
                 "lead_start = ?, vanguard = ? WHERE feature_type='fire_trajectory' AND feature_id=?",

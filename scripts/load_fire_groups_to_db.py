@@ -576,6 +576,7 @@ class FireGroupLoader:
                 "fire_season": group.get('season'),
                 "lead_start": group.get('lead_start'),
                 "lead_basis": group.get('lead_basis'),
+                **({"lead_start_usual": group['lead_start_usual']} if group.get('lead_start_usual') is not None else {}),
                 "lead_max": group.get('lead_max'),
                 "leads": group.get('leads'),
                 "ahead_km": group.get('ahead_km'),
