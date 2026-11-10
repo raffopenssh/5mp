@@ -438,6 +438,12 @@ test_query "front nowcast: live areas all hold a row" \
     "SELECT COUNT(*) FROM (SELECT area_id FROM fire_season_front GROUP BY area_id HAVING SUM(complete=0)>=1) a LEFT JOIN fire_front_nowcast n USING(area_id) WHERE n.area_id IS NULL" "0"
 test_query "front nowcast: ok rows name the live season" \
     "SELECT COUNT(*) FROM fire_front_nowcast n WHERE json_extract(n.stats_json,'\$.status')='ok' AND NOT EXISTS (SELECT 1 FROM fire_season_front f WHERE f.area_id=n.area_id AND f.season=n.season AND f.nx=n.nx AND f.ny=n.ny)" "0"
+# ...and "insufficient" must be true: fewer than two complete seasons stored,
+# not seven on a grid the live season no longer shares.
+test_query "front nowcast: insufficient means < 2 complete seasons" \
+    "SELECT COUNT(*) FROM fire_front_nowcast n WHERE json_extract(n.stats_json,'\$.status')='insufficient' AND (SELECT COUNT(*) FROM fire_season_front f WHERE f.area_id=n.area_id AND f.complete=1) >= 2" "0"
+test_query "season front: one grid and calendar per area" \
+    "SELECT COUNT(*) FROM (SELECT area_id FROM fire_season_front GROUP BY area_id HAVING COUNT(DISTINCT nx||'x'||ny||'m'||start_month) > 1)" "0"
 test_query "front nowcast: some area is ok" \
     "SELECT COUNT(*) FROM fire_front_nowcast WHERE json_extract(stats_json,'\$.status')='ok' AND nowcast IS NOT NULL" "nonempty"
 

@@ -656,6 +656,19 @@ def build_area(conn, area_id, current_only=False, verbose=True):
     ensure_nowcast_table(conn)
     existing = {r[0]: r for r in conn.execute(
         "SELECT season, complete, front, start_month FROM fire_season_front WHERE area_id=?", (area_id,))}
+    # --current reuses the stored complete fronts. If they cannot be reused —
+    # none stored, another calendar, or another grid (the catchment grew by a
+    # cell) — the live season would be written with an all-NaN `usual` and an
+    # "insufficient" nowcast while years of history sit in the archive: a
+    # no-op posing as an answer (2026-11-10: 8 areas, some for 7 weeks).
+    # Rebuild the area whole instead.
+    if current_only:
+        stored = [r for r in existing.values() if r[1]]
+        usable = [r for r in stored if r[3] == sm and len(r[2]) == grid.ny * grid.nx * 2]
+        if len(usable) < len(stored) or (not stored and len(seasons) > 1):
+            current_only = False
+            log(f"{area_id}: --current found {len(usable)}/{len(stored)} stored complete season(s) "
+                f"on this grid and calendar — rebuilding every season")
     written = []
     for_early = {}   # label -> dict(start, complete, front, onset, lat_mid): the early-burn ground's input
     for s in seasons:
@@ -1053,7 +1066,10 @@ def main():
         ids = [a.area]
     elif a.rotate:
         have = {r[0]: r[1] for r in conn.execute(
-            "SELECT area_id, MAX(computed_at) FROM fire_season_front GROUP BY area_id")}
+            "SELECT area_id, MIN(computed_at) FROM fire_season_front GROUP BY area_id")}
+        # MIN, not MAX: the nightly --current rewrites the live row of every
+        # area, so MAX was "today" everywhere and the rotation starved (46
+        # areas not rebuilt in 7 weeks). The oldest row dates the last full build.
         ids = sorted(all_area_ids(conn), key=lambda i: have.get(i, ""))[:a.rotate]
     else:
         ap.error("--area, --areas, --all or --rotate N")

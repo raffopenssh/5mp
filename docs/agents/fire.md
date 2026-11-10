@@ -843,6 +843,17 @@ model in the cron; not adopted, re-measure before proposing. The history-free
 with < 2 seasons (new AOIs) — not wired. Not drawn: the nowcast as dashed
 "expected" isochrones ahead of the front.
 
+**Verified 2026-11-10** (all areas rebuilt; `db.sqlite3.bak` removed). 117 live
+areas → 117 rows, 115 `ok` / 2 `insufficient` (1 complete season each), 3.4 MB;
+no nowcast cell under a measured front or ≤ as-of day in any area; complete-season
+`front` blobs byte-identical to the backup. Live tags on the nowcast: 547
+trajectories + 389 KF chains in 40 areas, median 17 d earlier than `usual`.
+**Found on the way:** `--current` silently wrote an all-NaN `usual` when the stored
+complete seasons were on another grid/calendar (8 areas) — it now rebuilds the area
+whole; `--rotate` ordered by `MAX(computed_at)`, which `--current` refreshes nightly
+(46 areas unrotated for 7 weeks) — now `MIN`. `usual` from `--current` (median of
+stored int16 fronts) and from a full build (median of floats) differ by ≤ 1 d.
+
 ## Kalman seed-ahead chains — the vanguard layer's population (shipped 2026-09-15)
 
 **What and why, in plain words.** The plain tracker runs over the whole
