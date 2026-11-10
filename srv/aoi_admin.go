@@ -1,7 +1,10 @@
 package srv
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -27,8 +30,12 @@ import (
 //  2. **`principals.label` is never served.** It is pwd[:3]+"…", written by
 //     SeedPrincipals to be recognisable in a *local* sqlite session. Serving
 //     it would put three characters of every other tenant's password on the
-//     wire. The handle is `ref[:8]` — a sha256 prefix, non-secret by
-//     construction — plus `is_you` for the row the caller is.
+//     wire. The handle is `publicHandle(ref)` — an HMAC of the ref under the
+//     server's master key — plus `is_you` for the row the caller is. It was
+//     `ref[:8]`, a prefix of the unsalted sha256 of the password: "non-secret
+//     by construction" only for a high-entropy secret, and these are short
+//     shared passwords, so any login could test guesses offline against every
+//     other login's handle and skip the gate's rate limiter entirely.
 //
 //  3. **It reports the queue; it does not reimplement it.** Lease state is
 //     read straight from aoi_datasets (the same columns `--status` prints) and
@@ -40,10 +47,23 @@ import (
 // the set is fixed by DEFAULT_DATASETS in scripts/aoi_lib.py.
 var aoiDatasetName = regexp.MustCompile(`^[a-z][a-z0-9_]{0,30}$`)
 
+// publicHandle is the only form of a principal ref that may go on the wire: a
+// stable 8-hex label that cannot be recomputed from a candidate password
+// without the server's master key. No key, no handle -- never the raw prefix.
+func publicHandle(ref string) string {
+	key, err := fileMasterKey()
+	if err != nil || len(key) == 0 || ref == "" {
+		return ""
+	}
+	m := hmac.New(sha256.New, key)
+	m.Write([]byte("principal-handle:" + ref))
+	return hex.EncodeToString(m.Sum(nil))[:8]
+}
+
 // aoiAdminPrincipal is one tenant, described without leaking a credential.
 type aoiAdminPrincipal struct {
 	ID      int64  `json:"id"`
-	Handle  string `json:"handle"` // sha256(pwd)[:8] — non-secret by construction
+	Handle  string `json:"handle"` // publicHandle(ref) — keyed, not derivable from a password
 	IsYou   bool   `json:"is_you"`
 	Owns    int    `json:"owns"`    // AOIs owned
 	Granted int    `json:"granted"` // AOIs shared with them
@@ -85,8 +105,8 @@ func (s *Server) HandleAPIAdminAccess(w http.ResponseWriter, r *http.Request) {
 		if a.OwnerID != 0 {
 			var ref string
 			if err := s.DB.QueryRow(`SELECT ref FROM principals WHERE id=?`,
-				a.OwnerID).Scan(&ref); err == nil && len(ref) >= 8 {
-				e.OwnerRef = ref[:8]
+				a.OwnerID).Scan(&ref); err == nil {
+				e.OwnerRef = publicHandle(ref)
 			}
 		}
 		entries = append(entries, e)
@@ -109,9 +129,7 @@ func (s *Server) HandleAPIAdminAccess(w http.ResponseWriter, r *http.Request) {
 			internalError(w, "could not scan principal", err)
 			return
 		}
-		if len(ref) >= 8 {
-			p.Handle = ref[:8]
-		}
+		p.Handle = publicHandle(ref)
 		p.IsYou = p.ID == me
 		ps = append(ps, p)
 	}

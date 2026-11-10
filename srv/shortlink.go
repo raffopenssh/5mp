@@ -244,6 +244,11 @@ func shortNormalizeURL(raw string, r *http.Request) (string, bool) {
 	if !strings.HasPrefix(u.Path, "/") || strings.HasPrefix(u.Path, "//") {
 		return "", false
 	}
+	// `/\\host` is `//host` to a browser, and a control character can split
+	// the Location header: neither is a path on this site.
+	if strings.ContainsAny(raw, "\\\r\n\t") || strings.Contains(u.Path, "\\") {
+		return "", false
+	}
 	// A short link may not point at another short link: two hops is a loop
 	// waiting to happen and buys nothing.
 	if u.Path == "/s" || strings.HasPrefix(u.Path, "/s/") {

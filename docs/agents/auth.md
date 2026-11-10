@@ -148,7 +148,7 @@ well as in `ACCESS_PASSWORDS`/`PASSWORD_ENVS`.
 
 ### Unauthenticated Endpoints
 
-These paths bypass password check (see `srv/auth_middleware.go`):
+These paths bypass password check (`isPublicPath`, `srv/auth_middleware.go`), plus `/static/**.{js,css,svg}`:
 - `/static/downloads/*` - Downloadable files
 - `/robots.txt` - SEO
 - `/sitemap.xml` - SEO
@@ -175,3 +175,52 @@ nobody uses. `ADMIN_EMAIL`/`ADMIN_PASSWORD` sat in `secrets.env.example` from
 `?pwd=$ADMIN_PASSWORD` therefore 401'd, correctly, because only
 `ACCESS_PASSWORDS` grants access. Removed rather than wired: a credential in
 the template that nothing checks reads as a login and is not one.
+
+---
+
+## Security audit 2026-11-10 — what was wrong, and the rule each fix leaves behind
+
+Regression tests: `srv/security_audit_test.go`.
+
+* **The public-asset rule is `/static/` + suffix, never suffix alone.**
+  `isPublicPath` was a bare `HasSuffix(.js|.css|.svg)`, so any route whose last
+  segment is a wildcard (`/api/legal/CAF/x.js`) skipped the gate — and an
+  ungated request is answered as the *client* tenant (`RequestEnv` default).
+  That default is still `clientTenant`; the gate is the only thing in front of
+  it, so nothing may be added to `isPublicPath` that reaches a tenant handler.
+* **A path handed back as a redirect or href goes through `localPath`.** The
+  gate runs before the mux cleans the path, so `//host/` and `/\host/` arrive
+  intact. `shortNormalizeURL` refuses `\` and control characters for the same
+  reason.
+* **A wrong `access_pwd` cookie is a metered guess** (`pwdGateRL`), exactly like
+  a wrong `?pwd=`; the bad cookie is cleared as it is counted.
+* **Never serve a prefix of `principalRef`.** It is an unsalted sha256 of a
+  short shared password; `ref[:8]` on `/api/admin/access` let any login test
+  guesses offline. The wire form is `publicHandle(ref)` (HMAC under the file
+  master key). The autofetch viewer roster still shows `pwd[:3]…` labels to the
+  source owner — known, not fixed.
+* **One predicate for "notifications this caller may see":**
+  `notifVisibleSQL`. The RSS feed and the two mark-read writes each had none
+  (the feed leaked another tenant's `new_upload` titles; one POST marked every
+  tenant's rows read). `is_read` is still one shared column, so the sandbox is
+  refused the write outright.
+* **In the frontend, `escapeHtml` is for text and quoted attributes; a value
+  inside an inline handler string needs `jsq`** — the attribute is HTML-decoded
+  before the script is parsed, so an entity-escaped quote still closes the
+  string. `escapeHtml` used to leave quotes alone (~300 call sites, AOI names
+  → stored XSS across tenants). `addPinnedLayer` refuses a malformed id/type
+  from `?pinned=`. There is still no CSP.
+* **Guest date lock** (`srv/guest.go`): `clampGuestQuery` now folds
+  `start`/`end` into the clamped pair and strips `year`/`from_year`/`to_year`;
+  `guestWindowRefuses` answers the handlers a window cannot apply to (403 for
+  the whole-history fire narrative, empty for the "now" feeds unless today is
+  inside the window). Known residue: year-granular handlers
+  (`/api/parks/{id}/stats`) answer for the whole calendar year containing the
+  window, and the two turbidity placemarks in `export.kml` ignore dates.
+* **Uploads:** `/admin/upload/{fire,ghsl}` answer 410 (their processor scripts
+  are gone; the handlers buffered 0.5–2 GB for any password). A zip of GPX has
+  one uncompressed budget across its entries (`maxUnzippedGPX`).
+* Not fixed (low): cookie value is the password itself; `GET /logout` and
+  `GET /?pwd=` change session state cross-site; geopackage job ids are bearer
+  capabilities for delete/extend; `delete-upload` cleanup is not scoped to the
+  caller's envs; autofetch host check is add-time only.

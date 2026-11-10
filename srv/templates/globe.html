@@ -1935,7 +1935,7 @@ window.addEventListener('load', function () {
                     <div class="ts-acts">
                         <button class="sh-btn" onclick="switchBasemap('${t.basemap}');renderBasemapGrid();renderTileSourcesPanel()" title="Show this source on the globe now">${isCur ? 'Showing' : 'Show'}</button>
                         <button class="sh-btn" onclick="tsVerify('${t.id}')" title="Fetch one tile again">Re-check</button>
-                        <button class="sh-btn sh-btn-off" onclick="tsDelete('${t.id}','${escapeHtml(t.name)}')">Remove</button>
+                        <button class="sh-btn sh-btn-off" onclick="tsDelete('${t.id}','${jsq(t.name)}')">Remove</button>
                     </div>
                 </div>`;
             }).join('');
@@ -2471,7 +2471,7 @@ window.addEventListener('load', function () {
             const ageRows = ages.map(a => {
                 const on = GeoMap.ageOn(a.key);
                 return `<div class="geo-row${on ? '' : ' off'}" role="button" aria-pressed="${on}"
-                    onclick="geoToggleAge('${escapeHtml(a.key)}')"
+                    onclick="geoToggleAge('${jsq(a.key)}')"
                     title="${escapeHtml(a.label)} &mdash; click to ${on ? 'hide' : 'show'} these ${byAge[a.key]} unit(s)">
                     <span style="width:13px;height:13px;border-radius:3px;flex:none;background:${escapeHtml(a.color)};border:1px solid rgba(0,0,0,0.45);"></span>
                     <span class="geo-row-lbl">${escapeHtml(a.label)}</span>
@@ -2544,7 +2544,7 @@ window.addEventListener('load', function () {
                     k => GeoMap.commodityWeight(c.sheet, c.code, k))) : 0;
                 const wDots = wBest ? `<span class="geo-w w${wBest}" title="${escapeHtml(GEO_WEIGHT_WHY[wBest])}">${'\u25CF'.repeat(wBest)}</span>` : '';
                 return `<div class="geo-row${shown ? '' : ' off'}" role="button" aria-pressed="${shown}"
-                    onclick="GeoMap.toggleClass('${c.sheet}','${escapeHtml(c.code)}')"
+                    onclick="GeoMap.toggleClass('${c.sheet}','${jsq(c.code)}')"
                     title="${escapeHtml(c.name)} &mdash; ${escapeHtml(GeoMap.age(c.age).label)}">
                     ${geoSwatch(c.lith, GeoMap.classColor(c), 13)}
                     <span style="color:#ddd;font-size:11px;font-family:monospace;flex:none;min-width:64px;">${escapeHtml(c.code)}</span>
@@ -4394,7 +4394,7 @@ window.addEventListener('load', function () {
                                 const names = data.places.slice(0, 3).map(p => {
                                     const typeIcon = {'city':'building-2','town':'building-2','village':'home','hamlet':'home',
                                         'mountain':'mountain','hill':'mountain','lake':'droplets','river':'waves','stream':'waves'}[p.type] || 'map-pin';
-                                    return `${icon(typeIcon,'neutral','sm')} ${p.name} <span style="color:#666">${p.distance_km}km</span>`;
+                                    return `${icon(typeIcon,'neutral','sm')} ${escapeHtml(p.name)} <span style="color:#666">${p.distance_km}km</span>`;
                                 });
                                 el.innerHTML = '<br>' + names.join(' · ');
                             }
@@ -4658,7 +4658,7 @@ window.addEventListener('load', function () {
         function renderMBTilesSources() {
             const box = document.getElementById('mbtiles-sources');
             const list = mbtilesSourceList();
-            box.innerHTML = list.map(o => `<button class="mbtiles-source-btn${o.key === mbtilesSource ? ' selected' : ''}" data-source="${escapeHtml(o.key)}" onclick="selectMBTilesSource('${escapeHtml(o.key)}')" title="${escapeHtml(o.sub)}">
+            box.innerHTML = list.map(o => `<button class="mbtiles-source-btn${o.key === mbtilesSource ? ' selected' : ''}" data-source="${escapeHtml(o.key)}" onclick="selectMBTilesSource('${jsq(o.key)}')" title="${escapeHtml(o.sub)}">
                 ${o.private ? '<i class="icon-lock"></i>' : '<i class="icon-satellite"></i>'}<span>${escapeHtml(o.name)}</span></button>`).join('');
             const e = mbtilesSourceEntry();
             const slider = document.getElementById('mbtiles-zoom-slider');
@@ -10101,7 +10101,7 @@ window.addEventListener('load', function () {
             // swallows its own taps — tapping the row body still selects.
             const row = (area, o) => `
                     <div class="search-result-item${o.cls ? ' ' + o.cls : ''}" role="option"
-                         onclick="selectSearchResult(${JSON.stringify(area).replace(/"/g, '&quot;')})">
+                         onclick="selectSearchResult(${escapeHtml(JSON.stringify(area))})">
                         <span class="search-dot ${o.dot}" title="${o.dotTitle || ''}"></span>
                         <div class="search-result-main">
                             <div class="search-result-name"><span>${escapeHtml(area.name)}</span>${o.badge || ''}</div>
@@ -10315,10 +10315,21 @@ window.addEventListener('load', function () {
             document.getElementById('search-input').focus();
         }
 
+        // Safe in element text AND in a quoted attribute value. It was
+        // textContent->innerHTML, which leaves " and ' alone, so every
+        // title="${escapeHtml(x)}" was an attribute breakout.
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
-            return div.innerHTML;
+            return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+        // The body of a JS string literal inside an inline handler attribute:
+        // onclick="f('${jsq(x)}')". The attribute is HTML-decoded BEFORE the
+        // script is parsed, so escapeHtml alone is not enough there -- &#39;
+        // comes back as a quote and closes the string.
+        function jsq(text) {
+            const body = JSON.stringify(String(text == null ? '' : text)).slice(1, -1).replace(/'/g, "\\'");
+            return escapeHtml(body);
         }
         
         function escapeXml(text) {
@@ -10746,15 +10757,15 @@ window.addEventListener('load', function () {
                 // as the popup.
                 const nameAct = a.is_owner
                     ? `class="aoi-tag-name aoi-editable-name" title="Click to rename"
-                       onclick="event.stopPropagation();renameAOITag('${escapeHtml(a.id)}')"
-                       ondblclick="event.stopPropagation();zoomToAOI('${escapeHtml(a.id)}')"`
+                       onclick="event.stopPropagation();renameAOITag('${jsq(a.id)}')"
+                       ondblclick="event.stopPropagation();zoomToAOI('${jsq(a.id)}')"`
                     : `class="aoi-tag-name"`;
-                return `<div class="aoi-tag${focused ? ' focused' : ''}" onclick="zoomToAOI('${escapeHtml(a.id)}')" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt} — click to zoom here">
+                return `<div class="aoi-tag${focused ? ' focused' : ''}" onclick="zoomToAOI('${jsq(a.id)}')" title="${escapeHtml(a.name)} — ${escapeHtml(win)}${km ? ' · ' + km : ''}${covTxt} — click to zoom here">
                     <span id="aoi-tagname-${escapeHtml(a.id)}" ${nameAct}>${escapeHtml(a.name)}</span>
                     <span class="aoi-tag-win">${escapeHtml(win)}</span>
-                    <button class="aoi-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${escapeHtml(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — the map zooms here, parks outside it are dimmed (starred ones stay bright) and the data layers switch to this area\u2019s own rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
-                    ${a.is_owner ? `<button class="aoi-tag-btn" onclick="event.stopPropagation();editAOI('${escapeHtml(a.id)}')" title="Edit shape or dates — saving keeps this version as history"><i class="icon-pencil-ruler"></i></button>
-                    <button class="aoi-tag-btn star on" onclick="event.stopPropagation();toggleAOIStar('${escapeHtml(a.id)}')" title="Starred — shown on the map and included in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-pressed="true">★</button>` : ''}
+                    <button class="aoi-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAOIFocus('${jsq(a.id)}')" title="${focused ? 'Leave focus' : 'Focus on this area — the map zooms here, parks outside it are dimmed (starred ones stay bright) and the data layers switch to this area\u2019s own rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
+                    ${a.is_owner ? `<button class="aoi-tag-btn" onclick="event.stopPropagation();editAOI('${jsq(a.id)}')" title="Edit shape or dates — saving keeps this version as history"><i class="icon-pencil-ruler"></i></button>
+                    <button class="aoi-tag-btn star on" onclick="event.stopPropagation();toggleAOIStar('${jsq(a.id)}')" title="Starred — shown on the map and included in your report. Un-star to hide it; nothing is deleted and search brings it back." aria-pressed="true">★</button>` : ''}
                 </div>`;
             }).join('');
         }
@@ -11096,8 +11107,8 @@ window.addEventListener('load', function () {
             // popup. Same gesture, same destination-shaped answer, which is
             // the rule the map tip's action button follows too.
             const open = isAoi
-                ? `openAOIPopupById('${escapeHtml(aoiFocusID)}')`
-                : `showPAPopup('${escapeHtml(aoiFocusID)}')`;
+                ? `openAOIPopupById('${jsq(aoiFocusID)}')`
+                : `showPAPopup('${jsq(aoiFocusID)}')`;
             el.innerHTML = `<i class="icon-focus"></i>`
                 + `<span class="stats-scope-name" onclick="event.stopPropagation();${open}">`
                 + `${escapeHtml(name)}</span>`
@@ -11346,8 +11357,8 @@ window.addEventListener('load', function () {
                         : '<span class="aoi-ver-chip current">current</span>';
                     const geo = v.geometry_changed ? ' <span style="color:#666">· shape changed</span>' : '';
                     const act = v.archived && v.is_owner !== false
-                        ? `<button class="aoi-ver-btn" onclick="event.stopPropagation();restoreAOIVersion('${escapeHtml(v.id)}')">Restore</button>`
-                        : (isThis ? '' : `<button class="aoi-ver-btn" onclick="event.stopPropagation();openAOIPopupById('${escapeHtml(v.id)}')">Open</button>`);
+                        ? `<button class="aoi-ver-btn" onclick="event.stopPropagation();restoreAOIVersion('${jsq(v.id)}')">Restore</button>`
+                        : (isThis ? '' : `<button class="aoi-ver-btn" onclick="event.stopPropagation();openAOIPopupById('${jsq(v.id)}')">Open</button>`);
                     return `<div class="aoi-ver-row${v.archived ? ' archived' : ''}">
                         <span style="min-width:0;overflow-wrap:anywhere">${escapeHtml(v.label)}${geo}</span>
                         <span style="display:flex;gap:4px;align-items:center">${chip}${act}</span>
@@ -11636,7 +11647,7 @@ window.addEventListener('load', function () {
             // into an email — yielded the string "XSA_Study_Area.kml". The
             // filename now comes from the server's Content-Disposition, which
             // every browser honours and which no copy gesture can mangle.
-            const safeName = escapeHtml(name).replace(/'/g, "\\'");
+            const safeName = jsq(name);
             // GeoJSON is the AOI's own polygon — a park's boundary is already
             // public geography served elsewhere, so the entry would be noise.
             const geojsonURL = aoi ? `${base}/export.geojson` : '';
@@ -11875,7 +11886,7 @@ window.addEventListener('load', function () {
         // AOI those are the same fact, so un-starring is how you hide it.
         function aoiActionsHTML(id, name, opts) {
             const o = opts || {};
-            const nm = escapeHtml(name).replace(/'/g, "\\'");
+            const nm = jsq(name);
             const focused = (typeof aoiFocusID !== 'undefined') && aoiFocusID === id;
             const parts = [
                 `<button onclick="event.stopPropagation();toggleAOIFocus('${id}')" title="Focus — parks outside this area are dimmed (starred parks stay bright) and the data layers switch to this area's own rows" aria-label="Focus on this area" aria-pressed="${focused}" class="pa-export-btn${focused ? ' active' : ''}" id="aoi-focus-btn-${id}"><i class="icon-focus"></i></button>`,
@@ -12120,7 +12131,7 @@ window.addEventListener('load', function () {
                             <span style="min-width: 0; overflow-wrap: break-word;">${escapeHtml(name)}</span>
                             <span style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
                                 <button onclick="event.stopPropagation();toggleAreaFocus('${paId}')" title="Focus — the stats panel counts THIS park only, other parks are dimmed (starred ones stay bright) and the data layers switch to its rows" aria-label="Focus on this park" aria-pressed="${(typeof aoiFocusID !== 'undefined') && aoiFocusID === paId}" class="pa-export-btn${((typeof aoiFocusID !== 'undefined') && aoiFocusID === paId) ? ' active' : ''}" id="park-focus-btn-${paId}"><i class="icon-focus"></i></button>
-                                <button onclick="event.stopPropagation();toggleAOIMenu(this,'${paId}','${escapeHtml(name).replace(/'/g, "\\'")}')" title="Download — KML for Google Earth, GeoPackage for QGIS, a Locus field-device backup, or offline satellite tiles" aria-label="Download data for this park" class="pa-export-btn"><i class="icon-download"></i></button>
+                                <button onclick="event.stopPropagation();toggleAOIMenu(this,'${paId}','${jsq(name)}')" title="Download — KML for Google Earth, GeoPackage for QGIS, a Locus field-device backup, or offline satellite tiles" aria-label="Download data for this park" class="pa-export-btn"><i class="icon-download"></i></button>
                                 ${createStarButton('parks', { id: paId, name: name, country: country, bbox: props.bbox, center: props.center ? (typeof props.center === 'string' ? JSON.parse(props.center) : props.center) : null })}
                             </span>
                         </div>
@@ -12138,7 +12149,7 @@ window.addEventListener('load', function () {
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="fire" onclick="event.stopPropagation(); togglePinFromIcon(this)">◇</span> Fire Activity<span id="fire-count-${paId}" class="pa-popup-section-count"></span></div>
                             
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'fire', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'fire', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="fire-content-${paId}">
@@ -12151,7 +12162,7 @@ window.addEventListener('load', function () {
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="settlement" onclick="event.stopPropagation(); togglePinFromIcon(this)">◻</span> Settlements<span id="settlement-count-${paId}" class="pa-popup-section-count"></span></div>
                             
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'settlement', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'settlement', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="ghsl-content-${paId}">
@@ -12164,7 +12175,7 @@ window.addEventListener('load', function () {
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="deforestation" onclick="event.stopPropagation(); togglePinFromIcon(this)">△</span> Deforestation<span id="deforest-count-${paId}" class="pa-popup-section-count"></span></div>
                             
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'deforestation', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="deforest-content-${paId}">
@@ -12179,7 +12190,7 @@ window.addEventListener('load', function () {
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon toggleable" data-park-id="${paId}" data-park-name="${escapeHtml(name)}" data-type="road" onclick="event.stopPropagation(); togglePinFromIcon(this)">⊡</span> Roads, Rivers, Places & Infrastructure<span id="road-count-${paId}" class="pa-popup-section-count"></span></div>
                             
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'road', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'road', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="road-content-${paId}">
@@ -12191,7 +12202,7 @@ window.addEventListener('load', function () {
                     <div class="pa-popup-section" id="species-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">❦</span> Species</div>
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'biodiversity', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'biodiversity', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="species-content-${paId}">
@@ -12203,7 +12214,7 @@ window.addEventListener('load', function () {
                     <div class="pa-popup-section" id="climate-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">☼</span> Climate</div>
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'climate', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'climate', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="climate-content-${paId}">
@@ -12215,7 +12226,7 @@ window.addEventListener('load', function () {
                     <div class="pa-popup-section" id="research-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">◉</span> Research</div>
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'research', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'research', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="research-content-${paId}">
@@ -12227,7 +12238,7 @@ window.addEventListener('load', function () {
                     <div class="pa-popup-section" id="legal-section-${paId}" onclick="togglePopupSection(this)">
                         <div class="pa-popup-section-header">
                             <div class="pa-popup-section-title"><span class="pa-popup-section-icon">§</span> Legal</div>
-                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${escapeHtml(name)}', 'legal', this)" title="Star this narrative">☆</button>
+                            <button class="star-btn pa-popup-section-star" onclick="event.stopPropagation(); starNarrative('${paId}', '${jsq(name)}', 'legal', this)" title="Star this narrative">☆</button>
                             <span class="pa-popup-section-toggle">▼</span>
                         </div>
                         <div class="pa-popup-section-content" id="legal-content-${paId}">
@@ -12560,7 +12571,7 @@ window.addEventListener('load', function () {
                         const isPinned = isSingleFeaturePinned(paId, 'fire', fireFeatureId);
                         const rowStyle = isPinned ? 'background: rgba(34,197,94,0.15); border-left: 2px solid #22c55e;' : 'background: rgba(0,0,0,0.2);';
                         const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="fire-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(fullText)}${fireVanTitle(n)}">${testBadge}<span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${escapeHtml(text)}</span>${fireVanMark(n)}</div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="fire" data-feature="${fireFeatureId}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(data.park_name || paId)}', 'fire', '${fireFeatureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; ${rowStyle} border-radius: 4px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(fullText)}${fireVanTitle(n)}">${testBadge}<span style="color: ${outcomeColor}; margin-right: 4px;">●</span> <span style="flex:1;">${escapeHtml(text)}</span>${fireVanMark(n)}</div>`;
                     };
                     fireNarrativeRenderers[paId] = { render: renderNarrative, name: data.park_name || paId };
                     
@@ -12587,7 +12598,7 @@ window.addEventListener('load', function () {
                                 const statusDetail = g.status_detail || '';
                                 const fires = g.metrics?.fires || g.fires_inside || '?';
                                 const days = g.metrics?.days || g.days_inside || '?';
-                                return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${escapeHtml(data.park_name || paId)}', '${escapeHtml(g.name)}', ${JSON.stringify(g.trajectory || []).replace(/"/g, '&quot;')}, '${escapeHtml(g.evidence_tier || '')}')">
+                                return `<div class="fire-alert-group" style="cursor: pointer;" onclick="event.stopPropagation(); showRealtimeTrajectory('${paId}', '${jsq(data.park_name || paId)}', '${jsq(g.name)}', ${escapeHtml(JSON.stringify(g.trajectory || []))}, '${jsq(g.evidence_tier || '')}')">
                                     <div style="display: flex; justify-content: space-between; align-items: start; width: 100%;">
                                         <span style="flex: 1;">
                                             ${iconHtml} <strong>${escapeHtml(g.name)}</strong> (${escapeHtml(statusLabel)})${fireVanMark(g)}<br>
@@ -12597,7 +12608,7 @@ window.addEventListener('load', function () {
                                 </div>`;
                             }).join('')}
                             </div>
-                            ${remaining.length > 0 ? `<button onclick="event.stopPropagation(); showMoreActiveGroups('${paId}', '${escapeHtml(data.park_name || paId)}', ${JSON.stringify(remaining).replace(/"/g, '&quot;')})" style="width:100%;padding:4px;margin-top:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;cursor:pointer;border-radius:4px;font-size:9px;">Show ${remaining.length} more</button>` : ''}
+                            ${remaining.length > 0 ? `<button onclick="event.stopPropagation(); showMoreActiveGroups('${paId}', '${jsq(data.park_name || paId)}', ${escapeHtml(JSON.stringify(remaining))})" style="width:100%;padding:4px;margin-top:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:#888;cursor:pointer;border-radius:4px;font-size:9px;">Show ${remaining.length} more</button>` : ''}
                         </div>`;
                     };
                     // Calculate filtered fire count (sum fires_inside from filtered narratives)
@@ -12836,7 +12847,7 @@ window.addEventListener('load', function () {
                         const name = s.name && s.name !== 'Unnamed settlement' ? s.name : `${s.lat.toFixed(3)}°, ${s.lon.toFixed(3)}°`;
                         const featureId = `settlement_${s.id || s.lat.toFixed(4)}_${s.lon.toFixed(4)}`;
                         const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="settlement-${idx}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${idx}</span>` : '';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${escapeHtml(name)}${escapeHtml(location)}</div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${formatArea(s.area_m2)} near ${escapeHtml(name)}${escapeHtml(location)}</div>`;
                     };
                     
                     // Format classified settlement with narrative
@@ -12882,7 +12893,7 @@ window.addEventListener('load', function () {
                         // distance to the boundary is not in this response.
                         const priorityScore = (populationScore * 0.57) + (areaScore * 0.43);
                         
-                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-persistence="${s.persistence || 'unmeasured'}" data-crop="${settlementCropBucket(s.cropland_frac_2019)}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}</span></div>`;
+                        return `<div class="narrative-row" data-park="${paId}" data-type="settlement" data-feature="${featureId}" data-classification="${s.classification || ''}" data-persistence="${s.persistence || 'unmeasured'}" data-crop="${settlementCropBucket(s.cropland_frac_2019)}" data-priority="${priorityScore.toFixed(0)}" data-population="${pop}" data-area="${area}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName || paId)}', 'settlement', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}</span></div>`;
                     };
                     
                     // Get settlements - prefer classified if available
@@ -13612,14 +13623,14 @@ window.addEventListener('load', function () {
                                 const patchInfo = polygonIds.length > 1 ? ` <span style="color: #666; font-size: 8px;">[${polygonIds.length} patches]</span>` : '';
                                 const badgeNum = deforestBadgeIdx++;
                                 const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="deforestation-${badgeNum}" style="display: inline-block; background: #3b82f6; color: white; font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-right: 4px;">${badgeNum}</span>` : '';
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${pinRef}" data-classification="${e.classification || ''}" data-crop="${deforestConvBucket(e.cropland_conversion_frac)}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${pinRef}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${pinRef}" data-classification="${e.classification || ''}" data-crop="${deforestConvBucket(e.cropland_conversion_frac)}" data-priority="${priorityScore.toFixed(0)}" data-year="${e.year}" data-area="${e.area_km2 || 0}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName)}', 'deforestation', '${pinRef}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; display: flex; align-items: flex-start; gap: 6px; transition: all 0.2s;" title="Click to pin on map. ${escapeHtml(text)}">${testBadge}<span style="background: rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, 0.2); border: 1px solid ${color}40; color: ${color}; font-size: 8px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; padding: 2px 4px; border-radius: 3px;">${escapeHtml(typeLabel)}</span> <span style="flex:1;">${escapeHtml(shortText)}${patchInfo}</span></div>`;
                             };
                             
                             // Format yearly story without classified data
                             const formatYearlyStory = (y) => {
                                 const featureId = `deforestation_year_${y.year}`;
                                 const text = y.narrative || `${y.year}: ${y.area_km2.toFixed(2)} km² lost${y.nearby_places && y.nearby_places.length > 0 ? ' near ' + y.nearby_places[0] : ''}`;
-                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${escapeHtml(text)}</div>`;
+                                return `<div class="narrative-row" data-park="${paId}" data-type="deforestation" data-feature="${featureId}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName)}', 'deforestation', '${featureId}', this, event)" style="font-size: 10px; color: #bbb; margin-bottom: 4px; padding: 4px 6px; background: rgba(0,0,0,0.2); border-radius: 4px; cursor: pointer; transition: all 0.2s;" title="Click to pin on map">${escapeHtml(text)}</div>`;
                             };
                             
                             if (classifiedEvents.length > 0) {
@@ -13686,7 +13697,7 @@ window.addEventListener('load', function () {
                                         ${yearlyStories.slice(0, 10).map(y => formatYearlyStory(y)).join('')}
                                     </div>
                                     ${yearlyStories.length > 10 ? `
-                                    <button onclick="showMoreDeforestStories('${paId}', ${JSON.stringify(yearlyStories.slice(10)).replace(/"/g, '&quot;')})" 
+                                    <button onclick="showMoreDeforestStories('${paId}', ${escapeHtml(JSON.stringify(yearlyStories.slice(10)))})" 
                                             id="deforest-more-btn-${paId}"
                                             style="margin-top: 6px; font-size: 9px; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); padding: 4px 8px; border-radius: 4px; cursor: pointer; width: 100%;">
                                         Show ${yearlyStories.length - 10} more years
@@ -13857,22 +13868,22 @@ window.addEventListener('load', function () {
                 const nRoads = dc.road ? (dc.road[geoDetail] || 0) : (s.total_roads || 0);
                 const nPlaces = dc.place ? (dc.place[geoDetail] || 0) : (s.total_places || 0);
 
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'river', this)" style="flex: 1;${nRivers === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRivers === 0 ? 'disabled' : ''}>
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'river', this)" style="flex: 1;${nRivers === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRivers === 0 ? 'disabled' : ''}>
                     <span style="color: #3b82f6;">∿</span> Rivers ${nRivers}
                 </button>`;
 
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'road', this)" style="flex: 1;${nRoads === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRoads === 0 ? 'disabled' : ''}>
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'road', this)" style="flex: 1;${nRoads === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRoads === 0 ? 'disabled' : ''}>
                     <span style="color: #60a5fa;">═</span> Roads ${nRoads}
                 </button>`;
 
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'place', this)" style="flex: 1;${nPlaces === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nPlaces === 0 ? 'disabled' : ''}>
+                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'place', this)" style="flex: 1;${nPlaces === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nPlaces === 0 ? 'disabled' : ''}>
                     <span style="color: #a855f7;">●</span> Places ${nPlaces}
                 </button>`;
                 
                 // Learned infrastructure (airstrips) - show only if there are approved ones
                 const airstripsApproved = (learned.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
                 if (airstripsApproved.length > 0) {
-                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'infrastructure', this)" style="flex: 1;">
+                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'infrastructure', this)" style="flex: 1;">
                         <span style="color: #22c55e;">✈</span> Infra ${airstripsApproved.length}
                     </button>`;
                 }
@@ -13921,20 +13932,20 @@ window.addEventListener('load', function () {
                         const a = Math.round(upstream.area_km2 || 0).toLocaleString();
                         const nUp = basin.upstream_count || 0;
                         const label = nUp > 1 ? `Upstream basins (${nUp})` : 'Upstream basin';
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin', this)" style="flex: 1;" title="Every contributing watershed upstream of this area's river exits (mghydro / MERIT-Hydro), drawn separately and named by the river that carries it. Anything happening in one drains through the area.">
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin', this)" style="flex: 1;" title="Every contributing watershed upstream of this area's river exits (mghydro / MERIT-Hydro), drawn separately and named by the river that carries it. Anything happening in one drains through the area.">
                             <span style="color: #0ea5e9;">⌬</span> ${label} <span style="color:#888;font-size:9px;">${a} km²</span>
                         </button>`;
                     }
                     if (upstream && (basin.upstream_reaches || 0) > 0) {
                         const n3 = basin.upstream_reaches_order3plus || 0;
                         const km3 = Math.round(basin.upstream_river_km_order3plus || 0).toLocaleString();
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}, ${km3} km) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}, ${km3} km) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
                             <span style="color: #38bdf8;">∿</span> Upstream rivers <span style="color:#888;font-size:9px;">${Math.round(basin.upstream_river_km || 0).toLocaleString()} km</span>
                         </button>`;
                     }
                     if (downstream) {
                         const l = Math.round(downstream.length_km || 0).toLocaleString();
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_downstream" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'basin_downstream', this)" style="flex: 1;" title="River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins).">
+                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_downstream" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin_downstream', this)" style="flex: 1;" title="River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins).">
                             <span style="color: #22d3ee;">⇣</span> Downstream <span style="color:#888;font-size:9px;">${l} km</span>
                         </button>`;
                     }
@@ -13946,7 +13957,7 @@ window.addEventListener('load', function () {
                 if (placesVisited.length > 0) {
                     const totalVisits = placesVisited.reduce((s, p) => s + (p.visit_count || 0), 0);
                     html += `<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">
-                    <button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="visits" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${escapeHtml(parkName)}', 'visits', this)" style="flex: 1;" title="Camps, outposts & gates detected from patrol GPX tracks, sized by visit count">
+                    <button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="visits" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'visits', this)" style="flex: 1;" title="Camps, outposts & gates detected from patrol GPX tracks, sized by visit count">
                         <span style="color: #10b981;">◉</span> Patrol Visits ${placesVisited.length} <span style="color:#888;font-size:9px;">(${totalVisits} visits)</span>
                     </button>
                     </div>`;
@@ -14261,7 +14272,7 @@ window.addEventListener('load', function () {
                                 ? `sediment source upstream of first observable water`
                                 : `${a.ratio}× brighter than upstream (clean above)`;
                             const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="mining-${idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${idx}</span>` : '';
-                            html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="turbidity_${idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'turbidity_${idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(a.scene||'')}">
+                            html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="turbidity_${idx}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName || paId)}', 'turbidity', 'turbidity_${idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(a.scene||'')}">
                                 ${testBadge}<span style="color:#eab308;">◈</span> <b>${kind}</b> — ${escapeHtml(a.river)}<br>
                                 <span style="color:#888;">${a.downstream_turbid_km} km turbid downstream · ${detail} · ${a.date}</span>
                             </div>`;
@@ -14299,7 +14310,7 @@ window.addEventListener('load', function () {
                         const newTag = p.new_since ? ` · <span style="color:#ef4444;">new since ${p.new_since}</span>` : (p.historical_px != null && p.historical_px >= p.px * 0.8 ? ' · long-standing' : '');
                         const ponds = p.pond_px > 0 ? ` · <span style="color:#3b82f6;">${(p.pond_px*0.04).toFixed(1)} ha ponds</span>` : '';
                         const testBadge = window.TEST ? `<span class="test-entry-id" data-entry="pit-${p._idx}" style="display:inline-block; background:#3b82f6; color:white; font-size:8px; font-weight:600; padding:1px 4px; border-radius:3px; margin-right:4px;">${p._idx}</span>` : '';
-                        return `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="pit_${p._idx}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'pit_${p._idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; ${indent ? 'margin-left:14px;' : ''} padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(p.scene||'')}">
+                        return `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="pit_${p._idx}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName || paId)}', 'turbidity', 'pit_${p._idx}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; ${indent ? 'margin-left:14px;' : ''} padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. Scene ${escapeHtml(p.scene||'')}">
                             ${testBadge}<span style="color:${scoreColor};">⛏</span> <span style="color:${scoreColor}; font-weight:600;">${Math.round(p.score*100)}%</span> <b>${p.area_ha} ha</b> bare-earth · ${p.water_km} km from river${ponds}${newTag}<br>
                             <span style="color:#888;">${p.lat.toFixed(4)}, ${p.lon.toFixed(4)} · ${p.date}${p.persistent ? ' · persistent' : ''}</span>
                         </div>`;
@@ -14343,7 +14354,7 @@ window.addEventListener('load', function () {
                         let text = st.narrative || `Mining-classified settlement at ${st.lat.toFixed(4)}, ${st.lon.toFixed(4)}`;
                         const full = text;
                         if (text.length > 180) text = text.substring(0, 177) + '...';
-                        html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="mining_${st.id}" onclick="toggleSingleFeaturePin('${paId}', '${escapeHtml(parkName || paId)}', 'turbidity', 'mining_${st.id}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. ${escapeHtml(full)}">
+                        html += `<div class="narrative-row" data-park="${paId}" data-type="turbidity" data-feature="mining_${st.id}" onclick="toggleSingleFeaturePin('${paId}', '${jsq(parkName || paId)}', 'turbidity', 'mining_${st.id}', this, event)" style="font-size:10px; color:#bbb; margin-bottom:4px; padding:4px 6px; background:rgba(0,0,0,0.2); border-radius:4px; cursor:pointer;" title="Click to pin on map. ${escapeHtml(full)}">
                             <span style="color:${confColor};">⛏</span> <span style="color:${confColor}; font-weight:600;">${confPct}%</span> ${escapeHtml(text)}
                         </div>`;
                     });
@@ -14461,7 +14472,7 @@ window.addEventListener('load', function () {
                 h += `<div style="margin-bottom: 3px; color: #6b7280;">${props.river || 'river'} · red reflectance ${props.red || '?'} (clean water < 1000)</div>`;
                 if (props.date) h += `<div style="color: #6b7280; font-size: 11px;">Sentinel-2 ${props.date}</div>`;
             } else {
-                if (props.name) h += `<div style="font-weight: 600;">${props.name}</div>`;
+                if (props.name) h += `<div style="font-weight: 600;">${escapeHtml(props.name)}</div>`;
             }
             h += `</div>`;
             return h;
@@ -14828,10 +14839,10 @@ window.addEventListener('load', function () {
                 // one thing must not look like two things.
                 const focused = (typeof aoiFocusID !== 'undefined') && aoiFocusID === park.id;
                 tag.innerHTML = `
-                    <span class="park-tag-name" onclick="flyToSelectedPark('${escapeHtml(park.id)}')" title="${escapeHtml(park.name)}">${escapeHtml(park.name)}</span>
+                    <span class="park-tag-name" onclick="flyToSelectedPark('${jsq(park.id)}')" title="${escapeHtml(park.name)}">${escapeHtml(park.name)}</span>
                     ${countryCode ? `<span class="park-tag-country">${countryCode}</span>` : ''}
-                    <button class="park-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAreaFocus('${escapeHtml(park.id)}')" title="${focused ? 'Leave focus' : 'Focus on this park — the panel counts this park only, other parks are dimmed (starred ones stay bright) and the data layers switch to its rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
-                    <button class="park-tag-remove" onclick="removeSelectedPark('${escapeHtml(park.id)}')" title="Remove">×</button>
+                    <button class="park-tag-btn${focused ? ' on' : ''}" onclick="event.stopPropagation();toggleAreaFocus('${jsq(park.id)}')" title="${focused ? 'Leave focus' : 'Focus on this park — the panel counts this park only, other parks are dimmed (starred ones stay bright) and the data layers switch to its rows'}" aria-pressed="${focused}"><i class="icon-focus"></i></button>
+                    <button class="park-tag-remove" onclick="removeSelectedPark('${jsq(park.id)}')" title="Remove">×</button>
                 `;
                 container.appendChild(tag);
             });
@@ -20545,7 +20556,7 @@ ${starredItems.narratives.map(n => {
         const starred = isStarred(type, id);
         const sizeClass = size === 'small' ? 'font-size: 12px;' : '';
         return `<button class="star-btn star-inline ${starred ? 'starred' : ''}" 
-                        onclick="toggleStarBtn('${type}', ${JSON.stringify(data).replace(/"/g, '&quot;')}, this, event)" 
+                        onclick="toggleStarBtn('${type}', ${escapeHtml(JSON.stringify(data))}, this, event)" 
                         title="${starred ? 'Remove from starred' : 'Add to starred'}"
                         style="${sizeClass}">${starred ? '★' : '☆'}</button>`;
     }
@@ -21621,6 +21632,13 @@ ${starredItems.narratives.map(n => {
     }
     
     async function addPinnedLayer(parkId, parkName, type) {
+        // Both arrive from ?pinned= in a link somebody else wrote. They become
+        // layer ids, URL segments and chip markup, so anything that is not an
+        // id is refused here rather than escaped at each use.
+        if (!/^[A-Za-z0-9_.-]{1,80}$/.test(String(parkId)) || !/^[a-z_]{1,40}$/.test(String(type))) {
+            console.warn('[pin] refused malformed pin', String(parkId).slice(0, 40), String(type).slice(0, 40));
+            return;
+        }
         const key = getPinKey(parkId, type);
         const layerId = `pinned-${key}`;
         const sourceId = `pinned-source-${key}`;
@@ -22509,10 +22527,10 @@ ${starredItems.narratives.map(n => {
                 
                 if (p.realtime) {
                     // Active fire with group name - click to fly, × to remove
-                    html += `<span class="pinned-layer-chip active-fire" data-chip-key="rt:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToRealtimeFire('${p.key}')" title="${p.groupName} - Click to fly to">`;
+                    html += `<span class="pinned-layer-chip active-fire" data-chip-key="rt:${escapeHtml(p.key)}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToRealtimeFire('${jsq(p.key)}')" title="${escapeHtml(p.groupName)} - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
-                    html += `<span>${p.groupName}</span>`;
-                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removeRealtimeFireLayer('${p.key}')" title="Remove">×</span>`;
+                    html += `<span>${escapeHtml(p.groupName)}</span>`;
+                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removeRealtimeFireLayer('${jsq(p.key)}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isBulk) {
                     // Bulk layer (all of type) - click to fly, × to remove.
@@ -22547,12 +22565,12 @@ ${starredItems.narratives.map(n => {
                             { render: p.render }, (p.total || count).toLocaleString());
                         lodMark = `<button type="button" class="chip-lod ${cls}${(p.detail && p.detail !== 'auto') ? ' forced' : ''}" `
                                 + `aria-haspopup="true" `
-                                + `onclick="event.stopPropagation();openPinModeMenu(this,'${p.key}','${p.type}',${typeof p.vanguard === 'number' ? p.vanguard : 'null'})" `
+                                + `onclick="event.stopPropagation();openPinModeMenu(this,'${jsq(p.key)}','${jsq(p.type)}',${typeof p.vanguard === 'number' ? p.vanguard : 'null'})" `
                                 + `title="${escapeHtml(title)}">`
                                 + (window.Renderings && sum.cats.length ? window.Renderings.glyph(sum.cats[0]) : '')
                                 + `<span>${escapeHtml(sum.text || 'off')}</span><span class="lod-caret">\u25be</span></button>`;
                     }
-                    const clsNote = p.classification ? ` · ${p.classification} only` : '';
+                    const clsNote = p.classification ? ` · ${escapeHtml(p.classification)} only` : '';
                     // WAITING IS SAID WHERE THE ANSWER WILL APPEAR.
                     //
                     // Three pulsing dots stand exactly where the count goes, in
@@ -22575,10 +22593,10 @@ ${starredItems.narratives.map(n => {
                     // vocabulary nothing else used. It is a row of the pin's
                     // own "Drawn as" menu now (`vanguard · 15 in view`), beside
                     // the shapes/dots choice it belongs with.
-                    html += `<span class="pinned-layer-chip ${p.type}${p.loading ? ' is-loading' : ''}" data-chip-key="b:${p.key}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${p.key}')" title="${escapeHtml(chipTitle)}">`;
+                    html += `<span class="pinned-layer-chip ${escapeHtml(p.type)}${p.loading ? ' is-loading' : ''}" data-chip-key="b:${escapeHtml(p.key)}" style="cursor:pointer;" onclick="event.stopPropagation(); flyToPinnedLayer('${jsq(p.key)}')" title="${escapeHtml(chipTitle)}">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `${countMark}${p.loading ? '' : lodMark}`;
-                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${p.key}')" title="Remove">×</span>`;
+                    html += `<span class="chip-remove" onclick="event.stopPropagation(); removePinnedLayer('${jsq(p.key)}')" title="Remove">×</span>`;
                     html += `</span>`;
                 } else if (p.isSingle) {
                     // Individual pinned features - click to fly, × to remove
@@ -22600,7 +22618,7 @@ ${starredItems.narratives.map(n => {
                         : uniq[0] === 'shapes'
                         ? 'Drawn as full clickable shapes at every zoom — an individual pin is served whole, so it does not change with the view.'
                         : 'Drawn as a point: this feature has no stored outline, only a centre. Hover it for its details.';
-                    html += `<span class="pinned-layer-chip ${p.type}" data-chip-key="s:${firstKey}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${firstKey}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
+                    html += `<span class="pinned-layer-chip ${escapeHtml(p.type)}" data-chip-key="s:${escapeHtml(firstKey)}" style="opacity:0.8;cursor:pointer;" onclick="event.stopPropagation(); flyToSinglePin('${jsq(firstKey)}')" title="${count} individual ${typeLabels[p.type] || p.type} pinned - Click to fly to">`;
                     html += `<span class="chip-icon">${icon}</span>`;
                     html += `<span class="chip-count">${label}</span>`;
                     html += `<span style="font-size:8px;opacity:0.7;">ind</span>`;
@@ -22803,7 +22821,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'visits') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${escapeHtml(props.name)}</div>`;
             const vinfo = [];
             if (props.place_type && props.place_type !== 'unknown') vinfo.push(props.place_type.charAt(0).toUpperCase() + props.place_type.slice(1));
             if (props.visit_count) vinfo.push(`${props.visit_count} patrol visit${props.visit_count > 1 ? 's' : ''}`);
@@ -22822,7 +22840,7 @@ ${starredItems.narratives.map(n => {
             if (props.narrative) {
                 html += `<div style="font-size: 12px; line-height: 1.5;">${props.narrative}</div>`;
             } else {
-                if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+                if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${escapeHtml(props.name)}</div>`;
                 
                 const info = [];
                 // area_m2 = built-up SURFACE (Σ GHSL fractional raster);
@@ -22855,7 +22873,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'road') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${escapeHtml(props.name)}</div>`;
             
             const roadType = [];
             if (props.highway) roadType.push(props.highway.charAt(0).toUpperCase() + props.highway.slice(1));
@@ -22871,7 +22889,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'river' || type === 'water') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${escapeHtml(props.name)}</div>`;
             
             const info = [];
             if (props.waterway) info.push(props.waterway.charAt(0).toUpperCase() + props.waterway.slice(1));
@@ -22966,7 +22984,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'settlement' || type === 'place') {
             html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${escapeHtml(props.name)}</div>`;
             
             const info = [];
             if (props.place) info.push(props.place.charAt(0).toUpperCase() + props.place.slice(1));
@@ -22990,7 +23008,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'road') {
             html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${escapeHtml(props.name)}</div>`;
             
             const roadType = [];
             if (props.highway) roadType.push(props.highway.charAt(0).toUpperCase() + props.highway.slice(1));
@@ -23006,7 +23024,7 @@ ${starredItems.narratives.map(n => {
             
         } else if (type === 'river' || type === 'water') {
             html += `<div style="font-size: 14px; line-height: 1.8; color: #374151;">`;
-            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${props.name}</div>`;
+            if (props.name) html += `<div style="font-weight: 600; font-size: 15px; margin-bottom: 6px;">${escapeHtml(props.name)}</div>`;
             
             const info = [];
             if (props.waterway) info.push(props.waterway.charAt(0).toUpperCase() + props.waterway.slice(1));
@@ -23519,7 +23537,7 @@ ${starredItems.narratives.map(n => {
             .filter(l => l.guest && !l.revoked && !l.expired && sharingDaysLeft(l) !== null && sharingDaysLeft(l) <= SHARING_RENEW_DAYS)
             .flatMap(l => l.tags || (l.tag ? [l.tag] : [])))];
         const tagBtns = tags.map(t =>
-            `<button class="sh-btn sh-btn-renew" onclick="sharingExtendTag('${escapeHtml(t)}')" title="Some keys tagged #${escapeHtml(t)} expire soon — extend them all by 30 days"><i class="icon-calendar-plus"></i> renew #${escapeHtml(t)}</button>`).join(' ');
+            `<button class="sh-btn sh-btn-renew" onclick="sharingExtendTag('${jsq(t)}')" title="Some keys tagged #${escapeHtml(t)} expire soon — extend them all by 30 days"><i class="icon-calendar-plus"></i> renew #${escapeHtml(t)}</button>`).join(' ');
         return `<section class="sh-group">
             <h4 class="sh-group-head">
                 <span class="sh-mine">this login</span>
@@ -23636,7 +23654,7 @@ ${starredItems.narratives.map(n => {
         // The renew icon appears only when the key is close to dying — the
         // moment the operator actually has a decision to make.
         const renew = soon
-            ? `<button class="sh-btn sh-btn-renew" title="Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep this key alive 30 days longer (and any file it points at)" onclick="sharingExtend('${escapeHtml(l.slug)}')"><i class="icon-calendar-plus"></i></button>` : '';
+            ? `<button class="sh-btn sh-btn-renew" title="Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep this key alive 30 days longer (and any file it points at)" onclick="sharingExtend('${jsq(l.slug)}')"><i class="icon-calendar-plus"></i></button>` : '';
         return `<div class="sh-row${l.guest ? ' is-key' : ''}${dead ? ' is-dead' : ''}">
             <div class="sh-main">
                 <code class="sh-slug">/s/${escapeHtml(l.slug)}</code>
@@ -23651,9 +23669,9 @@ ${starredItems.narratives.map(n => {
             <div class="sh-target" title="${escapeHtml(l.url)}">${escapeHtml(l.url)}</div>
             <div class="sh-meta">${hits}${life}</div>
             <div class="sh-acts">
-                ${dead ? '' : `<button class="sh-btn" onclick="sharingCopy(this,'${escapeHtml(url)}')">Copy</button>`}
+                ${dead ? '' : `<button class="sh-btn" onclick="sharingCopy(this,'${jsq(url)}')">Copy</button>`}
                 ${renew}
-                ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${escapeHtml(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
+                ${l.revoked ? '' : `<button class="sh-btn sh-btn-off" onclick="sharingClear('${jsq(l.slug)}',${l.guest})">${l.guest ? 'Switch off' : 'Clear'}</button>`}
             </div>
         </div>`;
     }
@@ -23774,7 +23792,7 @@ ${starredItems.narratives.map(n => {
         // Renew appears only near death, same rule as keys: an always-on
         // extend button gets clicked ritually, which is how files live forever.
         const renew = soon
-            ? `<button class="sh-btn sh-btn-renew" title="Swept in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep the file 30 days longer" onclick="filesExtend('${escapeHtml(f.id)}')"><i class="icon-calendar-plus"></i></button>` : '';
+            ? `<button class="sh-btn sh-btn-renew" title="Swept in ${daysLeft} day${daysLeft === 1 ? '' : 's'} — keep the file 30 days longer" onclick="filesExtend('${jsq(f.id)}')"><i class="icon-calendar-plus"></i></button>` : '';
         return `<div class="sh-row">
             <div class="sh-main">
                 <code class="sh-slug">${escapeHtml(f.name)}</code>
@@ -23786,9 +23804,9 @@ ${starredItems.narratives.map(n => {
             </div>
             <div class="sh-meta">kept until ${escapeHtml(safeDateStr(f.expires_at))} <span${soon ? ' class="sh-soon"' : ''}>(${daysLeft}d)</span></div>
             <div class="sh-acts">
-                <button class="sh-btn" title="Mint an expiring key that downloads this file without a password" onclick="filesShare('${escapeHtml(f.id)}','${escapeHtml(f.name)}')">Share</button>
+                <button class="sh-btn" title="Mint an expiring key that downloads this file without a password" onclick="filesShare('${jsq(f.id)}','${jsq(f.name)}')">Share</button>
                 ${renew}
-                <button class="sh-btn sh-btn-off" onclick="filesDelete('${escapeHtml(f.id)}','${escapeHtml(f.name)}')">Delete</button>
+                <button class="sh-btn sh-btn-off" onclick="filesDelete('${jsq(f.id)}','${jsq(f.name)}')">Delete</button>
             </div>
         </div>`;
     }
@@ -24172,7 +24190,7 @@ ${starredItems.narratives.map(n => {
                         <td>${x.units_total ? `${x.units_done}/${x.units_total} (${pct}%)` : '<span style="color:#666">single unit</span>'}</td>
                         <td style="color:#9ca3af;font-size:11px">${escapeHtml((x.detail || '').slice(0, 70))} ${lease}</td>
                         <td>${x.has_cursor ? '<span title="resumable: a cursor is stored" style="color:#60a5fa">cursor</span>' : ''}</td>
-                        <td>${a.is_owner ? `<button class="admin-btn" onclick="setAOIDataset('${escapeHtml(a.id)}','${escapeHtml(x.dataset)}',${x.enabled ? 0 : 1})">${x.enabled ? 'Disable' : 'Enable'}</button>` : ''}</td>
+                        <td>${a.is_owner ? `<button class="admin-btn" onclick="setAOIDataset('${jsq(a.id)}','${jsq(x.dataset)}',${x.enabled ? 0 : 1})">${x.enabled ? 'Disable' : 'Enable'}</button>` : ''}</td>
                     </tr>`;
                 }).join('');
                 return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;margin-bottom:14px;">
@@ -24186,7 +24204,7 @@ ${starredItems.narratives.map(n => {
                                 · ${done}/${total} datasets done
                             </div>
                         </div>
-                        ${a.is_owner ? `<button class="admin-btn admin-btn-success" onclick="kickAOIRunner('${escapeHtml(a.id)}')">Run now</button>` : ''}
+                        ${a.is_owner ? `<button class="admin-btn admin-btn-success" onclick="kickAOIRunner('${jsq(a.id)}')">Run now</button>` : ''}
                     </div>
                     <div class="admin-table-container" style="margin-top:10px;">
                         <table class="admin-table"><thead><tr>
@@ -24482,7 +24500,7 @@ ${starredItems.narratives.map(n => {
             if (data.airstrips) data.airstrips.forEach(a => features.push({...a, type: 'airstrip', name: a.name || 'Airstrip ' + a.id, confidence: a.confidence_pct, hit_count: (a.landing_count || 0) + (a.takeoff_count || 0)}));
 
             const covLine = data.coverage ? `<div style="font-size:11px;color:#666;line-height:1.5;">${escapeHtml(formatLearnedCoverage(data.coverage))}</div>` : '';
-            const kmlBtn = `<a href="#" onclick="event.preventDefault();downloadLearnedKML(null,'${escapeHtml(parkCode)}')" title="Download all learned features for this park as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>`;
+            const kmlBtn = `<a href="#" onclick="event.preventDefault();downloadLearnedKML(null,'${jsq(parkCode)}')" title="Download all learned features for this park as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>`;
             const header = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">${covLine}${kmlBtn}</div>`;
 
             if (features.length === 0) {
@@ -24624,7 +24642,7 @@ ${starredItems.narratives.map(n => {
             <i class="icon-${o.icon}" style="font-size:12px;"></i><span>${o.label}</span></button>`).join('');
         const cur = AF_VIS.find(o => o.v === current) || AF_VIS[0];
         const chips = (viewers || []).map(v => `<span class="af-chip" title="login ${escapeHtml(v.label)}">${escapeHtml(v.label)}
-            <button type="button" aria-label="Remove ${escapeHtml(v.label)}" onclick="afRemoveViewer(${JSON.stringify(ctx)}, '${escapeHtml(v.ref)}')">&times;</button></span>`).join('');
+            <button type="button" aria-label="Remove ${escapeHtml(v.label)}" onclick="afRemoveViewer(${JSON.stringify(ctx)}, '${jsq(v.ref)}')">&times;</button></span>`).join('');
         const roster = current === 'selected' ? `
             <div class="af-roster" id="${idAttr}-roster">
                 <span class="af-chip af-chip-you" title="the owner always sees the source">you</span>${chips}

@@ -79,21 +79,7 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	// new_upload rows follow the pixels: the caller's tenant plus every
 	// autofetch env visible to it (PatrolEnvs). MBTiles/GeoPackage rows are
 	// the caller's own jobs, so they stay on the tenant env.
-	env := RequestEnv(r)
-	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') AND notification_type NOT LIKE 'geopackage\\_%' ESCAPE '\\'" +
-		" OR (notification_type = 'new_upload' AND " + PatrolEnvsSQL("env") + ")" +
-		" OR (notification_type != 'new_upload' AND env = ?))"
-	// Mining/turbidity notifications (4,267 mining_alert + scan-status rows) are
-	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
-	// envCond so every branch below (and the unread count) inherits it.
-	envCond += miningNotifSQLFilter()
-	// AOI notifications ('aoi_progress', and anything else keyed by an AOI id)
-	// are private to the principals who may see the AOI: the title carries its
-	// name. Appended to envCond for the same reason, so every branch and the
-	// unread count inherit it. envArgs replaces the bare `env` in each branch.
-	aoiCond, aoiArgs := aoiNotifSQLFilter("park_id", s.RequestPrincipalID(r))
-	envCond += aoiCond
-	envArgs := append([]interface{}{s.PatrolEnvsJSON(r), env}, aoiArgs...)
+	envCond, envArgs := s.notifVisibleSQL(r)
 	// Same filter for the aliased fire_alert branch (which does not use envCond).
 	nAOICond, nAOIArgs := aoiNotifSQLFilter("n.park_id", s.RequestPrincipalID(r))
 
@@ -204,6 +190,31 @@ func (s *Server) HandleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(response)
 }
 
+// notifVisibleSQL is the one definition of "the notifications this caller may
+// see": tenant-scoped types by env, retired mining rows out, AOI rows only for
+// principals who can see the AOI. The list, the unread count, the RSS feed and
+// the mark-read writes all take it -- the feed and the writes each had their
+// own (absent) filter, so the feed showed one tenant's "New Patrol Data" titles
+// to another and one POST marked every tenant's notifications read.
+func (s *Server) notifVisibleSQL(r *http.Request) (string, []interface{}) {
+	env := RequestEnv(r)
+	envCond := "(notification_type NOT IN ('new_upload','mbtiles_complete','mbtiles_failed') AND notification_type NOT LIKE 'geopackage\\_%' ESCAPE '\\'" +
+		" OR (notification_type = 'new_upload' AND " + PatrolEnvsSQL("env") + ")" +
+		" OR (notification_type != 'new_upload' AND env = ?))"
+	// Mining/turbidity notifications (4,267 mining_alert + scan-status rows) are
+	// retired but not deleted -- docs/MINING_FINDINGS_2026-08.md §10. Appended to
+	// envCond so every branch below (and the unread count) inherits it.
+	envCond += miningNotifSQLFilter()
+	// AOI notifications ('aoi_progress', and anything else keyed by an AOI id)
+	// are private to the principals who may see the AOI: the title carries its
+	// name. Appended to envCond for the same reason, so every branch and the
+	// unread count inherit it. envArgs replaces the bare `env` in each branch.
+	aoiCond, aoiArgs := aoiNotifSQLFilter("park_id", s.RequestPrincipalID(r))
+	envCond += aoiCond
+	envArgs := append([]interface{}{s.PatrolEnvsJSON(r), env}, aoiArgs...)
+	return envCond, envArgs
+}
+
 // HandleMarkNotificationRead marks a notification as read
 // POST /api/notifications/{id}/read
 func (s *Server) HandleMarkNotificationRead(w http.ResponseWriter, r *http.Request) {
@@ -219,7 +230,12 @@ func (s *Server) HandleMarkNotificationRead(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	_, err = s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE id = ?", id)
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
+	cond, args := s.notifVisibleSQL(r)
+	_, err = s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE id = ? AND "+cond,
+		append([]interface{}{id}, args...)...)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return
@@ -232,7 +248,14 @@ func (s *Server) HandleMarkNotificationRead(w http.ResponseWriter, r *http.Reque
 // HandleMarkAllNotificationsRead marks all notifications as read
 // POST /api/notifications/read-all
 func (s *Server) HandleMarkAllNotificationsRead(w http.ResponseWriter, r *http.Request) {
-	result, err := s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE is_read = 0")
+	// is_read is one shared column, so "all" can only ever mean "all that I
+	// can see" -- and the public demo login does not get to clear it for the
+	// client tenants at all.
+	if refuseWriteInTestEnv(w, r) {
+		return
+	}
+	cond, args := s.notifVisibleSQL(r)
+	result, err := s.DB.Exec("UPDATE notifications SET is_read = 1 WHERE is_read = 0 AND "+cond, args...)
 	if err != nil {
 		internalError(w, "request failed", err)
 		return

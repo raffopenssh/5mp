@@ -49,11 +49,16 @@ func secretsEnv(key string) string {
 // read by PasswordMiddleware (may I skip auth?) and PrivateCacheMiddleware
 // (may a cache share this body?) -- two copies would drift, and the drift is
 // invisible: either a leak or a needlessly uncacheable asset.
+//
+// The asset suffixes count only under /static/. They used to be a bare
+// HasSuffix, so `/api/legal/CAF/x.js` -- any route whose last segment is a
+// wildcard -- walked past the gate and was answered as the client tenant.
 func isPublicPath(p string) bool {
-	return strings.HasSuffix(p, ".css") ||
-		strings.HasSuffix(p, ".js") ||
-		strings.HasSuffix(p, ".svg") ||
-		strings.HasPrefix(p, "/static/downloads/") ||
+	if strings.HasPrefix(p, "/static/") && !strings.Contains(p, "..") &&
+		(strings.HasSuffix(p, ".css") || strings.HasSuffix(p, ".js") || strings.HasSuffix(p, ".svg")) {
+		return true
+	}
+	return strings.HasPrefix(p, "/static/downloads/") ||
 		p == "/static/og-image.png" ||
 		p == "/static/og-methods.png" ||
 		p == "/static/og-image.svg" ||
@@ -68,10 +73,18 @@ func isPublicPath(p string) bool {
 		p == "/static/sitemap.xml"
 }
 
+// localPath makes a request path safe to hand back as a redirect target or an
+// href. The gate runs before the mux cleans the path, so `//evil.example/` (or
+// `/\evil.example/`, which browsers read the same way) arrived here intact and
+// left as a protocol-relative Location -- an open redirect on our own domain.
+func localPath(p string) string {
+	return "/" + strings.TrimLeft(strings.ReplaceAll(p, "\\", "/"), "/")
+}
+
 // urlWithoutPwd returns the same path+query with `pwd` removed. One writer, so
 // the two places that scrub the address bar cannot drift.
 func urlWithoutPwd(u *url.URL) string {
-	clean := u.Path
+	clean := localPath(u.Path)
 	if u.RawQuery != "" {
 		q := u.Query()
 		q.Del("pwd")
@@ -201,6 +214,9 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// also holds a guest cookie stays themselves -- the strongest
 		// credential present wins, and a guest never downgrades a session.
 		if gr, ok := s.guestAuth(r); ok {
+			if guestWindowRefuses(w, gr) {
+				return
+			}
 			next.ServeHTTP(w, gr)
 			return
 		}
@@ -210,7 +226,15 @@ func (s *Server) PasswordMiddleware(next http.Handler) http.Handler {
 		// password could be guessed at line rate through `?pwd=`. Only a
 		// non-empty, invalid attempt spends a token: a fresh visit or a
 		// scrubbed URL is not a guess. 10 burst, then one attempt a second.
-		if r.URL.Query().Get("pwd") != "" && !pwdGateRL.allow(extractIP(r)) {
+		//
+		// A wrong `access_pwd` COOKIE is the same guess by another door and
+		// was not metered at all. It is cleared as it is counted, so a browser
+		// holding a rotated password pays one token and then stops sending it.
+		badCookie := err == nil && cookie.Value != ""
+		if badCookie {
+			ClearAccessPwdCookie(w)
+		}
+		if (r.URL.Query().Get("pwd") != "" || badCookie) && !pwdGateRL.allow(extractIP(r)) {
 			http.Error(w, "Too many password attempts — wait a minute and try again", http.StatusTooManyRequests)
 			return
 		}
@@ -358,7 +382,7 @@ func (s *Server) renderLoginPage(w http.ResponseWriter, r *http.Request, status 
 	tryoutQuery := r.URL.Query()
 	tryoutQuery.Del("notice")
 	tryoutQuery.Set("pwd", "test2026")
-	tryoutHref := r.URL.Path + "?" + tryoutQuery.Encode()
+	tryoutHref := localPath(r.URL.Path) + "?" + tryoutQuery.Encode()
 
 	// A shared file link is not the landing page. Someone who was sent
 	// /api/geopackage/{id}/download opened it to get a file, so the form says

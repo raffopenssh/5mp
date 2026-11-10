@@ -23,6 +23,21 @@ import (
 
 const maxUploadSize = 200 << 20 // 200MB (increased for large patrol data files)
 
+// maxUnzippedGPX bounds what one uploaded zip may expand to, across all of its
+// entries.
+const maxUnzippedGPX = 512 << 20
+
+type countingReader struct {
+	r io.Reader
+	n int64
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.n += int64(n)
+	return n, err
+}
+
 // UploadResponse is the JSON response for file uploads.
 type UploadResponse struct {
 	FilesProcessed  int              `json:"files_processed"`
@@ -299,7 +314,11 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			// Process each GPX file in the zip
+			// Process each GPX file in the zip. The body cap bounds the
+			// COMPRESSED size only; each entry is decoded into a full struct
+			// tree, so a few MB of zip expanding to gigabytes of <trkpt> took
+			// the server out of memory. One budget across all entries.
+			unzipLeft := int64(maxUnzippedGPX)
 			for _, zf := range zipReader.File {
 				zfName := strings.ToLower(zf.Name)
 				// Skip Mac OS X metadata and non-GPX files
@@ -307,14 +326,22 @@ func (s *Server) HandleUpload(w http.ResponseWriter, r *http.Request) {
 					continue
 				}
 
+				if unzipLeft <= 0 || int64(zf.UncompressedSize64) > unzipLeft {
+					slog.Warn("zip upload exceeds the uncompressed budget; entry skipped",
+						"file", zf.Name, "claimed_bytes", zf.UncompressedSize64, "budget_left", unzipLeft)
+					continue
+				}
 				zfReader, err := zf.Open()
 				if err != nil {
 					continue
 				}
 
-				if err := processGPX(zf.Name, zfReader); err != nil {
+				// The header's size is a claim; the limit is the fact.
+				counted := &countingReader{r: io.LimitReader(zfReader, unzipLeft)}
+				if err := processGPX(zf.Name, counted); err != nil {
 					slog.Debug("failed to parse GPX from zip", "file", zf.Name, "error", err)
 				}
+				unzipLeft -= counted.n
 				zfReader.Close()
 			}
 			continue

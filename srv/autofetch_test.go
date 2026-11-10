@@ -113,10 +113,18 @@ func TestAutofetchLedgerDedupsOverlap(t *testing.T) {
 	if err := exec.Command("python3", "-c", "import requests").Run(); err != nil {
 		t.Skip("python requests not installed")
 	}
+	// Dates are relative to now: recordAutofetchSeen prunes ledger rows older
+	// than autofetchLedgerKeep, so fixed 2026-09-18 timestamps passed until
+	// the calendar moved 30 days past them and then pruned every key the test
+	// had just written ("ledger has 0 keys, want 3").
+	base := time.Now().UTC().Add(-24 * time.Hour).Truncate(time.Hour)
+	at := func(min int) string {
+		return base.Add(time.Duration(min) * time.Minute).Format("2006-01-02T15:04:05+00:00")
+	}
 	er := &fakeER{points: [][3]interface{}{
-		{37.0, -8.0, "2026-09-18T05:00:00+00:00"},
-		{37.01, -8.01, "2026-09-18T05:10:00+00:00"},
-		{37.02, -8.02, "2026-09-18T05:20:00+00:00"},
+		{37.0, -8.0, at(300)},
+		{37.01, -8.01, at(310)},
+		{37.02, -8.02, at(320)},
 	}}
 	ts := httptest.NewServer(er.handler())
 	defer ts.Close()
@@ -132,7 +140,7 @@ func TestAutofetchLedgerDedupsOverlap(t *testing.T) {
 	}
 	s := &Server{DB: d}
 	ctx := context.Background()
-	since := time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC)
+	since := base
 
 	run := func() (autofetchScriptResult, string) {
 		seen, _, err := s.writeAutofetchSeen(ctx, 7, since)
@@ -172,7 +180,7 @@ func TestAutofetchLedgerDedupsOverlap(t *testing.T) {
 	}
 
 	// Same window again, plus one late-synced point recorded first.
-	er.points = append([][3]interface{}{{36.99, -7.99, "2026-09-18T04:50:00+00:00"}}, er.points...)
+	er.points = append([][3]interface{}{{36.99, -7.99, at(290)}}, er.points...)
 	r2, _ := run()
 	if !r2.OK || r2.Points != 1 || r2.Dropped != 3 {
 		t.Fatalf("run 2 must import only the late point: %+v", r2)

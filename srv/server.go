@@ -271,8 +271,16 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/admin/db-health", s.RequireAdmin(s.HandleAdminDBHealth))
 	mux.HandleFunc("POST /admin/approve", s.RequireAdmin(s.HandleApproveUser))
 	mux.HandleFunc("POST /admin/reject", s.RequireAdmin(s.HandleRejectUser))
-	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(s.HandleUploadFire))
-	mux.HandleFunc("POST /admin/upload/ghsl", s.RequireAdmin(s.HandleUploadGHSL))
+	// Both bulk uploads are switched off: the processors they hand the file to
+	// (scripts/{fire,ghsl}_processor_streaming.py) no longer exist, so all the
+	// routes still did was accept 500 MB / 2 GB into memory and unzip without a
+	// bound, from any access password. Fire data arrives by cron
+	// (scripts/daily_fire_update.py). Restore only with a streaming size cap.
+	uploadRetired := func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "This upload is retired: fire data is ingested by the nightly job, and the GHSL processor was removed.", http.StatusGone)
+	}
+	mux.HandleFunc("POST /admin/upload/fire", s.RequireAdmin(uploadRetired))
+	mux.HandleFunc("POST /admin/upload/ghsl", s.RequireAdmin(uploadRetired))
 	mux.HandleFunc("GET /admin/status", s.RequireAdmin(s.HandleProcessingStatus))
 
 	// Short links (srv/shortlink.go). /s/{slug} is either a name for a long

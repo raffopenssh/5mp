@@ -434,6 +434,23 @@ func clampGuestQuery(r *http.Request, g *GuestSession) *http.Request {
 	}
 	q := r.URL.Query()
 	from, to := q.Get("from"), q.Get("to")
+	// `start`/`end` are aliases several handlers prefer over from/to, and
+	// `year` (and its range forms) overrides both. Clamping only from/to left
+	// every one of them as a way round the lock: fold the aliases in, then
+	// remove them so the clamped pair is the only window the handler can read.
+	aliased := false
+	if v := q.Get("start"); v != "" {
+		from, aliased = v, true
+	}
+	if v := q.Get("end"); v != "" {
+		to, aliased = v, true
+	}
+	for _, k := range []string{"start", "end", "year", "from_year", "to_year"} {
+		if q.Has(k) {
+			q.Del(k)
+			aliased = true
+		}
+	}
 	// An unstated bound becomes the window's own edge: a handler defaulting
 	// "no from" to 2020 would walk straight out of the window, and the default
 	// is written in the handler, not here.
@@ -448,7 +465,7 @@ func clampGuestQuery(r *http.Request, g *GuestSession) *http.Request {
 	if from > to {
 		from = to
 	}
-	if from == q.Get("from") && to == q.Get("to") {
+	if !aliased && from == q.Get("from") && to == q.Get("to") {
 		return r
 	}
 	q.Set("from", from)
@@ -458,6 +475,40 @@ func clampGuestQuery(r *http.Request, g *GuestSession) *http.Request {
 	u.RawQuery = q.Encode()
 	r2.URL = &u
 	return r2
+}
+
+// guestWindowRefuses answers, in the middleware, the handlers a date window
+// cannot be applied to at all -- so a locked key gets nothing from them rather
+// than everything. Two kinds:
+//
+//   - "now" feeds (alerts, notifications, the RSS feed) have no dates to clamp;
+//     they are served only when today is inside the window, otherwise empty.
+//   - the fire narrative is one cached body covering the whole history that
+//     the UI subsets client-side; `format=stats` honours from/to and passes.
+//
+// A handler added later whose range is not from/to still has to call
+// ClampGuestDates itself; this list is the ones found leaking on 2026-11-10.
+func guestWindowRefuses(w http.ResponseWriter, r *http.Request) bool {
+	from, to, ok := GuestWindow(r)
+	if !ok {
+		return false
+	}
+	p := r.URL.Path
+	today := time.Now().UTC().Format("2006-01-02")
+	nowInside := today >= from && today <= to
+	switch {
+	case p == "/api/notifications" && !nowInside:
+		writeJSON(w, http.StatusOK, map[string]any{"notifications": []any{}, "unread_count": 0, "total": 0})
+	case p == "/api/fire-alerts" && !nowInside:
+		writeJSON(w, http.StatusOK, []any{})
+	case p == "/api/feed" && !nowInside:
+		http.Error(w, "This link is limited to "+from+" – "+to, http.StatusForbidden)
+	case strings.HasSuffix(p, "/fire-narrative") && r.URL.Query().Get("format") != "stats":
+		writeJSON(w, http.StatusForbidden, map[string]any{"error": "This link is limited to " + from + " – " + to})
+	default:
+		return false
+	}
+	return true
 }
 
 // ClampGuestDates narrows a window a handler computed for itself, for the
