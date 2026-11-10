@@ -65,6 +65,9 @@ type FireNarrative struct {
 	AvgZigzagRatio  float64        `json:"avg_zigzag_ratio,omitempty"`
 	Seasons         map[string]int `json:"seasons,omitempty"`
 	Directions      map[string]int `json:"directions,omitempty"`
+	// Window is set only on a body rebuilt for a date-locked guest link
+	// (srv/fire_narrative_window.go); absent, the body is the whole history.
+	Window *FireNarrativeWindow `json:"window,omitempty"`
 }
 
 // FireHotspot represents a geographic concentration of fire activity
@@ -521,6 +524,37 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	// A date-locked guest link: the same shapes, rebuilt for its window from
+	// the cached struct (srv/fire_narrative_window.go). Never the slow compute
+	// path below, whose range is year-granular.
+	if gFrom, gTo, locked := GuestWindow(r); locked {
+		var areaKm2 float64
+		if s.AreaStore != nil {
+			for _, area := range s.AreaStore.Areas {
+				if area.ID == internalID {
+					areaKm2 = area.AreaKm2
+					break
+				}
+			}
+		}
+		cached, computedAt, err := s.GetCachedFireNarrative(internalID)
+		if err != nil {
+			cached = &FireNarrative{ParkID: internalID, ParkName: parkName}
+		} else {
+			w.Header().Set("X-Cache-Date", computedAt.Format(time.RFC3339))
+		}
+		filterFireNarrativeToWindow(cached, gFrom, gTo, areaKm2)
+		suppressContainmentForAOI(internalID, cached)
+		if r.URL.Query().Get("format") == "stats" {
+			s.handleFireNarrativeStats(w, internalID, parkName, gFrom, gTo, cached)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Cache", "HIT")
+		json.NewEncoder(w).Encode(cached)
+		return
+	}
+
 	// Check for stats-only format
 	if r.URL.Query().Get("format") == "stats" {
 		// Also support start/end as aliases for from/to
@@ -532,7 +566,7 @@ func (s *Server) HandleAPIFireNarrative(w http.ResponseWriter, r *http.Request) 
 		if endDate == "" {
 			endDate = r.URL.Query().Get("to")
 		}
-		s.handleFireNarrativeStats(w, internalID, parkName, startDate, endDate)
+		s.handleFireNarrativeStats(w, internalID, parkName, startDate, endDate, nil)
 		return
 	}
 
@@ -2964,7 +2998,12 @@ type DeforestationFeature struct {
 }
 
 // handleFireNarrativeStats returns stats-only format for fire narrative
-func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkName string, startDate, endDate string) {
+//
+// windowed is non-nil only for a date-locked guest link: startDate/endDate are
+// then the lock's exact days and the group figures come from the narrative
+// already filtered to them, because park_group_infractions is per YEAR and
+// would answer a January lock with the whole of that year.
+func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkName string, startDate, endDate string, windowed *FireNarrative) {
 	// Parse year range from dates
 	fromYear := 2000
 	toYear := time.Now().Year()
@@ -3004,7 +3043,21 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 	// Get aggregate stats from park_group_infractions
 	var totalGroups, stoppedInside, transited int
 	var avgDays float64
-	err := s.DB.QueryRow(`
+	var err error
+	detFrom, detTo := fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)
+	if windowed != nil {
+		detFrom, detTo = startDate, endDate
+		totalGroups, stoppedInside, transited = windowed.TotalGroups, windowed.StoppedInsideGroups, windowed.TransitedGroups
+		for _, st := range windowed.Narratives {
+			avgDays += float64(st.Days) / float64(len(windowed.Narratives))
+		}
+		if windowed.Trend != nil {
+			for _, y := range windowed.Trend.Years {
+				response.Stats.ByYear[y.Year] = y.TotalGroups
+			}
+		}
+	} else {
+		err = s.DB.QueryRow(`
 		SELECT 
 			COALESCE(SUM(total_groups), 0),
 			COALESCE(SUM(groups_stopped_inside), 0),
@@ -3013,6 +3066,7 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 		FROM park_group_infractions 
 		WHERE park_id = ? AND year >= ? AND year <= ?
 	`, parkID, fromYear, toYear).Scan(&totalGroups, &stoppedInside, &transited, &avgDays)
+	}
 
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(w, "Database error", http.StatusInternalServerError)
@@ -3035,7 +3089,7 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 		SELECT COUNT(*) FROM fire_detections 
 		WHERE protected_area_id = ?`+fireInsideSQL+`
 		AND acq_date >= ? AND acq_date <= ?
-	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&response.Stats.TotalFires)
+	`, parkID, detFrom, detTo).Scan(&response.Stats.TotalFires)
 
 	// Get peak month
 	var peakMonth string
@@ -3045,7 +3099,7 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 		WHERE protected_area_id = ?`+fireInsideSQL+`
 		AND acq_date >= ? AND acq_date <= ?
 		GROUP BY month ORDER BY COUNT(*) DESC LIMIT 1
-	`, parkID, fmt.Sprintf("%d-01-01", fromYear), fmt.Sprintf("%d-12-31", toYear)).Scan(&peakMonth)
+	`, parkID, detFrom, detTo).Scan(&peakMonth)
 	monthNames := map[string]string{
 		"01": "January", "02": "February", "03": "March", "04": "April",
 		"05": "May", "06": "June", "07": "July", "08": "August",
@@ -3058,7 +3112,9 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 		SELECT year, total_groups FROM park_group_infractions 
 		WHERE park_id = ? AND year >= ? AND year <= ?
 	`, parkID, fromYear, toYear)
-	if err == nil {
+	if windowed != nil && err == nil {
+		rows.Close() // by_year was filled from the windowed groups above
+	} else if err == nil {
 		defer rows.Close()
 		for rows.Next() {
 			var year, groups int
@@ -3069,8 +3125,7 @@ func (s *Server) handleFireNarrativeStats(w http.ResponseWriter, parkID, parkNam
 	}
 
 	// Get fire trajectory features with geojson_id
-	startDateStr := fmt.Sprintf("%d-01-01", fromYear)
-	endDateStr := fmt.Sprintf("%d-12-31", toYear)
+	startDateStr, endDateStr := detFrom, detTo
 
 	featureRows, err := s.DB.Query(`
 		SELECT fg.id, fg.feature_id, fg.start_date, fg.end_date, fg.properties_json,

@@ -291,6 +291,40 @@ Usually that is right. Sometimes one season *is* the grant — hence
    holder), so asking for the lock takes the frozen URL with it rather than
    refusing the click; un-freezing drops the lock.
 
+### The fire narrative under a date lock
+
+`/fire-narrative` is one cached whole-history body the UI subsets client-side,
+so the clamp on the way in does nothing to it. It was refused (403) for a day;
+now `HandleAPIFireNarrative` rebuilds it for `GuestWindow(r)` in memory
+(`srv/fire_narrative_window.go`) — the cache is never written (invariant 10),
+and everyone else gets the cached bytes untouched.
+
+* **Edge rule: a group is in the window only if it began AND ended inside it.**
+  A straddler is dropped whole — its detections/FRP/distance/prose describe the
+  whole chain and the cache has no per-day split. This is strict: Chinko,
+  January 2025 keeps 84 of the narrative's groups, and on the map 234 lines of
+  the 552 that *start* that month. `bboxScope` adds the same `end_date` bound
+  for a locked key (`guestTrajectoryEndSQL`), so `/api/features-in-bbox` and
+  `/api/lod-tiles` draw exactly the lines the list names.
+* **Recomputed from the kept groups** (the writer's formulas): every top-level
+  total and breakdown, `peak_month`, `trend.years`, `trend.weeks`, the summary
+  sentence; `group_num` is renumbered (an all-history ordinal is a count).
+  `total_fires_basis` and a `window{from,to,rule}` object name the basis.
+* **Omitted, not left all-time:** `hotspots`, `trend.months`,
+  `latitude_comparison`; and `trend_direction`/`worst_year`/`best_year`/
+  `avg_groups_per_km2`/trend prose unless whole calendar years lie inside the
+  window (a January is not a "worst year").
+* `format=stats` for a locked key takes its group figures from the same
+  filtered struct and its detections by day — the normal path is per-year.
+* A cache miss yields the empty shape, never the deprecated compute path.
+* `visibilityFingerprint` for a guest is now the whole slug plus its window:
+  a windowed body is a function of the link, not of the query.
+
+Not covered (same class, different fix): the KML/Locus/GeoPackage exports
+select trajectories that *overlap* the window and `/api/feature-detail?id=`
+tests no date, so a straddler's geometry and dates are still reachable there.
+Test: `TestFireNarrativeHonoursGuestWindow`.
+
 The dialog's note states the grant in the recipient's terms before it is sent
 ("Only Jul 14 – Aug 12 — other dates come back empty"), and the admin sheet
 badges it in blue, distinct from the red `patrol tracks`: a narrowed window is a

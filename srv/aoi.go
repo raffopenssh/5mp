@@ -102,7 +102,12 @@ func visibilityFingerprint(r *http.Request) string {
 		// the back door. Its own slot, keyed on the slug: two guests of the
 		// same principal legitimately share a body, but only with each other.
 		if g := GuestFromRequest(r); g != nil {
-			return "g" + g.Slug[:min(7, len(g.Slug))]
+			// ...and only with the same date lock: a windowed body (fire
+			// narrative, srv/fire_narrative_window.go) is a function of the
+			// link's window, not of the query, so the window is in the key.
+			// The whole slug, not a prefix: "chinko-jan" and "chinko-feb"
+			// are two capabilities.
+			return "g" + g.Slug + "@" + g.DateFrom + ".." + g.DateTo
 		}
 		return "anon"
 	}

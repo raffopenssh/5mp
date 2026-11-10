@@ -479,12 +479,12 @@ func clampGuestQuery(r *http.Request, g *GuestSession) *http.Request {
 
 // guestWindowRefuses answers, in the middleware, the handlers a date window
 // cannot be applied to at all -- so a locked key gets nothing from them rather
-// than everything. Two kinds:
+// than everything: the "now" feeds (alerts, notifications, the RSS feed) have
+// no dates to clamp; they are served only when today is inside the window,
+// otherwise empty.
 //
-//   - "now" feeds (alerts, notifications, the RSS feed) have no dates to clamp;
-//     they are served only when today is inside the window, otherwise empty.
-//   - the fire narrative is one cached body covering the whole history that
-//     the UI subsets client-side; `format=stats` honours from/to and passes.
+// The fire narrative was on this list (one cached whole-history body) until
+// it learned to rebuild itself for the window: srv/fire_narrative_window.go.
 //
 // A handler added later whose range is not from/to still has to call
 // ClampGuestDates itself; this list is the ones found leaking on 2026-11-10.
@@ -503,8 +503,6 @@ func guestWindowRefuses(w http.ResponseWriter, r *http.Request) bool {
 		writeJSON(w, http.StatusOK, []any{})
 	case p == "/api/feed" && !nowInside:
 		http.Error(w, "This link is limited to "+from+" – "+to, http.StatusForbidden)
-	case strings.HasSuffix(p, "/fire-narrative") && r.URL.Query().Get("format") != "stats":
-		writeJSON(w, http.StatusForbidden, map[string]any{"error": "This link is limited to " + from + " – " + to})
 	default:
 		return false
 	}

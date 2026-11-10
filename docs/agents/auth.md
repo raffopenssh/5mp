@@ -212,11 +212,14 @@ Regression tests: `srv/security_audit_test.go`.
   from `?pinned=`. There is still no CSP.
 * **Guest date lock** (`srv/guest.go`): `clampGuestQuery` now folds
   `start`/`end` into the clamped pair and strips `year`/`from_year`/`to_year`;
-  `guestWindowRefuses` answers the handlers a window cannot apply to (403 for
-  the whole-history fire narrative, empty for the "now" feeds unless today is
-  inside the window). Known residue: year-granular handlers
-  (`/api/parks/{id}/stats`) answer for the whole calendar year containing the
-  window, and the two turbidity placemarks in `export.kml` ignore dates.
+  `guestWindowRefuses` answers the "now" feeds, which a window cannot apply
+  to (empty unless today is inside it). The fire narrative is no longer
+  refused: it is rebuilt for the window (`sharing.md`, "The fire narrative
+  under a date lock"). Known residue: year-granular handlers
+  (`/api/parks/{id}/stats`, `deforestation-narrative` incl. its all-time
+  `polygon_count`/cropland figures) answer for the whole calendar year
+  containing the window; `settlement-narrative` is an undated inventory and is
+  served whole; the two turbidity placemarks in `export.kml` ignore dates.
 * **Uploads:** `/admin/upload/{fire,ghsl}` answer 410 (their processor scripts
   are gone; the handlers buffered 0.5–2 GB for any password). A zip of GPX has
   one uncompressed budget across its entries (`maxUnzippedGPX`).

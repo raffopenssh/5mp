@@ -476,6 +476,16 @@ func (s *Server) bboxScope(r *http.Request, featureType string, bbox [4]float64)
 		args = append(args, to)
 	}
 
+	// A date-locked guest link draws a fire line only when the whole chain
+	// lies in its window — the fire narrative's edge rule, so the map and the
+	// list agree about a group that straddles the edge
+	// (srv/fire_narrative_window.go).
+	if gFrom, gTo, locked := GuestWindow(r); locked {
+		sql, a := guestTrajectoryEndSQL(gFrom, gTo, locked, featureType)
+		where += sql
+		args = append(args, a...)
+	}
+
 	// ?class= — the popup's classification filter ("only agricultural
 	// clearings", "only fishing camps"), applied HERE rather than in the
 	// browser.
