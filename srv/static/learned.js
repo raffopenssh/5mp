@@ -81,7 +81,8 @@
                 'circle-color': ['match', ['get', 'family'], 'airfield', COL.airstrip, COL.place],
                 'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5,
                 // An airstrip with a drawn runway steps back once the line is legible.
-                'circle-opacity': ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], z.concat([10, 1, 12, 0.25]), 1] } });
+                // (a zoom expression must be outermost, so the case sits in the stop)
+                'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
             filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone']],
             paint: { 'circle-radius': z.concat([5, 3, 11, 6]), 'circle-color': 'rgba(15,23,42,0.6)',
@@ -99,6 +100,7 @@
         data: null,
         tipHTML: tipHTML,
         init: function (map) {
+            LearnedMap.map = map;
             if (/[?&]learned=0\b/.test(location.search)) return;
             fetch('/api/learned-map', { credentials: 'same-origin' })
                 .then(function (r) { return r.ok ? r.json() : null; })
