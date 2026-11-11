@@ -38,6 +38,11 @@ SCOPE=(
   "gpx_upload_logs|env = '$ENV'"
 )
 
+# SCOPE_FILE=<file of "table|WHERE" lines> replaces the list above (same dump,
+# verify and batched delete; order the lines so a row is deleted before the
+# rows its WHERE reads).
+if [[ -n "${SCOPE_FILE:-}" ]]; then mapfile -t SCOPE < <(grep -v '^\s*\(#\|$\)' "$SCOPE_FILE"); fi
+
 count() { sqlite3 "$1" "SELECT COUNT(*) FROM $2 WHERE $3"; }
 
 : > "$OUT"
@@ -58,7 +63,7 @@ for row in "${SCOPE[@]}"; do
   t="${row%%|*}"
   sqlite3 "$DB" "SELECT sql || ';' FROM sqlite_master WHERE type='table' AND name='$t'" | sqlite3 "$SCRATCH"
 done
-sqlite3 "$SCRATCH" < "$OUT"
+{ echo "BEGIN;"; cat "$OUT"; echo "COMMIT;"; } | sqlite3 "$SCRATCH"   # one transaction: per-row commits took 20+ min for 345k rows
 sum() { sqlite3 "$1" ".mode list" "SELECT * FROM $2 WHERE $3 ORDER BY rowid;" | sha256sum | cut -c1-16; }
 for row in "${SCOPE[@]}"; do
   t="${row%%|*}"; w="${row#*|}"
