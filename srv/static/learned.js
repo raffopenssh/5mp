@@ -115,14 +115,15 @@
     function lzFilter() { return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone'], inParks(airParks)]; }
 
     // A bare white disc reads as a rendering fault, not as a landing site
-    // (reported as "Safari shows white dots"). The disc carries a plane.
+    // (reported as "Safari shows white dots"). The disc carries the Lucide `plane` icon (the app's icon set).
     var PLANE = 'M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z';
     function planeImage(map) {
         if (map.hasImage('learned-plane')) return true;
         try {
             var c = document.createElement('canvas'); c.width = c.height = 48;
             var g = c.getContext('2d');
-            g.scale(2, 2); g.fillStyle = '#000'; g.fill(new Path2D(PLANE));
+            // drawn as Lucide draws it: 24-unit grid, 2-unit round stroke, no fill
+            g.scale(2, 2); g.strokeStyle = '#000'; g.lineWidth = 2; g.lineCap = g.lineJoin = 'round'; g.stroke(new Path2D(PLANE));
             map.addImage('learned-plane', g.getImageData(0, 0, 48, 48), { sdf: true, pixelRatio: 2 });
             return true;
         } catch (e) { return false; }
@@ -154,7 +155,7 @@
                 'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         if (planeImage(map)) map.addLayer({ id: L.air, type: 'symbol', source: SRC, minzoom: 5,
             filter: airFilter(),
-            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.4, 11, 0.6]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
+            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.42, 11, 0.62]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
             paint: { 'icon-color': '#0f172a',
                 'icon-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
