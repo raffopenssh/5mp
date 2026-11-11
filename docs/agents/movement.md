@@ -122,7 +122,10 @@ stop: that was the >1,000 pending places.
 - **Movement only**: `classifyByMovementOnly` (`srv/upload_queue.go`) moves ER
   device labels into `ClassifiedSegment.Label` before classifying.
 - **Map**: `GET /api/learned-map` (client tenant only, approved only) +
-  `srv/static/learned.js`, on by default (`?learned=0` hides). A MapLibre zoom
+  `srv/static/learned.js` (`?learned=0` hides). Airstrips and landing zones
+  are on by default; road sections draw only for parks whose `road` pin is on
+  and places only for parks whose `place` or `visits` pin is on
+  (`LearnedMap.setRoadParks` / `setPlaceParks`, fed from `updatePinnedIndicator`). A MapLibre zoom
   expression must be outermost — nesting it in a `case` silently dropped the
   whole points layer.
 - **Raw input is kept**: `data/autofetch_archive/<env>/*.gpx.gz`;

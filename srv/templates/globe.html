@@ -22509,6 +22509,7 @@ ${starredItems.narratives.map(n => {
         // Learned tracks ride the Roads toggle (srv/static/learned.js).
         if (window.LearnedMap && LearnedMap.setRoadParks) {
             LearnedMap.setRoadParks(Object.values(pinnedLayers).filter(p => p && p.type === 'road').map(p => p.parkId));
+            LearnedMap.setPlaceParks([...new Set(Object.values(pinnedLayers).filter(p => p && (p.type === 'place' || p.type === 'visits')).map(p => p.parkId))]);
         }
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');

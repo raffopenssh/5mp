@@ -98,6 +98,14 @@
         return ['all', ['==', ['get', 'family'], 'road'], ['in', ['get', 'park_id'], ['literal', roadParks]]];
     }
 
+    // Learned places likewise: only for parks whose Places or Patrol visits
+    // row is on. Airstrips share the layer and are not gated.
+    var placeParks = [];
+    function ptFilter() {
+        return ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'landing_zone'],
+            ['any', ['!=', ['get', 'family'], 'place'], ['in', ['get', 'park_id'], ['literal', placeParks]]]];
+    }
+
     function addLayers(map) {
         var z = ['interpolate', ['linear'], ['zoom']];
         map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
@@ -108,7 +116,7 @@
         map.addLayer({ id: L.runway, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
             paint: { 'line-color': COL.airstrip, 'line-width': z.concat([9, 2, 14, 9]) } });
         map.addLayer({ id: L.pt, type: 'circle', source: SRC, minzoom: 5,
-            filter: ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'landing_zone']],
+            filter: ptFilter(),
             paint: {
                 'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 3.5, 2], 11, ['match', ['get', 'family'], 'airfield', 7, 5]]),
                 'circle-color': ['match', ['get', 'family'], 'airfield', COL.airstrip, COL.place],
@@ -138,6 +146,13 @@
             roadParks = ids;
             var map = LearnedMap.map;
             if (map && map.getLayer(L.road)) map.setFilter(L.road, roadFilter());
+        },
+        setPlaceParks: function (ids) {
+            ids = (ids || []).slice().sort();
+            if (ids.join('|') === placeParks.join('|')) return;
+            placeParks = ids;
+            var map = LearnedMap.map;
+            if (map && map.getLayer(L.pt)) map.setFilter(L.pt, ptFilter());
         },
         // After a reviewer decision in the admin panel: redraw from the server.
         reload: function () {
