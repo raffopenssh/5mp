@@ -372,7 +372,8 @@ func waitUploadProcessed(ctx context.Context, db *sql.DB, queueID int64) error {
 		}
 		if status == "completed" {
 			var busy int
-			_ = db.QueryRowContext(ctx, `SELECT COUNT(*) FROM gpx_learning_queue WHERE status IN ('pending','processing')`).Scan(&busy)
+			_ = db.QueryRowContext(ctx, `SELECT COUNT(*) FROM gpx_learning_queue WHERE status IN ('pending','processing')
+				AND upload_id = (SELECT result_upload_id FROM upload_queue WHERE id = ?)`, queueID).Scan(&busy) // THIS upload's jobs: a row stuck in 'processing' since September must not block the walk
 			if busy == 0 {
 				return nil
 			}
