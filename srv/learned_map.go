@@ -33,7 +33,8 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 			if json.Unmarshal([]byte(evidence.String), &ev) == nil {
 				for _, k := range []string{"events", "days", "trackers", "journeys", "landings", "takeoffs",
 					"fixed_wing_journeys", "rotor_wing_journeys", "first_seen", "axis_deg", "axis_agreement",
-					"known_airfield", "dwell_median_min", "near_osm_place", "on_known_road", "connected_ends", "idle_active_days"} {
+					"known_airfield", "dwell_median_min", "near_osm_place", "on_known_road", "connected_ends", "idle_active_days",
+					"on_reference_frac", "outside_reference"} {
 					if v, ok := ev[k]; ok {
 						props[k] = v
 					}
@@ -43,6 +44,11 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 			props["unscored"] = true // approved by a reviewer before the learner kept evidence
 		}
 		feats = append(feats, map[string]any{"type": "Feature", "geometry": geom, "properties": props})
+	}
+	// Village and river context, from the tables the nightly OSM rotation
+	// refreshes -- looked up now, not stored (srv/learned_context.go).
+	locate := func(props map[string]any, lat, lon float64) {
+		s.learnedContextAt(ctx, props["park_id"].(string), lat, lon).apply(props)
 	}
 	const where = ` WHERE status IN ('approved','auto_approved') AND (evidence_json IS NOT NULL OR status = 'approved') AND (? = '' OR park_id = ?)`
 
@@ -73,7 +79,9 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 			return p
 		}
 		pt, _ := json.Marshal(map[string]any{"type": "Point", "coordinates": []float64{lon, lat}})
-		add(pt, props(), ev)
+		pp := props()
+		locate(pp, lat, lon)
+		add(pt, pp, ev)
 		if line.Valid && kind == "airstrip" {
 			p := props()
 			p["runway"] = true
@@ -99,6 +107,7 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 				p["score"] = score.Float64
 			}
 			pt, _ := json.Marshal(map[string]any{"type": "Point", "coordinates": []float64{lon, lat}})
+			locate(p, lat, lon)
 			add(pt, p, ev)
 		}
 		rows.Close()
@@ -118,6 +127,14 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 			p := map[string]any{"family": "road", "kind": "road", "id": id, "park_id": pid, "status": status, "last_seen": last.String, "length_m": length.Float64}
 			if score.Valid {
 				p["score"] = score.Float64
+			}
+			var g struct {
+				Coordinates [][]float64 `json:"coordinates"`
+			}
+			if json.Unmarshal([]byte(gj), &g) == nil && len(g.Coordinates) > 0 {
+				if mid := g.Coordinates[len(g.Coordinates)/2]; len(mid) >= 2 {
+					locate(p, mid[1], mid[0])
+				}
 			}
 			add(json.RawMessage(gj), p, ev)
 		}

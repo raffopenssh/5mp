@@ -99,6 +99,112 @@ def name_park(conn, park_id, verbose=True):
     return len(updates) + propagated
 
 
+LINE_MATCH_M = 500.0   # HydroRIVERS is traced on a 15" (~450 m) grid
+LINE_STEP_M = 200.0    # both lines are compared at this spacing
+LINE_MIN_FRAC = 0.5    # share of a reach that must lie along ONE named river
+
+
+def _densify(coords, step_m=LINE_STEP_M):
+    """Points along a lon/lat line no further apart than step_m. A straight
+    reach is two vertices 5 km apart; comparing vertices alone misses it."""
+    out = []
+    for a, b in zip(coords, coords[1:]):
+        d = dist_km(a[1], a[0], b[1], b[0]) * 1000.0
+        n = max(1, int(math.ceil(d / step_m)))
+        for i in range(n):
+            t = i / n
+            out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+    if coords:
+        out.append((coords[-1][0], coords[-1][1]))
+    return out
+
+
+def match_reach_names(reaches, lines):
+    """{reach_id: name} for the reaches that run along a named OSM waterway.
+
+    reaches: [(id, coords)], lines: [(name, coords)], coords lon/lat.
+    A reach takes a name only when at least LINE_MIN_FRAC of it lies within
+    LINE_MATCH_M of that ONE river -- so a tributary is not named after the
+    river it joins (only its last few hundred metres are close), which is
+    what a single name point with a 1.5 km radius did.
+    """
+    cell = LINE_MATCH_M / 111000.0
+    names, grid = [], {}
+    idx = {}
+    for name, coords in lines:
+        if not good_name(name):
+            continue
+        k = idx.setdefault(name, len(names))
+        if k == len(names):
+            names.append(name)
+        for lon, lat in _densify(coords):
+            grid.setdefault((int(math.floor(lat / cell)), int(math.floor(lon / cell))), []).append((lat, lon, k))
+    out = {}
+    if not grid:
+        return out
+    for rid, coords in reaches:
+        pts = _densify(coords)
+        if len(pts) < 2:
+            continue
+        votes = {}
+        for lon, lat in pts:
+            ci, cj = int(math.floor(lat / cell)), int(math.floor(lon / cell))
+            best, bk = LINE_MATCH_M / 1000.0, None
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+                    for plat, plon, k in grid.get((ci + di, cj + dj), ()):
+                        d = dist_km(lat, lon, plat, plon)
+                        if d <= best:
+                            best, bk = d, k
+            if bk is not None:
+                votes[bk] = votes.get(bk, 0) + 1
+        if votes:
+            k, v = max(votes.items(), key=lambda kv: kv[1])
+            if v >= LINE_MIN_FRAC * len(pts):
+                out[rid] = names[k]
+    return out
+
+
+def name_park_from_lines(conn, park_id, lines):
+    """Name a park's HydroRIVERS reaches from full OSM waterway lines.
+
+    Called by scripts/osm_pbf.py while the country PBF is on disk: the lines
+    are used and dropped, nothing but the name is stored. Only positive
+    hyriv_id rows (HydroRIVERS, which carries no names of its own); OSM rows
+    (negative ids) arrive named. A line match overwrites an older name -- that
+    one came from a point. Unmatched reaches keep what they had, then gaps
+    are filled along connectivity.
+    """
+    rows = conn.execute("""
+        SELECT id, COALESCE(name,''), geojson FROM park_rivers_hydro
+        WHERE park_id = ? AND hyriv_id > 0 AND geojson IS NOT NULL
+    """, (park_id,)).fetchall()
+    before = sum(1 for r in rows if r[1])
+    reaches, cur = [], {}
+    for rid, name, gj in rows:
+        try:
+            g = json.loads(gj)
+        except Exception:
+            continue
+        coords = g.get('coordinates') or []
+        if g.get('type') == 'MultiLineString':
+            coords = [c for line in coords for c in line]
+        reaches.append((rid, coords))
+        cur[rid] = name
+    matched = match_reach_names(reaches, lines)
+    updates = [(n, rid) for rid, n in matched.items() if cur.get(rid) != n]
+    if updates:
+        conn.executemany("UPDATE park_rivers_hydro SET name = ? WHERE id = ?", updates)
+        conn.commit()
+    if rows:
+        propagate_names(conn, park_id)
+    after = conn.execute("""SELECT COUNT(*) FROM park_rivers_hydro
+        WHERE park_id = ? AND hyriv_id > 0 AND name IS NOT NULL AND name != ''""",
+                         (park_id,)).fetchone()[0]
+    return {'reaches': len(rows), 'before': before, 'after': after,
+            'matched': len(matched), 'changed': len(updates)}
+
+
 def propagate_names(conn, park_id):
     """Flood-fill names along touching segments of the same stream order.
 

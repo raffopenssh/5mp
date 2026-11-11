@@ -31,7 +31,12 @@
     function tipHTML(p) {
         if (!p || !p.family) return '';
         var col = COL[p.family === 'airfield' ? p.kind : p.family] || '#e5e7eb';
-        var h = '<div style="font-weight:600;margin-bottom:3px;color:' + col + '">' + esc(TITLE[p.kind] || p.kind) + (p.name ? ' \u00b7 ' + esc(p.name) : '') + '</div>';
+        // An unnamed place is titled by where it is: "Camp" alone sends the
+        // reader to the map to find out what the tip could have said.
+        var label = p.name || (p.family !== 'road' && p.near_village && Number(p.near_village_km) <= 5 ? 'near ' + p.near_village : '');
+        var h = '<div style="font-weight:600;margin-bottom:3px;color:' + col + '">' + esc(TITLE[p.kind] || p.kind) + (label ? ' \u00b7 ' + esc(label) : '') + '</div>';
+        var loc = whereLine(p);
+        if (loc) h += '<div style="margin-bottom:3px">' + loc + '</div>';
         var ev = [];
         if (p.unscored) {
             ev.push('approved by a reviewer; no event evidence kept');
@@ -48,16 +53,35 @@
         } else if (p.family === 'place') {
             ev.push(n(p.events, 'stay', 'stays') + ' on ' + n(p.days, 'day', 'days') + ' by ' + n(p.trackers, 'tracker', 'trackers'));
             if (p.dwell_median_min != null) ev.push('typical stay ' + dwell(p.dwell_median_min));
-            if (p.near_osm_place) ev.push('near ' + esc(p.near_osm_place) + ' (OSM)');
         } else {
             ev.push(n(p.events, 'vehicle pass', 'vehicle passes') + ' on ' + n(p.days, 'day', 'days') + ' by ' + n(p.trackers, 'tracker', 'trackers'));
-            if (p.length_m) ev.push((p.length_m / 1000).toFixed(1) + ' km, not on the reference road map');
+            // Three states, three sentences: measured absent, measured present
+            // (a later OSM refresh mapped the same track), and not measured.
+            var ref = p.outside_reference ? 'outside the reference road map\u2019s coverage'
+                : (Number(p.on_reference_frac) >= 0.5 ? 'now also on the OSM road map' : 'not on the reference road map');
+            if (p.length_m) ev.push((p.length_m / 1000).toFixed(1) + ' km, ' + ref);
         }
         h += '<div>' + ev.join('<br>') + '</div>';
         h += '<div style="margin-top:3px">Last seen ' + day(p.last_seen) + '</div>';
         h += '<div style="opacity:.6;font-size:11px;margin-top:4px">Learned from patrol tracks'
             + (p.status === 'approved' ? ' \u00b7 approved by a reviewer' : (p.score != null ? ' \u00b7 auto-approved, ' + Math.round(p.score * 100) + '% likely in use' : '')) + '</div>';
         return h;
+    }
+    // Village and river from the OSM tables the nightly refresh maintains
+    // (srv/learned_context.go); nothing in range prints nothing.
+    function whereLine(p) {
+        var out = [];
+        if (p.near_village) {
+            var km = Number(p.near_village_km) || 0;
+            out.push((km < 0.3 ? 'in ' : (km < 10 ? km.toFixed(1) : Math.round(km)) + ' km ' + esc(p.near_village_dir || '') + ' of ')
+                + esc(p.near_village) + ' <span style="opacity:.6">(' + esc(p.near_village_type || 'place') + ')</span>');
+        }
+        if (p.near_river) {
+            var m = Number(p.near_river_m) || 0;
+            out.push((m < 100 ? 'on the ' : (m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m') + ' from the ') + esc(p.near_river)
+                + ' <span style="opacity:.6">(river)</span>');
+        }
+        return out.join('<br>');
     }
     function dwell(m) { m = Number(m); return m >= 90 ? (m / 60).toFixed(m >= 600 ? 0 : 1) + ' h' : Math.round(m) + ' min'; }
     function runwayName(axis) {

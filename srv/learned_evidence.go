@@ -65,6 +65,14 @@ type Evidence struct {
 	// road
 	RoadLengthM   float64 `json:"road_length_m,omitempty"`
 	ConnectedEnds *int    `json:"connected_ends,omitempty"` // ends meeting the known or learned network
+	// Share of the section now lying on the reference road map. 0 when it was
+	// learned (that is why it was learned); it rises when a later OSM refresh
+	// maps the same track. Not a score feature.
+	OnRefFrac *float64 `json:"on_reference_frac,omitempty"`
+
+	// The feature lies outside the park's reference extract, so on_known_road
+	// and on_reference_frac are unmeasured there, not false.
+	OutsideRef bool `json:"outside_reference,omitempty"`
 
 	Lat float64 `json:"lat,omitempty"`
 	Lon float64 `json:"lon,omitempty"`

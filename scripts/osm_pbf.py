@@ -90,17 +90,32 @@ def park_bbox(park, buffer_km):
     return min(lons)-d, min(lats)-d, max(lons)+d, max(lats)+d
 
 
-def find_pbf(region):
-    """Path to an already-downloaded country PBF, or None."""
+# A staged PBF is a cache, and a cache has an age. The rotation refreshed CAF,
+# SSD and SDN "successfully" every 17 days from files staged on 2026-08-05 /
+# 09-07 -- same roads in, same roads out, state file advanced (AGENTS.md
+# invariant 1). Callers that mean "current OSM" pass max_age_days.
+PBF_CACHE_MAX_AGE_DAYS = 30
+
+
+def _age_days(path):
+    import time
+    return (time.time() - os.path.getmtime(path)) / 86400.0
+
+
+def find_pbf(region, max_age_days=None):
+    """Path to an already-downloaded country PBF, or None. With max_age_days a
+    copy older than that is not returned (ensure_pbf then replaces it)."""
     for d in LOCAL_PBF_DIRS:
         for name in (f"{region}.osm.pbf", f"{region}-latest.osm.pbf"):
             p = os.path.join(d, name)
             if os.path.exists(p):
+                if max_age_days is not None and _age_days(p) > max_age_days:
+                    continue
                 return p
     return None
 
 
-def ensure_pbf(iso, dest_dir="/tmp"):
+def ensure_pbf(iso, dest_dir="/tmp", max_age_days=None):
     """(path, is_temporary) for a country PBF, downloading if needed.
 
     African parks countries come from GEOFABRIK (and may be staged locally in
@@ -108,6 +123,11 @@ def ensure_pbf(iso, dest_dir="/tmp"):
     index. Global downloads land in /tmp and report is_temporary=True, so the
     caller deletes them after the area is processed -- a one-off AOI must not
     leave a 1-4 GB PBF behind.
+
+    max_age_days: a staged copy older than this is not used. A fresh one is
+    downloaded to dest_dir (temporary) and the stale staged file is deleted
+    once the download succeeded -- it is wrong for every other reader too, and
+    keeping both would cost the disk twice.
     """
     region = GEOFABRIK.get(iso)
     if region:
@@ -117,10 +137,16 @@ def ensure_pbf(iso, dest_dir="/tmp"):
         if not g:
             raise SystemExit(f"no geofabrik mapping for {iso}")
         region, url = g["region"], g["url"]
-    local = find_pbf(region)
+    local = find_pbf(region, max_age_days)
     if local:
         return local, False
+    stale = find_pbf(region) if max_age_days is not None else None
     pbf = os.path.join(dest_dir, f"{region}-latest.osm.pbf")
+    # A leftover from a killed run is not "already downloaded": it may be a
+    # day-old country or (before the .part rename below) half of one.
+    if os.path.exists(pbf) and _age_days(pbf) > 1:
+        os.remove(pbf)
+    part = pbf + ".part"
     if not os.path.exists(pbf):
         print(f"downloading {url}", file=sys.stderr)
         # Bounded on THROUGHPUT, not just on retries: --retry does not cover a
@@ -137,20 +163,29 @@ def ensure_pbf(iso, dest_dir="/tmp"):
                                   "--retry-delay", "120", "--retry-all-errors",
                                   "--speed-limit", "10000", "--speed-time", "120",
                                   "--max-time", "5400", "-w", "%{http_code}",
-                                  url, "-o", pbf],
+                                  url, "-o", part],
                                  capture_output=True, text=True)
             if res.returncode != 0:
                 raise RuntimeError(
                     f"curl exit {res.returncode} http={res.stdout.strip() or '?'} "
                     f"{url}: {res.stderr.strip()[-300:]}")
+            os.replace(part, pbf)
         except Exception:
             # A truncated PBF is worse than no PBF: osmium would read it as a
             # smaller country and every park of it would silently thin out.
-            try:
-                os.remove(pbf)
-            except OSError:
-                pass
+            for f in (part, pbf):
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
             raise
+    if stale:
+        print(f"staged {stale} is {_age_days(stale):.0f} days old; replaced by "
+              f"a fresh download and deleted", file=sys.stderr)
+        try:
+            os.remove(stale)
+        except OSError:
+            pass
     return pbf, pbf.startswith("/tmp/")
 
 
@@ -197,6 +232,35 @@ def _export_filtered(park_pbf, park_id, filt, geom_types):
         for t in (tmpf, tmpj):
             try: os.remove(t)
             except OSError: pass
+
+
+def compact_geom(geom, nd=5):
+    """GeoJSON geometry -> the string we store. 5 decimals is ~1 m, finer than
+    any OSM trace or 15" HydroRIVERS cell, and no ", " separators: roads_heigit
+    is the largest non-fire table (3.4 GB at 7 decimals) and 23% of it was
+    digits and spaces nothing could draw. Consecutive vertices that round to
+    the same metre are dropped; a line never falls below two points."""
+    def line(cs):
+        out = []
+        for c in cs:
+            q = [round(c[0], nd), round(c[1], nd)]
+            if not out or q != out[-1]:
+                out.append(q)
+        if len(out) < 2 and len(cs) >= 2:
+            out = [out[0], [round(cs[-1][0], nd), round(cs[-1][1], nd)]]
+        return out
+    t, c = geom.get("type"), geom.get("coordinates")
+    if t == "LineString":
+        c = line(c)
+    elif t in ("MultiLineString", "Polygon"):
+        c = [line(x) for x in c]
+    elif t == "MultiPolygon":
+        c = [[line(r) for r in poly] for poly in c]
+    elif t == "Point":
+        c = [round(c[0], nd), round(c[1], nd)]
+    else:
+        return json.dumps(geom, separators=(",", ":"))
+    return json.dumps({"type": t, "coordinates": c}, separators=(",", ":"))
 
 
 def _line_centroid_len(coords):
@@ -288,12 +352,14 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
             # OSM splits rivers into many ways). osm_tags keeps attributes:
             # intermittent, width, tidal, boat...
             best = {}
+            named_lines = []
             for f in _export_filtered(park_pbf, park_id,
                                       ["w/waterway=river,stream"], "linestring"):
                 p = f["properties"]
                 name = p.get("name")
                 if not name or f["geometry"]["type"] != "LineString":
                     continue
+                named_lines.append((name, f["geometry"]["coordinates"]))
                 lo, la, length = _line_centroid_len(f["geometry"]["coordinates"])
                 key = (name, p["waterway"])
                 if key not in best or length > best[key][0]:
@@ -331,6 +397,14 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                     VALUES (?,?,?,?,?,?,?)""", rows)
                 db.commit()
                 print(f"  enriched osm_places: {park_id} +{len(rows)}", file=sys.stderr)
+            if named_lines and not append:
+                # The named LINES are in hand only now, while the PBF is on
+                # disk; osm_places keeps one point per name. Put the names on
+                # the reaches the map draws instead of storing the lines.
+                from name_rivers_from_osm import name_park_from_lines
+                r = name_park_from_lines(db, park_id, named_lines)
+                print(f"  river names: {park_id} {r['before']} -> {r['after']} "
+                      f"of {r['reaches']} reaches named", file=sys.stderr)
 
         if n_roads == 0 or force or append:
             rows = []
@@ -344,7 +418,7 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                 dl_class, passability = _road_class(p)
                 rows.append((park_id, f.get("id", ""), p.get("name"),
                              p.get("highway"), (p.get("surface") or "").split(";")[0],
-                             round(length, 2), json.dumps(f["geometry"]),
+                             round(length, 2), compact_geom(f["geometry"]),
                              dl_class, passability))
             if force and not rows:
                 print(f"  WARN empty roads export, keeping existing: {park_id}",
@@ -429,18 +503,20 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
     if dry_run:
         print(f"{country}: would refresh {len(parks)} parks")
         return 0
-    pbf, temporary = ensure_pbf(country)
+    pbf, temporary = ensure_pbf(country, max_age_days=PBF_CACHE_MAX_AGE_DAYS)
     done = 0
     try:
         for p in parks:
             print(f"  {p['id']}", file=sys.stderr)
+            bbox = park_bbox(p, buffer_km)
             try:
-                area = extract_bbox(pbf, p["id"], park_bbox(p, buffer_km))
+                area = extract_bbox(pbf, p["id"], bbox)
             except subprocess.CalledProcessError as ex:
                 print(f"  extract failed {p['id']}: {ex}", file=sys.stderr)
                 continue
             try:
                 enrich_park_infra(area, p["id"], force=True)
+                _osm_hydro_fallback(area, p["id"])
                 done += 1
             finally:
                 try: os.remove(area)
@@ -450,6 +526,32 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
             try: os.remove(pbf)
             except OSError: pass
     return done
+
+
+def _osm_hydro_fallback(area_pbf, park_id):
+    """Rivers and lakes from OSM for a park that has no HydroSHEDS import.
+
+    data.hydrosheds.org has been behind a Cloudflare challenge since
+    2026-08-07, so a park onboarded after that (DZA_Djurdjura,
+    GNQ_Reserva_de_la_Paz) had roads and villages and not one river. The
+    parks' consumers already read OSM rows (negative ids, scripts/osm_hydro.py
+    -- it is what every AOI has). A park WITH HydroRIVERS reaches keeps them
+    and only gets names; mixing both would draw every river twice."""
+    import sqlite3
+    import osm_hydro
+    db = sqlite3.connect(DB_PATH, timeout=30)
+    try:
+        for table, col, fn in (("park_rivers_hydro", "hyriv_id", osm_hydro.rivers_from_pbf),
+                               ("park_lakes_hydro", "hylak_id", osm_hydro.lakes_from_pbf)):
+            imported = db.execute(
+                f"SELECT 1 FROM {table} WHERE park_id = ? AND {col} > 0 LIMIT 1",
+                (park_id,)).fetchone()
+            if imported:
+                continue
+            fn(db, park_id, area_pbf, replace=True, keep_on_empty=True,
+               log=lambda m: print(m, file=sys.stderr))
+    finally:
+        db.close()
 
 
 def _infra_counts(parks):

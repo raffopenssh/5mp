@@ -90,7 +90,8 @@ def _osm_int(fid):
     return n + 10_000_000_000 if kind == "r" else n
 
 
-def rivers_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
+def rivers_from_pbf(conn, target_id, area_pbf, replace=True, log=print,
+                    keep_on_empty=False):
     """Fill park_rivers_hydro from the waterways in an already-extracted PBF.
 
     One row per OSM way, geometry kept whole: rivers_merged.go chains touching
@@ -112,8 +113,13 @@ def rivers_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
         lon, lat, length = osm_pbf._line_centroid_len(coords)
         rows.append((target_id, -oid, p.get("name") or None,
                      WATERWAY_ORDER.get(p.get("waterway"), 1),
-                     0, round(length, 3), lat, lon, json.dumps(g)))
+                     0, round(length, 3), lat, lon, osm_pbf.compact_geom(g)))
 
+    if keep_on_empty and not rows:
+        # The park rotation's rule (osm_pbf.enrich_park_infra): an empty
+        # export there is an osmium failure, not a park without water.
+        log(f"  WARN empty export, keeping existing: {target_id}")
+        return 0
     if replace:
         # Scoped to our own negative id space: an imported HydroRIVERS row for
         # the same park survives. Deleted BEFORE the empty-input return so a
@@ -130,7 +136,8 @@ def rivers_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
     return len(rows)
 
 
-def lakes_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
+def lakes_from_pbf(conn, target_id, area_pbf, replace=True, log=print,
+                    keep_on_empty=False):
     """Fill park_lakes_hydro from natural=water / landuse=reservoir polygons."""
     rows = []
     seen = set()
@@ -153,8 +160,13 @@ def lakes_from_pbf(conn, target_id, area_pbf, replace=True, log=print):
         lon = sum(q[0] for q in pts) / len(pts)
         lat = sum(q[1] for q in pts) / len(pts)
         rows.append((target_id, -oid, p.get("name") or None, 1,
-                     round(area, 4), lon, lat, json.dumps(g)))
+                     round(area, 4), lon, lat, osm_pbf.compact_geom(g)))
 
+    if keep_on_empty and not rows:
+        # The park rotation's rule (osm_pbf.enrich_park_infra): an empty
+        # export there is an osmium failure, not a park without water.
+        log(f"  WARN empty export, keeping existing: {target_id}")
+        return 0
     if replace:
         conn.execute("DELETE FROM park_lakes_hydro WHERE park_id = ? AND "
                      "hylak_id < 0", (target_id,))

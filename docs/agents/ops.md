@@ -84,6 +84,46 @@ python3 scripts/osm_pbf.py --enrich-all --iso CAF    # one country, ~75s
   countries are still on the thin HeiGIT import. It is a ~17-day rotation, so
   without that there is nothing to look at between start and finish.
 
+### What the rotation does while the PBF is on disk (2026-11-11)
+
+The country PBF is the only moment full OSM geometry is in hand, so everything
+that needs it happens in that pass and **nothing but the result is stored**:
+
+* **River names from LINES, not points.** `osm_places` keeps one point per
+  waterway name (centroid of the longest way); `name_rivers_from_osm.py` gave
+  that name to every HydroRIVERS reach within 1.5 km of the *point* — so a
+  200 km river was named for 3 km, and a tributary near the point took the
+  main river's name. `name_park_from_lines()` now compares each reach with the
+  named OSM waterway lines (both densified to 200 m; a reach is named when
+  ≥ 50 % of it lies within 500 m of ONE river), overwrites point-era names it
+  disagrees with, then fills gaps along connectivity. The lines are dropped.
+  The gain is bounded by what OSM names (Nyerere 531 → 771 of 4,716 reaches,
+  Ruaha 505 → 554): an unnamed reach is mostly an unnamed river in OSM.
+* **A park with no HydroSHEDS import gets OSM rivers and lakes**
+  (`_osm_hydro_fallback`, negative ids like every AOI). hydrosheds.org is
+  behind a Cloudflare challenge, so parks onboarded since August had roads and
+  villages and zero rivers (`GNQ_Reserva_de_la_Paz`, `DZA_Djurdjura`). A park
+  WITH HydroRIVERS reaches is never mixed — that would draw each river twice.
+* **Geometry is written compact** — `osm_pbf.compact_geom()`: 5 decimals
+  (~1 m), no separators. `roads_heigit` is the largest non-fire table and 23 %
+  of it was digits nothing could draw. `scripts/compact_geojson.py --table T`
+  rewrites existing rows (batched, resumable). Freed pages go to the freelist
+  and are reused; the file shrinks only on `VACUUM`.
+* **A staged PBF has an age.** `data/osm_geofabrik/` held CAF/SSD/SDN files
+  from August, `find_pbf` preferred them, and the rotation "refreshed" those
+  three countries from the same file every 17 days and advanced the state
+  (invariant 1). The rotation now passes `max_age_days=30`: a stale staged
+  copy is replaced by a fresh temporary download and **deleted**. Downloads go
+  to `<name>.part` and are renamed, and a `/tmp/*-latest.osm.pbf` older than a
+  day is not trusted — a killed run's leftover is neither current nor whole.
+* **The learner reads these tables, it does not copy them.** Its reference
+  (`roads_heigit`, `osm_places`) is loaded per learning job, so a refresh is
+  picked up by the next upload: `on_reference_frac` on a learned road rises
+  when OSM maps the same track ("now also on the OSM road map"), and a feature
+  outside the park's bbox extract is `outside_reference` — unmeasured, not
+  "not on the map". The village / river line in a learned tip is looked up at
+  request time (`srv/learned_context.go`), villages across all parks' rows.
+
 ## Cron jobs report into the notification bell — by SHAPE, not by a list
 
 Every nightly job writes a `<job>_success` / `<job>_failed` row via

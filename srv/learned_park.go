@@ -537,8 +537,12 @@ func (pl *ParkLearner) EvidenceAsOf(f *LearnedFeature, asOf time.Time, active []
 		// agreement (the vehicle that stopped drew it), and reading its
 		// status would make the place score depend on the road model.
 		if pl.KnownRoads != nil {
-			on := pl.KnownRoads.near(pt, placeOnRoadM)
-			e.OnKnownRoad = &on
+			if pl.KnownRoads.covers(pt) {
+				on := pl.KnownRoads.near(pt, placeOnRoadM)
+				e.OnKnownRoad = &on
+			} else {
+				e.OutsideRef = true
+			}
 		}
 	case "road":
 		e = RoadEvidence(evs, f.LengthM)
@@ -552,6 +556,19 @@ func (pl *ParkLearner) EvidenceAsOf(f *LearnedFeature, asOf time.Time, active []
 			e.ConnectedEnds = &n
 			mid := f.Coords[len(f.Coords)/2]
 			e.Lon, e.Lat = mid[0], mid[1]
+			if pl.KnownRoads != nil {
+				if pl.KnownRoads.covers(mid) {
+					on := 0
+					for _, c := range f.Coords {
+						if pl.KnownRoads.near(c, roadHeigitMatchM) {
+							on++
+						}
+					}
+					e.OnRefFrac = fptr(math.Round(100*float64(on)/float64(len(f.Coords))) / 100)
+				} else {
+					e.OutsideRef = true
+				}
+			}
 		}
 	}
 	e.SetIdle(active, asOf)

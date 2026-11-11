@@ -52,6 +52,16 @@ type corridorIndex struct {
 	grid  map[[2]int][][2][2]float64 // cell -> segments [[lonA,latA],[lonB,latB]]
 	kx    float64                    // meters per degree lon
 	ky    float64                    // meters per degree lat
+	ext   [4]float64                 // minLon, minLat, maxLon, maxLat of what was indexed
+	any   bool
+}
+
+// covers reports whether pt=[lon,lat] lies inside the extent of the indexed
+// lines. The reference roads of a park are a BBOX extract (scripts/osm_pbf.py),
+// so outside this box "no road nearby" is not an observation: nothing was
+// looked at there.
+func (c *corridorIndex) covers(pt []float64) bool {
+	return c.any && pt[0] >= c.ext[0] && pt[0] <= c.ext[2] && pt[1] >= c.ext[1] && pt[1] <= c.ext[3]
 }
 
 func newCorridorIndex(refLat float64) *corridorIndex {
@@ -70,6 +80,14 @@ func (c *corridorIndex) cellOf(lon, lat float64) [2]int {
 // addLine indexes a polyline. Each segment is registered in every cell it
 // passes through plus the 8 neighbours, so a query only needs its own cell.
 func (c *corridorIndex) addLine(coords [][]float64) {
+	for _, p := range coords {
+		if !c.any {
+			c.ext, c.any = [4]float64{p[0], p[1], p[0], p[1]}, true
+			continue
+		}
+		c.ext[0], c.ext[1] = math.Min(c.ext[0], p[0]), math.Min(c.ext[1], p[1])
+		c.ext[2], c.ext[3] = math.Max(c.ext[2], p[0]), math.Max(c.ext[3], p[1])
+	}
 	for i := 0; i+1 < len(coords); i++ {
 		a, b := coords[i], coords[i+1]
 		seg := [2][2]float64{{a[0], a[1]}, {b[0], b[1]}}
