@@ -62,7 +62,7 @@ func (s *Server) learnedContextAt(ctx context.Context, parkID string, lat, lon f
 	dLon := dLat / math.Max(0.2, math.Cos(lat*math.Pi/180))
 	if rows, err := s.DB.QueryContext(ctx, `SELECT name, place_type, lat, lon FROM osm_places
 		WHERE lat BETWEEN ? AND ? AND lon BETWEEN ? AND ?
-		  AND place_type IN ('city','town','village','hamlet')`,
+		  AND +place_type IN ('city','town','village','hamlet')`, // unary +: the planner otherwise picks idx_op_type and scans every village in Africa (54 ms vs <1 ms)
 		lat-dLat, lat+dLat, lon-dLon, lon+dLon); err == nil {
 		best := learnedCtxVillageKm
 		for rows.Next() {
