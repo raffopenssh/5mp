@@ -107,15 +107,14 @@
     var placeParks = [], airParks = [];
     function inParks(ids) { return ['in', ['get', 'park_id'], ['literal', ids]]; }
     function ptFilter() {
-        return ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'landing_zone'],
-            ['case', ['==', ['get', 'family'], 'place'], inParks(placeParks), inParks(airParks)]];
+        return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'family'], 'place'], inParks(placeParks)];
     }
     function runwayFilter() { return ['all', ['==', ['get', 'runway'], true], inParks(airParks)]; }
     function airFilter() { return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'family'], 'airfield'], ['!=', ['get', 'kind'], 'landing_zone'], inParks(airParks)]; }
     function lzFilter() { return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone'], inParks(airParks)]; }
 
     // A bare white disc reads as a rendering fault, not as a landing site
-    // (reported as "Safari shows white dots"). The disc carries the Lucide `plane` icon (the app's icon set).
+    // (reported as "Safari shows white dots"). An airstrip is the Lucide `plane` icon (the app's icon set), no disc.
     var PLANE = 'M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z';
     function planeImage(map) {
         if (map.hasImage('learned-plane')) return true;
@@ -125,7 +124,11 @@
             var c = document.createElement('canvas'); c.width = c.height = 96;
             var g = c.getContext('2d');
             // drawn as Lucide draws it: 24-unit grid, 2-unit round stroke, no fill
-            g.scale(4, 4); g.strokeStyle = '#0f172a'; g.lineWidth = 2; g.lineCap = g.lineJoin = 'round'; g.stroke(new Path2D(PLANE));
+            // in the airstrip white, over a dark casing so it holds on any ground
+            var p = new Path2D(PLANE);
+            g.scale(4, 4); g.lineCap = g.lineJoin = 'round';
+            g.strokeStyle = '#0b1220'; g.lineWidth = 5; g.stroke(p); g.fillStyle = '#0b1220'; g.fill(p);
+            g.strokeStyle = COL.airstrip; g.lineWidth = 2; g.stroke(p);
             map.addImage('learned-plane', g.getImageData(0, 0, 96, 96), { pixelRatio: 4 });
             return true;
         } catch (e) { return false; }
@@ -149,15 +152,11 @@
         map.addLayer({ id: L.pt, type: 'circle', source: SRC, minzoom: 5,
             filter: ptFilter(),
             paint: {
-                'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 9, 2], 11, ['match', ['get', 'family'], 'airfield', 11.5, 5]]),
-                'circle-color': ['match', ['get', 'family'], 'airfield', COL.airstrip, COL.place],
-                'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5,
-                // An airstrip with a drawn runway steps back once the line is legible.
-                // (a zoom expression must be outermost, so the case sits in the stop)
-                'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
+                'circle-radius': z.concat([5, 2, 11, 5]), 'circle-color': COL.place,
+                'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5 } });
         if (planeImage(map)) map.addLayer({ id: L.air, type: 'symbol', source: SRC, minzoom: 5,
             filter: airFilter(),
-            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.56, 11, 0.72]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
+            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.75, 11, 1]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
             paint: {
                 'icon-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
@@ -167,6 +166,7 @@
         if (window.MapTip && MapTip.register) {
             MapTip.register(L.road, { html: tipHTML, tabLabel: 'Track', tabColor: COL.road, priority: 4 });
             MapTip.register(L.runway, { html: tipHTML, tabLabel: 'Airstrip', tabColor: COL.airstrip, priority: 7 });
+            if (map.getLayer(L.air)) MapTip.register(L.air, { html: tipHTML, tabLabel: 'Airstrip', tabColor: COL.airstrip, priority: 8 });
             MapTip.register(L.pt, { html: tipHTML, tabLabel: 'Learned', tabColor: COL.place, priority: 8 });
             MapTip.register(L.ptH, { html: tipHTML, tabLabel: 'Landing zone', tabColor: COL.landing_zone, priority: 8 });
         }
