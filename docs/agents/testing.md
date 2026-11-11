@@ -95,7 +95,7 @@ URL params encode full UI state for reproducible tests:
 |-------|---------|-------------|
 | `test` | `1` | Enable TEST helper |
 | `panel` | `filter,star,admin,upload` | Open panel |
-| `admin_tab` | `learning,features` | Admin tab |
+| `admin_tab` | `uploads,learning,autofetch,access,map-settings` (`pending`, `features` alias to `learning`) | Admin tab |
 | `popup` | `CAF_Chinko` | Open park popup |
 | `sections` | `fire,deforestation` | Open accordions |
 | `pinned` | `CAF_Chinko:fire_trajectory` | Pin layers |

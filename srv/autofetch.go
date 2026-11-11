@@ -46,6 +46,11 @@ type autofetchSource struct {
 	// Contribution summary, derived from the source's own env.
 	Uploads int     `json:"uploads"`
 	TotalKm float64 `json:"total_km"`
+	// Failures: consecutive failed runs (drives the retry backoff), so the
+	// card can say "retrying" rather than only repeat the last error.
+	Failures int `json:"consecutive_failures,omitempty"`
+	// Log: what the source delivered, kept and backfilled (srv/admin_activity.go).
+	Log *autofetchLog `json:"log,omitempty"`
 }
 
 // autofetchViewer is a login the source is shared with. The label is the
@@ -332,7 +337,7 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 	rows, err := s.DB.QueryContext(r.Context(),
 		`SELECT a.id, a.api_type, a.service_url, a.username, a.title, a.enabled, a.interval_h,
 		        a.park_names, a.created_at, a.last_run_at, a.last_status, a.last_points,
-		        a.owner_ref = ?, a.visibility, a.data_env
+		        a.owner_ref = ?, a.visibility, a.data_env, a.consecutive_failures
 		 FROM autofetch_sources a
 		 WHERE a.owner_ref = ? OR a.visibility = 'all'
 		    OR (a.visibility = 'selected' AND EXISTS (
@@ -352,7 +357,7 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 		var dataEnv string
 		if err := rows.Scan(&src.ID, &src.APIType, &src.ServiceURL, &src.Username, &src.Title,
 			&enabled, &src.IntervalH, &src.ParkNames, &src.CreatedAt,
-			&lastRun, &lastStatus, &src.LastPoints, &mine, &src.Visibility, &dataEnv); err != nil {
+			&lastRun, &lastStatus, &src.LastPoints, &mine, &src.Visibility, &dataEnv, &src.Failures); err != nil {
 			continue
 		}
 		src.Enabled = enabled == 1
@@ -374,6 +379,7 @@ func (s *Server) HandleAPIAutofetchList(w http.ResponseWriter, r *http.Request) 
 			_ = s.DB.QueryRowContext(r.Context(),
 				`SELECT COUNT(*), COALESCE(SUM(total_distance_km),0) FROM gpx_uploads WHERE env = ?`, dataEnv).
 				Scan(&src.Uploads, &src.TotalKm)
+			src.Log = s.autofetchSourceLog(r, src.ID, dataEnv)
 		}
 		if src.Mine {
 			src.Viewers = s.autofetchViewers(r.Context(), src.ID)

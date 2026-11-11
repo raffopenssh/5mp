@@ -123,6 +123,15 @@
         layers: L,
         data: null,
         tipHTML: tipHTML,
+        // After a reviewer decision in the admin panel: redraw from the server.
+        reload: function () {
+            var map = LearnedMap.map;
+            if (!map || !map.getSource(SRC)) return;
+            fetch('/api/learned-map', { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (fc) { if (fc && fc.features && map.getSource(SRC)) { LearnedMap.data = fc; map.getSource(SRC).setData(fc); } })
+                .catch(function () { });
+        },
         init: function (map) {
             LearnedMap.map = map;
             if (/[?&]learned=0\b/.test(location.search)) return;

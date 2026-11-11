@@ -138,6 +138,39 @@ Salaam and Morogoro appear under Nyerere); other parks touched by af12 tracks
 (Udzungwa, Uluguru, …) still hold old counter-era rows (`evidence_json IS
 NULL`) beside new ones; `gpx_learning_queue` id 2348 is stuck `processing`.
 
+## Admin panel: Activity + Learner (2026-11-11)
+
+The reviewer surface for everything above. Frontend `srv/static/admin.js`
+(`window.AdminUI`), shell markup in `globe.html` `#admin-panel`, CSS at the end
+of `globe.css`. Backend `srv/admin_learner.go` (`GET /api/admin/learner`,
+`POST /api/admin/learner/release`) and `srv/admin_activity.go`
+(`GET /api/admin/activity`, `/activity/detail`, and the `log` block on each
+`/api/admin/autofetch` source). All client-tenant only, like the tables.
+
+- Tabs are `uploads` (Activity), `learning` (Learner), `autofetch`, `access`,
+  `map-settings`. `pending` and `features` are aliases in `ADMIN_TAB_ALIAS`
+  (old links keep working) — do not re-add them as tabs.
+- **No "approve all above N %".** The old button used 75 against a
+  `confidence_pct`; the calibrated lines are per family (`model.approve`), and
+  a feature under its line is undecided on purpose. Bulk actions act only on
+  rows the reviewer ticked.
+- A row prints the score **with its line** (`approve_at`); `score: null`
+  (counter-era, reviewer-approved) prints "not scored", never 0 %.
+- Approve / Reject set a reviewer decision the learner never overrides;
+  **Hand back** (`/learner/release`) clears it and re-decides from stored
+  evidence. Undo restores who had decided, not just the status.
+- Activity rows lead with the period the tracks **cover** (`gpx_uploads.
+  start_time/end_time`), not arrival: a backfill arrives in one afternoon. The
+  fetch-log bars on an autofetch card are ordered the same way.
+- `upload_time` is stored in three spellings; `logTime()` normalises. The
+  detail endpoint aggregates segments server-side (the stored JSON is ~2.8 MB
+  per weekly file) and returns the 12 longest legs *of N*.
+- Aircraft km with no measured airframe is its own bar
+  (`aircraft_unknown`), never folded into plane or helicopter.
+- Still served but no longer used by the UI: `/api/admin/gpx-logs`,
+  `/pending-approvals`, `/learned-features`, `/learning-results`,
+  `/upload-detail`, `/approve-high-confidence` (the last should not be called).
+
 ## Measured (2026-11-11; 536 files, 745,833 points, hints stripped)
 
 | | before | after |

@@ -98,7 +98,8 @@ test.describe('Admin Panel', () => {
         await page.goto(url('&panel=admin&admin_tab=features'));
         await page.waitForTimeout(1500);
         
-        await expect(page.locator('[data-tab="features"]')).toHaveClass(/active/);
+        // "features" was folded into the Learner tab (2026-11-11); the old link still lands there.
+        await expect(page.locator('[data-tab="learning"]')).toHaveClass(/active/);
     });
 });
 

@@ -33,6 +33,7 @@
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <script src="/static/maptip.js?v={{.Version}}"></script>
     <script src="/static/learned.js?v={{.Version}}"></script>
+    <script src="/static/admin.js?v={{.Version}}" defer></script>
     <!-- One loader for every viewport feature layer (stats toggles + pins):
          mode=auto, geometry or centroids decided by the server from the true
          count in view, cross-faded. See srv/static/lodlayer.js. -->
@@ -23315,9 +23316,8 @@ ${starredItems.narratives.map(n => {
         });
     }
     
-    let adminSelectedItems = [];
     let adminCurrentTab = 'uploads';
-    let adminDataCache = {};
+    let _adminReturnFocus = null;
     
     // openAdminPanel(tab): open (if closed) and land on a tab — the deep link
     // the offline-tiles dialog and the Map strip use.
@@ -23334,9 +23334,14 @@ ${starredItems.narratives.map(n => {
         const isOpen = panel.classList.contains('active');
         if (isOpen) {
             panel.classList.remove('active');
+            if (window.AdminUI) AdminUI.closed();
+            // Focus goes back to whatever opened the panel.
+            try { if (_adminReturnFocus && document.contains(_adminReturnFocus)) _adminReturnFocus.focus(); } catch (_) {}
+            _adminReturnFocus = null;
         } else {
+            _adminReturnFocus = document.activeElement;
             panel.classList.add('active');
-            loadUploadLogs();
+            switchAdminTab(adminCurrentTab);
             loadPipelineStatus();
         }
     }
@@ -23449,25 +23454,38 @@ ${starredItems.narratives.map(n => {
         } catch (e) { return String(ts); }
     }
     
-    function switchAdminTab(tabName) {
+    // Tabs that were folded into another one keep working as links: an old
+    // ?admin_tab=pending bookmark lands on the Learner, filtered.
+    const ADMIN_TAB_ALIAS = {
+        pending:  ['learning', {state: 'pending'}],
+        features: ['learning', {state: 'map'}],
+        sharing:  ['access', null],          // merged 2026-08-16
+    };
+    function switchAdminTab(tabName, opts) {
+        const alias = ADMIN_TAB_ALIAS[tabName];
+        if (alias) { tabName = alias[0]; opts = Object.assign({}, alias[1], opts); }
+        if (!document.getElementById(`tab-${tabName}`)) tabName = 'uploads';
         adminCurrentTab = tabName;
-        adminSelectedItems = [];
-        updateBulkActionBar();
-        
-        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-        
-        const tab = document.querySelector(`.admin-tab[data-tab="${tabName}"]`);
-        const content = document.getElementById(`tab-${tabName}`);
-        if (tab) tab.classList.add('active');
-        if (content) content.classList.add('active');
-        
-        if (tabName === 'uploads') loadUploadLogs();
-        else if (tabName === 'pending') loadPendingApprovals();
-        else if (tabName === 'learning') loadLearningResults();
-        else if (tabName === 'features') loadLearnedFeatures();
+        if (window.AdminUI) AdminUI.clearSelection();
+
+        document.querySelectorAll('.admin-tab').forEach(t => {
+            const on = t.dataset.tab === tabName;
+            t.classList.toggle('active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            t.tabIndex = on ? 0 : -1;
+            // On a phone the tabs are a scrolling strip: the chosen one must
+            // not be left off-screen.
+            if (on && t.scrollIntoView) t.scrollIntoView({block: 'nearest', inline: 'nearest'});
+        });
+        document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tabName}`));
+        const body = document.getElementById('admin-panel-body');
+        if (body) body.scrollTop = 0;
+
+        // admin.js is deferred; a restore that runs before it re-enters here
+        // from AdminUI's own init.
+        if (tabName === 'uploads') { if (window.AdminUI) AdminUI.activity.open(opts); }
+        else if (tabName === 'learning') { if (window.AdminUI) AdminUI.learner.open(opts); }
         else if (tabName === 'access') { loadAccessTab(); loadSharingTab(); loadFilesSection(); }
-        else if (tabName === 'sharing') { switchAdminTab('access'); return; } // merged 2026-08-16
         else if (tabName === 'map-settings') {
             renderBasemapGrid();
             renderTileSourcesPanel();
@@ -24263,368 +24281,10 @@ ${starredItems.narratives.map(n => {
         } catch(e) { return ts.slice(0, 10); }
     }
 
-    function buildExcludedReasons(log) {
-        // excluded_km = auto_generated + static segments
-        // (road_km and boundary_km are tracked separately;
-        //  aircraft logistics and vehicle transit are now included in effort)
-        const parts = [];
-        const excl = log.excluded_km || 0;
-        if (excl >= 0.05) parts.push(`other ${excl.toFixed(1)}km`);
-        return parts.join(', ');
-    }
-
-    async function loadUploadLogs() {
-        const tbody = document.getElementById('uploads-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;">Loading...</td></tr>';
-        
-        try {
-            const res = await fetch('/api/admin/gpx-logs?limit=50');
-            const data = await res.json();
-            
-            if (data.stats) {
-                const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
-                el('stat-total-uploads', data.stats.total_uploads || 0);
-                el('stat-foot-km', (data.stats.total_foot_km || 0).toFixed(1));
-                el('stat-vehicle-km', (data.stats.total_vehicle_km || 0).toFixed(1));
-                el('stat-boat-km', (data.stats.total_boat_km || 0).toFixed(1));
-                el('stat-fixed-wing-km', (data.stats.total_fixed_wing_km || 0).toFixed(1));
-                el('stat-rotor-wing-km', (data.stats.total_rotor_wing_km || 0).toFixed(1));
-            }
-            
-            if (!data.logs || data.logs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:#888;">No upload logs found</td></tr>';
-                return;
-            }
-            
-            const km = v => { const n = v || 0; return n < 0.05 ? '-' : n.toFixed(1); };
-            const kmC = (v, c) => { const s = km(v); return s === '-' ? '<span style="color:#444">-</span>' : `<span style="color:${c}">${s}</span>`; };
-            tbody.innerHTML = data.logs.map(log => {
-                const parkDisplay = log.protected_area_name || log.park_name || '-';
-                const exclReasons = buildExcludedReasons(log);
-                const exclHtml = (log.excluded_km || 0) < 0.05
-                    ? '<span style="color:#444">-</span>'
-                    : `<span style="color:#ef4444">${km(log.excluded_km)}</span>${exclReasons ? `<span style="color:#888;font-size:10px;"> (${exclReasons})</span>` : ''}`;
-                return `
-                <tr data-id="${log.id}" data-type="upload" onclick="handleAdminRowClick(event, 'upload', ${log.id})">
-                    <td title="${escapeHtml(log.filename || '')}">${escapeHtml((log.filename || 'unnamed').slice(0, 20))}${(log.filename || '').length > 20 ? '...' : ''}</td>
-                    <td>${escapeHtml(parkDisplay)}</td>
-                    <td>${kmC(log.foot_km, '#22c55e')}</td>
-                    <td>${kmC(log.vehicle_km, '#3b82f6')}</td>
-                    <td>${kmC(log.boat_km, '#60a5fa')}</td>
-                    <td>${kmC(log.fixed_wing_km, '#a78bfa')}</td>
-                    <td>${kmC(log.rotor_wing_km, '#c084fc')}</td>
-                    <td>${kmC(log.boundary_km, '#f59e0b')}</td>
-                    <td>${exclHtml}</td>
-                    <td>${safeDateStr(log.upload_time)}</td>
-                </tr>
-            `;
-            }).join('');
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
-        }
-    }
-    
-    async function loadPendingApprovals() {
-        const tbody = document.getElementById('pending-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;">Loading...</td></tr>';
-        
-        try {
-            const res = await fetch('/api/admin/pending-approvals');
-            const data = await res.json();
-            
-            if (!data.features || data.features.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#888;">No pending features</td></tr>';
-                return;
-            }
-            
-            // Update stats
-            const stats = data.stats || {};
-            const el = id => document.getElementById(id);
-            if (el('stat-pending-roads')) el('stat-pending-roads').textContent = stats.pending_roads || 0;
-            if (el('stat-pending-places')) el('stat-pending-places').textContent = stats.pending_places || 0;
-            if (el('stat-pending-airstrips')) el('stat-pending-airstrips').textContent = stats.pending_airstrips || 0;
-            if (el('stat-high-confidence')) el('stat-high-confidence').textContent = stats.high_confidence || 0;
-
-            // Per-park data coverage (learned date/time range + point counts)
-            const covEl = el('pending-coverage');
-            if (covEl) {
-                const cov = data.coverage || {};
-                const parts = Object.keys(cov).sort().map(pid =>
-                    `<span style="white-space:nowrap;"><span style="color:#999;">${escapeHtml(pid)}</span>: ${escapeHtml(formatLearnedCoverage(cov[pid]))}</span>`);
-                covEl.innerHTML = parts.join('<span style="color:#444;"> · </span>');
-            }
-            
-            tbody.innerHTML = data.features.map(f => {
-                const confidence = f.confidence_pct || f.confidence || 0;
-                const hasCoords = f.lat != null && f.lon != null;
-                const coordStr = hasCoords ? `${f.lat.toFixed(4)}, ${f.lon.toFixed(4)}` : '-';
-                const flyBtn = hasCoords
-                    ? `<a href="#" onclick="event.stopPropagation();event.preventDefault();flyToApproval(${f.lat},${f.lon},'${f.type}')" style="color:#3b82f6;font-size:11px;text-decoration:none;white-space:nowrap;" title="Fly to location on map"><i class='icon-map-pin icon-color-info' style='font-size:10px;'></i> ${coordStr}</a>`
-                    : `<span style="color:#555;font-size:11px;">${coordStr}</span>`;
-                return `
-                <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})">
-                    <td>${escapeHtml(f.park_id || f.park_name || 'Unknown')}</td>
-                    <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
-                    <td style="font-size:11px;">${escapeHtml(f.details || f.name || 'Unnamed')}</td>
-                    <td>${flyBtn}</td>
-                    <td>
-                        <div class="confidence-bar">
-                            <div class="confidence-fill" style="width:${confidence}%;background:${getConfidenceColor(confidence)}"></div>
-                        </div>
-                        <span class="confidence-text">${confidence.toFixed(0)}%</span>
-                    </td>
-                    <td style="font-size:11px;color:#888;">${f.created_at ? new Date(f.created_at).toLocaleDateString() : '-'}</td>
-                    <td>
-                        <button class="admin-btn admin-btn-success" onclick="event.stopPropagation();approveFeature('${f.type}',${f.id})">Approve</button>
-                        <button class="admin-btn admin-btn-danger" onclick="event.stopPropagation();rejectFeature('${f.type}',${f.id})">Reject</button>
-                    </td>
-                </tr>`;
-            }).join('');
-        } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f87171;">${escapeHtml(err.message)}</td></tr>`;
-        }
-    }
-    
-    function flyToApproval(lat, lon, type) {
-        // Close admin panel and fly to location
-        if (window.viewer) {
-            window.viewer.camera.flyTo({
-                destination: Cesium.Cartesian3.fromDegrees(lon, lat, type === 'road' ? 30000 : 8000),
-                duration: 1.5
-            });
-        }
-    }
-    
-    async function loadLearningResults() {
-        const tbody = document.getElementById('learning-table-body');
-        if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">Loading...</td></tr>';
-        
-        try {
-            const res = await fetch('/api/admin/learning-results?limit=50');
-            if (!res.ok) throw new Error('Failed to load results');
-            const data = await res.json();
-            
-            if (!data.results || data.results.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#888;">No learning results</td></tr>';
-                return;
-            }
-            
-            // Update stats
-            const stats = data.stats || {};
-            const statRoads = document.getElementById('stat-new-roads');
-            const statPlaces = document.getElementById('stat-new-places');
-            const statAirstrips = document.getElementById('stat-new-airstrips');
-            if (statRoads) statRoads.textContent = (stats.total_new_roads || 0) + ' (' + (stats.total_new_roads_km || 0).toFixed(1) + ' km)';
-            if (statPlaces) statPlaces.textContent = stats.total_new_places || 0;
-            if (statAirstrips) statAirstrips.textContent = stats.total_new_airstrips || 0;
-            
-            tbody.innerHTML = data.results.map(r => {
-                const roadsStr = (r.new_roads_found || 0) > 0 ? `${r.new_roads_found} (${(r.new_roads_km || 0).toFixed(1)} km)` : '0';
-                const placesStr = (r.new_places_found || 0) > 0 ? `${r.new_places_found}` : '0';
-                const airstripsStr = (r.new_airstrips_found || 0) > 0 ? `${r.new_airstrips_found}` : '0';
-                const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString() : '-';
-                const summary = r.summary_text || '-';
-                return `
-                <tr>
-                    <td style="font-weight:500;">${escapeHtml(r.park_name || r.park_id || 'Unknown')}</td>
-                    <td>${roadsStr}</td>
-                    <td>${placesStr}</td>
-                    <td>${airstripsStr}</td>
-                    <td style="max-width:300px;font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(summary)}">${escapeHtml(summary.substring(0, 80))}${summary.length > 80 ? '...' : ''}</td>
-                    <td style="font-size:11px;color:#666;">${dateStr}</td>
-                </tr>`;
-            }).join('');
-        } catch (err) {
-            console.error('Learning results error:', err);
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#f87171;">Error: ${escapeHtml(err.message)}</td></tr>`;
-        }
-    }
-    
-    function downloadLearnedKML(scope, parkId) {
-        let url = `/api/admin/learned-features-kml?`;
-        if (scope === 'pending') url += '&scope=pending';
-        else if (parkId) url += `&park_id=${encodeURIComponent(parkId)}`;
-        window.location.href = url;
-    }
-
-    function formatLearnedCoverage(cov) {
-        if (!cov) return '';
-        const fmt = t => { const d = new Date(t); return isNaN(d) ? t : d.toLocaleDateString(undefined, {year:'numeric',month:'short',day:'numeric'}); };
-        const pts = (cov.data_points || 0).toLocaleString();
-        const range = (cov.from && cov.to) ? `${fmt(cov.from)} – ${fmt(cov.to)}` : 'unknown period';
-        return `built on ${pts} data points / ${cov.uploads || 0} tracks between ${range}`;
-    }
-
-    async function populateFeaturesParkFilter() {
-        const select = document.getElementById('features-park-filter');
-        if (!select || select.dataset.populated) return;
-        try {
-            const res = await fetch(`/api/admin/learning-results?limit=100`);
-            const data = await res.json();
-            const parks = new Map();
-            (data.results || []).forEach(r => { if (r.park_id) parks.set(r.park_id, r.park_name || r.park_id); });
-            [...parks.entries()].sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, name]) => {
-                const opt = document.createElement('option');
-                opt.value = id; opt.textContent = name;
-                select.appendChild(opt);
-            });
-            select.dataset.populated = '1';
-        } catch (e) { /* ignore */ }
-    }
-
-    async function loadLearnedFeatures() {
-        const container = document.getElementById('features-content');
-        if (!container) return;
-        populateFeaturesParkFilter();
-
-        const select = document.getElementById('features-park-filter');
-        const parkCode = select ? select.value : '';
-
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;">Loading...</div>';
-
-        try {
-            const parkParam = parkCode ? `&park_id=${encodeURIComponent(parkCode)}` : '';
-            const res = await fetch(`/api/admin/learned-features?${parkParam || '&park_id=__none__'}`);
-            // Without a park the endpoint requires park_id; fall back to pending-approvals view
-            let data;
-            if (parkCode) {
-                data = await res.json();
-            } else {
-                container.innerHTML = '<div style="color:#666;text-align:center;padding:40px;">Select a park to view learned features</div>';
-                return;
-            }
-
-            // Combine all feature types into a single array
-            const features = [];
-            if (data.roads) data.roads.forEach(r => features.push({...r, type: 'road', name: r.name || 'Road ' + r.id, confidence: r.confidence_pct, hit_count: r.match_count}));
-            if (data.places) data.places.forEach(p => features.push({...p, type: 'place', name: p.name || p.place_type, confidence: p.confidence_pct, hit_count: p.visit_count}));
-            if (data.airstrips) data.airstrips.forEach(a => features.push({...a, type: 'airstrip', name: a.name || 'Airstrip ' + a.id, confidence: a.confidence_pct, hit_count: (a.landing_count || 0) + (a.takeoff_count || 0)}));
-
-            const covLine = data.coverage ? `<div style="font-size:11px;color:#666;line-height:1.5;">${escapeHtml(formatLearnedCoverage(data.coverage))}</div>` : '';
-            const kmlBtn = `<a href="#" onclick="event.preventDefault();downloadLearnedKML(null,'${jsq(parkCode)}')" title="Download all learned features for this park as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>`;
-            const header = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">${covLine}${kmlBtn}</div>`;
-
-            if (features.length === 0) {
-                container.innerHTML = header + '<div style="text-align:center;padding:20px;color:#888;">No learned features for this park</div>';
-                return;
-            }
-
-            container.innerHTML = header + `
-            <div class="admin-table-container">
-                <table class="admin-table">
-                    <thead><tr><th>Type</th><th>Name</th><th>Confidence</th><th>Hits</th><th>Status</th></tr></thead>
-                    <tbody id="features-table-body">${features.map(f => `
-                        <tr data-id="${f.id}" data-type="${f.type}" onclick="handleAdminRowClick(event, '${f.type}', ${f.id})" style="cursor:pointer;">
-                            <td><span class="feature-type-badge type-${f.type}">${f.type}</span></td>
-                            <td>${escapeHtml(f.name || 'Unnamed')}</td>
-                            <td>
-                                <div class="confidence-bar">
-                                    <div class="confidence-fill" style="width:${f.confidence || 0}%;background:${getConfidenceColor(f.confidence)}"></div>
-                                </div>
-                                <span class="confidence-text">${(f.confidence || 0).toFixed(0)}%</span>
-                            </td>
-                            <td>${f.hit_count || 0}</td>
-                            <td><span class="status-badge status-${f.status}">${f.status}</span></td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table>
-            </div>`;
-        } catch (err) {
-            container.innerHTML = `<div style="text-align:center;color:#f87171;padding:20px;">${escapeHtml(err.message)}</div>`;
-        }
-    }
-    
-    function getConfidenceColor(confidence) {
-        if (confidence >= 75) return '#22c55e';
-        if (confidence >= 50) return '#eab308';
-        return '#f87171';
-    }
-    
-    async function approveFeature(type, id) {
-        try {
-            const res = await fetch('/api/admin/approve-feature', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, id })
-            });
-            if (!res.ok) throw new Error('Failed to approve');
-            showToast('Feature approved', 'success');
-            if (adminCurrentTab === 'pending') loadPendingApprovals();
-            else if (adminCurrentTab === 'features') loadLearnedFeatures();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    async function rejectFeature(type, id) {
-        if (!confirm('Reject this feature? It will be marked as invalid.')) return;
-        try {
-            const res = await fetch('/api/admin/reject-feature', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, id })
-            });
-            if (!res.ok) throw new Error('Failed to reject');
-            showToast('Feature rejected', 'info');
-            if (adminCurrentTab === 'pending') loadPendingApprovals();
-            else if (adminCurrentTab === 'features') loadLearnedFeatures();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    async function showFeatureDetail(type, id) {
-        const modal = document.getElementById('feature-modal');
-        if (!modal) return;
-        
-        const content = modal.querySelector('.feature-modal-content') || modal;
-        content.innerHTML = '<div style="text-align:center;padding:40px;">Loading...</div>';
-        modal.classList.add('active');
-        
-        try {
-            const res = await fetch(`/api/admin/feature-detail?type=${type}&id=${id}`);
-            const data = await res.json();
-            
-            content.innerHTML = `
-                <div class="feature-modal-header">
-                    <h3>${escapeHtml(data.name || 'Unnamed Feature')}</h3>
-                    <button class="feature-modal-close" onclick="closeFeatureModal()">&times;</button>
-                </div>
-                <div class="feature-modal-body">
-                    <div class="feature-detail-row"><strong>Type:</strong> <span class="feature-type-badge type-${type}">${type}</span></div>
-                    <div class="feature-detail-row"><strong>Park:</strong> ${escapeHtml(data.park_name || 'Unknown')}</div>
-                    <div class="feature-detail-row"><strong>Confidence:</strong> ${(data.confidence || 0).toFixed(0)}%</div>
-                    <div class="feature-detail-row"><strong>Hit Count:</strong> ${data.hit_count || 0}</div>
-                    <div class="feature-detail-row"><strong>Status:</strong> <span class="status-badge status-${data.status}">${data.status}</span></div>
-                    <div class="feature-detail-row"><strong>First Seen:</strong> ${data.created_at ? new Date(data.created_at).toLocaleString() : 'Unknown'}</div>
-                    <div class="feature-detail-row"><strong>Last Updated:</strong> ${data.updated_at ? new Date(data.updated_at).toLocaleString() : 'Unknown'}</div>
-                    ${data.history && data.history.length > 0 ? `
-                        <div class="feature-history">
-                            <h4>History</h4>
-                            <ul>${data.history.map(h => `<li>${new Date(h.timestamp).toLocaleString()}: ${escapeHtml(h.action)}</li>`).join('')}</ul>
-                        </div>
-                    ` : ''}
-                </div>
-                <div class="feature-modal-footer">
-                    ${data.status === 'pending' ? `
-                        <button class="admin-btn admin-btn-success" onclick="approveFeature('${type}',${id});closeFeatureModal();">Approve</button>
-                        <button class="admin-btn admin-btn-danger" onclick="rejectFeature('${type}',${id});closeFeatureModal();">Reject</button>
-                    ` : ''}
-                    <button class="admin-btn" onclick="closeFeatureModal()">Close</button>
-                </div>
-            `;
-        } catch (err) {
-            content.innerHTML = `<div style="text-align:center;padding:40px;color:#f87171;">Error: ${escapeHtml(err.message)}<br><button class="admin-btn" onclick="closeFeatureModal()" style="margin-top:10px;">Close</button></div>`;
-        }
-    }
-    
-    function closeFeatureModal() {
-        const modal = document.getElementById('feature-modal');
-        if (modal) modal.classList.remove('active');
-    }
+    // The Activity and Learner tabs live in static/admin.js (window.AdminUI).
+    // What stood here -- an upload table of seven km columns, a "Pending
+    // approvals" list capped at 100 of 3,200, and "Approve all > 75%" -- was
+    // written for the counter learner and hand uploads; see admin.js.
 
     // ── Automated Fetch (EarthRanger/PAMDAS GPS sync) ──────────────────────
 
@@ -24785,11 +24445,17 @@ ${starredItems.narratives.map(n => {
             s.uploads ? `<span>${s.uploads} fetches · ${Math.round(s.total_km).toLocaleString()} km</span>` : '',
             `<span>every ${s.interval_h} h</span>`,
         ].filter(Boolean).join('<i class="af-dot"></i>');
+        // Pause and Delete arm in place (first press asks, second does);
+        // Resume opens a password field in the card, not a prompt().
         const acts = s.mine ? `
-            ${s.enabled ? `<button class="sh-btn" onclick="autofetchRunNow(${s.id})">Fetch now</button>
-                           <button class="sh-btn" onclick="autofetchDisable(${s.id})" title="Pauses fetching and purges the stored password">Pause</button>`
-                        : `<button class="sh-btn sh-btn-primary" onclick="autofetchEnable(${s.id})">Resume…</button>`}
-            <button class="sh-btn sh-btn-off" onclick="autofetchDelete(${s.id})" aria-label="Delete source">Delete</button>` : '';
+            ${s.enabled ? `<button class="sh-btn" onclick="autofetchRunNow(${s.id}, this)"><i class="icon-refresh-cw" aria-hidden="true"></i> Fetch now</button>
+                           <button class="sh-btn" onclick="AdminUI.arm(this, 'Pause and purge the stored password?', () => autofetchDisable(${s.id}))" title="Fetching stops and the stored server password is purged; you re-enter it to resume">Pause</button>`
+                        : `<form class="af-resume" onsubmit="autofetchEnable(${s.id}, this); return false;">
+                               <input type="password" name="pw" autocomplete="off" placeholder="Server password to resume" aria-label="Server password to resume fetching" required>
+                               <button class="sh-btn sh-btn-primary" type="submit">Resume</button>
+                           </form>`}
+            <button class="sh-btn sh-btn-off" onclick="AdminUI.arm(this, 'Delete source and its credentials?', () => autofetchDelete(${s.id}))"
+                title="Credentials and the sharing list are removed. Already-fetched pixels stay on record but are no longer shown to anyone.">Delete</button>` : '';
         const shared = s.mine ? '' : `<div class="af-shared-note"><i class="icon-users" style="font-size:11px;"></i> Shared with you by another login. Its pixels are drawn on your map; only the owner can change it.</div>`;
         return `<div class="af-card${s.mine?'':' af-card-ro'}" id="af-card-${s.id}">
             <div class="af-card-head">
@@ -24801,7 +24467,9 @@ ${starredItems.narratives.map(n => {
                 <div class="ts-meta"><code>${escapeHtml(host)}</code>${parks.map(p=>`<span class="af-park">${escapeHtml(p)}</span>`).join('')}</div>
             </div>
             <div class="af-stats">${stats}</div>
-            ${isErr ? `<div class="af-err">${escapeHtml(s.last_status)}</div>` : ''}
+            ${isErr ? `<div class="af-err">${escapeHtml(s.last_status)}${s.consecutive_failures > 1
+                ? ` <span class="af-retry">\u2014 failed ${s.consecutive_failures} times in a row${next ? `, retrying ${next}` : ''}</span>` : ''}</div>` : ''}
+            ${window.AdminUI ? AdminUI.afLogHTML(s) : ''}
             ${shared}
             ${s.mine ? afVisControl(`af-vis-${s.id}`, s.visibility, s.viewers, s.id) : ''}
             ${acts ? `<div class="ts-acts">${acts}</div>` : ''}
@@ -24868,27 +24536,26 @@ ${starredItems.narratives.map(n => {
     }
 
     async function autofetchDisable(id) {
-        if (!confirm('Pause this source? Fetching stops and the stored server password is purged; you will re-enter it to resume.')) return;
         try {
             const res = await fetch(`/api/admin/autofetch/disable?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
-            showToast('Source paused', 'info');
+            showToast('Source paused \u2014 the stored password was purged', 'info');
             loadAutofetchSources();
         } catch (err) { showToast(err.message, 'error'); }
     }
 
-    async function autofetchEnable(id) {
-        const pw = prompt('Server password to resume fetching:');
-        if (!pw) return;
+    async function autofetchEnable(id, form) {
+        const inp = form.elements.pw, btn = form.querySelector('button');
+        if (!inp.value) { inp.focus(); return; }
+        btn.disabled = true;
         try {
-            await afPost('enable', {id, password: pw});
+            await afPost('enable', {id, password: inp.value});
             showToast('Fetching resumed', 'success');
             loadAutofetchSources();
-        } catch (err) { showToast(err.message, 'error'); }
+        } catch (err) { afMsg(id, err.message, 'err'); showToast(err.message, 'error'); btn.disabled = false; inp.select(); }
     }
 
     async function autofetchDelete(id) {
-        if (!confirm('Delete this source? Its credentials and sharing list are removed. Already-fetched pixels stay on record but are no longer shown to anyone.')) return;
         try {
             const res = await fetch(`/api/admin/autofetch/delete?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
@@ -24897,13 +24564,14 @@ ${starredItems.narratives.map(n => {
         } catch (err) { showToast(err.message, 'error'); }
     }
 
-    async function autofetchRunNow(id) {
+    async function autofetchRunNow(id, btn) {
+        if (btn) btn.disabled = true;
         try {
             const res = await fetch(`/api/admin/autofetch/run?id=${id}`, {method: 'POST'});
             if (!res.ok) throw new Error((await res.json()).error);
-            showToast('Fetch started in the background', 'success');
+            showToast('Fetch started in the background', 'success', {key: 'af-run'});
             setTimeout(loadAutofetchSources, 4000);
-        } catch (err) { showToast(err.message, 'error'); }
+        } catch (err) { showToast(err.message, 'error'); if (btn) btn.disabled = false; }
     }
 
     // Lazy-load fetch script source code on first expand
@@ -24927,299 +24595,6 @@ ${starredItems.narratives.map(n => {
                 if (codeEl) codeEl.textContent = 'Error loading script: ' + err.message;
             }
         });
-    }
-    
-    async function showUploadDetail(id) {
-        // Toggle inline detail row below the clicked upload row
-        const existingDetail = document.getElementById(`upload-detail-${id}`);
-        if (existingDetail) {
-            existingDetail.remove();
-            return;
-        }
-        
-        // Remove any other open detail rows
-        document.querySelectorAll('.upload-detail-row').forEach(r => r.remove());
-        
-        const row = document.querySelector(`tr[data-id="${id}"][data-type="upload"]`);
-        if (!row) return;
-        
-        // Insert loading row
-        const detailRow = document.createElement('tr');
-        detailRow.id = `upload-detail-${id}`;
-        detailRow.className = 'upload-detail-row';
-        detailRow.innerHTML = `<td colspan="10" style="padding:12px 16px;background:#111;border-left:3px solid #3b82f6;"><div style="text-align:center;color:#888;">Loading...</div></td>`;
-        row.after(detailRow);
-        
-        try {
-            const res = await fetch(`/api/admin/upload-detail?id=${id}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            
-            // Parse classified segments
-            let segments = [];
-            if (data.classified_segments_json) {
-                try { segments = JSON.parse(data.classified_segments_json); } catch(e) {}
-            }
-            
-            // Parse validation
-            const errors = data.validation_errors ? (() => { try { return JSON.parse(data.validation_errors); } catch(e) { return []; } })() : [];
-            const warnings = data.validation_warnings ? (() => { try { return JSON.parse(data.validation_warnings); } catch(e) { return []; } })() : [];
-            
-            // Status color
-            const statusColor = data.processing_status === 'completed' ? '#22c55e' : data.processing_status === 'partial' ? '#f59e0b' : '#ef4444';
-            
-            // Build segments HTML
-            const segsHTML = segments.length > 0 ? segments.map((seg, idx) => {
-                const c = seg.include_in_effort ? '#22c55e' : '#ef4444';
-                const bg = seg.include_in_effort ? '#1a2b1a' : '#2b1a1a';
-                return `<div style="background:${bg};border-left:3px solid ${c};padding:6px 8px;margin-bottom:4px;border-radius:3px;font-size:11px;">
-                    <span style="color:${c};font-weight:bold;">Seg ${idx+1}: ${seg.classification}</span>
-                    <span style="color:#aaa;"> · ${seg.movement_type || '?'}${seg.activity_type ? ' ('+seg.activity_type+')' : ''} · ${(seg.distance_km||0).toFixed(2)} km · ${(seg.avg_speed_kmh||0).toFixed(1)} km/h${seg.duration ? ' · '+seg.duration : ''}</span>
-                    ${seg.reason ? `<div style="color:#666;font-style:italic;margin-top:2px;">${seg.reason}</div>` : ''}
-                </div>`;
-            }).join('') : '<div style="color:#666;font-size:11px;">No classified segments</div>';
-            
-            // Build validation HTML
-            let valHTML = '';
-            if (errors.length > 0) valHTML += errors.map(e => `<div style="color:#f87171;font-size:11px;">✗ ${escapeHtml(e)}</div>`).join('');
-            if (warnings.length > 0) valHTML += warnings.map(w => `<div style="color:#fbbf24;font-size:11px;">⚠ ${escapeHtml(w)}</div>`).join('');
-            
-            detailRow.innerHTML = `<td colspan="10" style="padding:0;background:#111;border-left:3px solid #3b82f6;">
-                <div style="padding:12px 16px;">
-                    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:10px;">
-                        <div><strong style="color:#888;">Status:</strong> <span style="color:${statusColor};font-weight:bold;">${data.processing_status || 'unknown'}</span></div>
-                        <div><strong style="color:#888;">Points:</strong> <span style="color:#ddd;">${data.total_points || 0}</span></div>
-                        <div><strong style="color:#888;">Uploaded:</strong> <span style="color:#ddd;">${safeDateStr(data.upload_time)}</span></div>
-                        ${data.protected_area_name ? `<div><strong style="color:#888;">Park:</strong> <span style="color:#ddd;">${escapeHtml(data.protected_area_name)}</span></div>` : ''}
-                    </div>
-                    
-                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
-                        <span style="color:#22c55e;">Patrol: ${(data.patrol_km||0).toFixed(2)} km</span>
-                        <span style="color:#888;">Road: ${(data.road_km||0).toFixed(2)} km</span>
-                        <span style="color:#888;">Boundary: ${(data.boundary_km||0).toFixed(2)} km</span>
-                        <span style="color:#ef4444;">Excluded: ${(data.excluded_km||0).toFixed(2)} km</span>${(() => { const r = buildExcludedReasons(data); return r ? `<span style="color:#888;font-size:11px;"> (${r})</span>` : ''; })()}
-                    </div>
-                    
-                    <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12px;">
-                        ${data.foot_segments > 0 ? `<span style="color:#ddd;">🚶 ${data.foot_segments}× ${(data.foot_km||0).toFixed(1)} km / ${Math.round(data.foot_minutes||0)} min</span>` : ''}
-                        ${data.vehicle_segments > 0 ? `<span style="color:#ddd;">🚗 ${data.vehicle_segments}× ${(data.vehicle_km||0).toFixed(1)} km / ${Math.round(data.vehicle_minutes||0)} min</span>` : ''}
-                        ${data.aircraft_segments > 0 ? `<span style="color:#ddd;">✈ ${data.aircraft_segments}× ${(data.aircraft_km||0).toFixed(1)} km / ${Math.round(data.aircraft_minutes||0)} min</span>` : ''}
-                    </div>
-                    
-                    ${valHTML ? `<div style="margin-bottom:10px;">${valHTML}</div>` : ''}
-                    
-                    <details style="margin-top:4px;">
-                        <summary style="cursor:pointer;color:#3b82f6;font-size:12px;user-select:none;">Segments (${segments.length})</summary>
-                        <div style="margin-top:6px;max-height:200px;overflow-y:auto;">${segsHTML}</div>
-                    </details>
-                    
-                    <div style="margin-top:10px;text-align:right;">
-                        <button class="admin-btn admin-btn-danger" style="font-size:11px;padding:4px 10px;" onclick="event.stopPropagation();deleteUpload(${data.id});">Delete</button>
-                    </div>
-                </div>
-            </td>`;
-        } catch (err) {
-            detailRow.innerHTML = `<td colspan="10" style="padding:12px 16px;background:#111;border-left:3px solid #ef4444;color:#f87171;font-size:12px;">Error loading details: ${err.message}</td>`;
-        }
-    }
-    
-    async function approveAllHighConfidence() {
-        if (!confirm('Approve all features with >75% confidence?')) return;
-        try {
-            const res = await fetch('/api/admin/approve-high-confidence', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ threshold: 75 })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-            showToast(`Approved ${data.approved || 0} features`, 'success');
-            loadPendingApprovals();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    
-    async function hideNotification(notificationId) {
-        try {
-            const res = await fetch('/api/admin/hide-notification', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: notificationId })
-            });
-            if (!res.ok) throw new Error('Failed to hide');
-            const row = document.querySelector(`tr[data-notification-id="${notificationId}"]`);
-            if (row) row.remove();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    function handleAdminRowClick(event, type, id) {
-        if (event.shiftKey && adminSelectedItems.length > 0) {
-            const row = event.currentTarget;
-            const rows = Array.from(row.parentElement.querySelectorAll('tr[data-id]'));
-            const currentIndex = rows.indexOf(row);
-            const lastSelected = adminSelectedItems[adminSelectedItems.length - 1];
-            const lastRow = row.parentElement.querySelector(`tr[data-id="${lastSelected.id}"]`);
-            const lastIndex = rows.indexOf(lastRow);
-            
-            const start = Math.min(currentIndex, lastIndex);
-            const end = Math.max(currentIndex, lastIndex);
-            
-            for (let i = start; i <= end; i++) {
-                const r = rows[i];
-                const itemId = parseInt(r.dataset.id);
-                const itemType = r.dataset.type || type;
-                if (!adminSelectedItems.find(s => s.id === itemId && s.type === itemType)) {
-                    adminSelectedItems.push({ type: itemType, id: itemId });
-                    r.classList.add('selected');
-                }
-            }
-        } else if (event.ctrlKey || event.metaKey) {
-            const row = event.currentTarget;
-            const itemId = parseInt(row.dataset.id);
-            const itemType = row.dataset.type || type;
-            const idx = adminSelectedItems.findIndex(s => s.id === itemId && s.type === itemType);
-            if (idx >= 0) {
-                adminSelectedItems.splice(idx, 1);
-                row.classList.remove('selected');
-            } else {
-                adminSelectedItems.push({ type: itemType, id: itemId });
-                row.classList.add('selected');
-            }
-        } else {
-            // Single click without modifiers - show detail modal
-            if (type === 'upload') {
-                showUploadDetail(id);
-            } else {
-                showFeatureDetail(type, id);
-            }
-            return;
-        }
-        updateBulkActionBar();
-    }
-    
-    // Ctrl+A / Cmd+A to select all rows in current admin tab
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-            const adminPanel = document.getElementById('admin-panel');
-            if (!adminPanel || adminPanel.style.display === 'none') return;
-            e.preventDefault();
-            
-            // Find visible table body
-            let tbody;
-            if (adminCurrentTab === 'uploads') tbody = document.getElementById('uploads-table-body');
-            else if (adminCurrentTab === 'pending') tbody = document.getElementById('pending-table-body');
-            else if (adminCurrentTab === 'features') tbody = document.getElementById('features-table-body');
-            if (!tbody) return;
-            
-            const rows = tbody.querySelectorAll('tr[data-id]');
-            if (rows.length === 0) return;
-            
-            // If all already selected, deselect all
-            const allSelected = adminSelectedItems.length === rows.length;
-            if (allSelected) {
-                clearSelection();
-                return;
-            }
-            
-            adminSelectedItems = [];
-            rows.forEach(r => {
-                r.classList.add('selected');
-                adminSelectedItems.push({ type: r.dataset.type, id: parseInt(r.dataset.id) });
-            });
-            updateBulkActionBar();
-        }
-    });
-
-    function updateBulkActionBar() {
-        let bar = document.getElementById('admin-bulk-bar');
-        const hasUploads = adminSelectedItems.some(s => s.type === 'upload');
-        const hasFeatures = adminSelectedItems.some(s => s.type !== 'upload');
-        if (adminSelectedItems.length > 0) {
-            if (!bar) {
-                bar = document.createElement('div');
-                bar.id = 'admin-bulk-bar';
-                bar.className = 'admin-bulk-bar';
-                document.getElementById('admin-panel').appendChild(bar);
-            }
-            bar.innerHTML = `
-                <span class="bulk-count">${adminSelectedItems.length} selected</span>
-                ${hasFeatures ? '<button class="admin-btn admin-btn-success" onclick="bulkApprove()">Approve</button>' : ''}
-                ${hasFeatures ? '<button class="admin-btn admin-btn-danger" onclick="bulkReject()">Reject</button>' : ''}
-                ${hasUploads ? '<button class="admin-btn admin-btn-danger" onclick="bulkDeleteUploads()"><i class="icon-trash-2"></i> Delete</button>' : ''}
-                <button class="admin-btn" onclick="clearSelection()">Clear</button>
-            `;
-            bar.classList.add('active');
-        } else if (bar) {
-            bar.classList.remove('active');
-        }
-    }
-    
-    async function bulkApprove() {
-        if (!confirm(`Approve ${adminSelectedItems.length} items`)) return;
-        try {
-            const res = await fetch('/api/admin/bulk-approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: adminSelectedItems })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-            showToast(`Approved ${data.approved || adminSelectedItems.length} items`, 'success');
-            clearSelection();
-            if (adminCurrentTab === 'pending') loadPendingApprovals();
-            else if (adminCurrentTab === 'features') loadLearnedFeatures();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    async function bulkReject() {
-        if (!confirm(`Reject ${adminSelectedItems.length} items`)) return;
-        try {
-            const res = await fetch('/api/admin/bulk-reject', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: adminSelectedItems })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-            showToast(`Rejected ${data.rejected || adminSelectedItems.length} items`, 'info');
-            clearSelection();
-            if (adminCurrentTab === 'pending') loadPendingApprovals();
-            else if (adminCurrentTab === 'features') loadLearnedFeatures();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-    
-    async function bulkDeleteUploads() {
-        const uploadItems = adminSelectedItems.filter(s => s.type === 'upload');
-        if (uploadItems.length === 0) return;
-        if (!confirm(`Delete ${uploadItems.length} upload(s)? This cannot be undone.`)) return;
-        try {
-            const res = await fetch('/api/admin/bulk-delete-uploads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: uploadItems.map(s => s.id) })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
-            showToast(`Deleted ${data.deleted} upload(s)`, 'info');
-            clearSelection();
-            loadUploadLogs();
-        } catch (err) {
-            showToast('Error: ' + err.message, 'error');
-        }
-    }
-
-    function clearSelection() {
-        adminSelectedItems = [];
-        document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
-        updateBulkActionBar();
     }
     
     // ========== END ADMIN PANEL ==========
@@ -26327,7 +25702,7 @@ ${starredItems.narratives.map(n => {
                         <path d="M12 20h9"></path>
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                     </svg>
-                    GPX/Map Admin
+                    <span>Admin</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div id="pipeline-status-badge" class="pipeline-badge" style="display:none;" title="Nightly fire pipeline heartbeat"></div>
@@ -26338,113 +25713,89 @@ ${starredItems.narratives.map(n => {
                     <button class="admin-panel-close" onclick="toggleAdminPanel()" aria-label="Close admin panel">&times;</button>
                 </div>
             </div>
-            <div class="admin-panel-tabs" role="tablist" aria-label="Admin sections">
-                <button class="admin-tab active" data-tab="uploads" onclick="switchAdminTab('uploads')" role="tab" aria-selected="true" aria-controls="tab-uploads">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Upload Logs
+            <div class="admin-panel-tabs" role="tablist" aria-label="Admin sections" aria-orientation="vertical">
+                <div class="admin-nav-group" aria-hidden="true">Patrol data</div>
+                <button class="admin-tab active" data-tab="uploads" onclick="switchAdminTab('uploads')" role="tab" id="admin-tab-uploads" aria-selected="true" aria-controls="tab-uploads">
+                    <i class="icon-activity" aria-hidden="true"></i><span>Activity</span>
                 </button>
-                <button class="admin-tab" data-tab="pending" onclick="switchAdminTab('pending')" role="tab" aria-selected="false" aria-controls="tab-pending">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Pending Approvals
-                    <span class="admin-tab-badge" id="pending-count">0</span>
+                <button class="admin-tab" data-tab="learning" onclick="switchAdminTab('learning')" role="tab" id="admin-tab-learning" aria-selected="false" aria-controls="tab-learning" tabindex="-1">
+                    <i class="icon-brain" aria-hidden="true"></i><span>Learner</span>
+                    <span class="admin-tab-badge" id="learner-queue-badge" hidden></span>
                 </button>
-                <button class="admin-tab" data-tab="learning" onclick="switchAdminTab('learning')" role="tab" aria-selected="false" aria-controls="tab-learning">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                    Learning Results
+                <button class="admin-tab" data-tab="autofetch" onclick="switchAdminTab('autofetch')" role="tab" id="admin-tab-autofetch" aria-selected="false" aria-controls="tab-autofetch" tabindex="-1">
+                    <i class="icon-cloud-download" aria-hidden="true"></i><span>Automated fetch</span>
                 </button>
-                <button class="admin-tab" data-tab="features" onclick="switchAdminTab('features')" role="tab" aria-selected="false" aria-controls="tab-features">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-                    Learned Features
+                <div class="admin-nav-group" aria-hidden="true">Workspace</div>
+                <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')" role="tab" id="admin-tab-access" aria-selected="false" aria-controls="tab-access" tabindex="-1">
+                    <i class="icon-share-2" aria-hidden="true"></i><span>Access &amp; sharing</span>
                 </button>
-                <button class="admin-tab" data-tab="autofetch" onclick="switchAdminTab('autofetch')" role="tab" aria-selected="false" aria-controls="tab-autofetch">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
-                    Automated Fetch
-                </button>
-                <button class="admin-tab" data-tab="access" onclick="switchAdminTab('access')" role="tab" aria-selected="false" aria-controls="tab-access">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
-                    Access &amp; Sharing
-                </button>
-                <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" aria-selected="false" aria-controls="tab-map-settings">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-5-7H1m6 0h6m6 0h6M7 7l-2-2m12 0l2-2M7 17l-2 2m12 0l2 2"/></svg>
-                    Map Settings
+                <button class="admin-tab" data-tab="map-settings" onclick="switchAdminTab('map-settings')" role="tab" id="admin-tab-map-settings" aria-selected="false" aria-controls="tab-map-settings" tabindex="-1">
+                    <i class="icon-sliders-horizontal" aria-hidden="true"></i><span>Map settings</span>
                 </button>
             </div>
-            <div class="admin-panel-body">
-                <!-- Upload Logs Tab -->
-                <div class="admin-tab-content active" id="tab-uploads" role="tabpanel" aria-labelledby="tab-uploads">
-                    <div class="admin-stats-row" id="uploads-stats">
-                        <div class="admin-stat-card"><div class="admin-stat-label">Uploads</div><div class="admin-stat-value" id="stat-total-uploads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-footprints icon-color-success"></i> Foot</div><div class="admin-stat-value" style="color:#22c55e" id="stat-foot-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-car icon-color-info"></i> Vehicle</div><div class="admin-stat-value" style="color:#3b82f6" id="stat-vehicle-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-ship icon-color-info"></i> Boat</div><div class="admin-stat-value" style="color:#60a5fa" id="stat-boat-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-plane icon-color-neutral"></i> Fixed-wing</div><div class="admin-stat-value" style="color:#a78bfa" id="stat-fixed-wing-km">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label"><i class="icon-helicopter icon-color-neutral"></i> Helicopter</div><div class="admin-stat-value" style="color:#c084fc" id="stat-rotor-wing-km">-</div></div>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead><tr><th>File</th><th>Park</th><th>Foot</th><th>Vhl</th><th>Boat</th><th>F-Wing</th><th>Heli</th><th>Bdy</th><th>Excl</th><th>Date</th></tr></thead>
-                            <tbody id="uploads-table-body"><tr><td colspan="10" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
-                        </table>
-                    </div>
+            <div class="admin-panel-body" id="admin-panel-body">
+                <!-- Activity: every track file that reached the pipeline, fetched or
+                     uploaded (srv/admin_activity.go, static/admin.js). -->
+                <div class="admin-tab-content active" id="tab-uploads" role="tabpanel" aria-labelledby="admin-tab-uploads">
+                    <header class="adm-page-head">
+                        <div>
+                            <h2>Activity</h2>
+                            <p>Every track file that reached the patrol pipeline &mdash; fetched on a schedule or uploaded by hand &mdash; the period it covers, what moved, and what the learner made of it.</p>
+                        </div>
+                        <div class="adm-seg" id="act-source" role="group" aria-label="Filter by origin">
+                            <button type="button" class="on" data-v="" aria-pressed="true">All</button>
+                            <button type="button" data-v="autofetch" aria-pressed="false">Fetched</button>
+                            <button type="button" data-v="upload" aria-pressed="false">Uploaded</button>
+                        </div>
+                    </header>
+                    <div id="act-totals"></div>
+                    <div id="act-list" class="adm-list" aria-live="polite"><div class="adm-skel"></div><div class="adm-skel"></div><div class="adm-skel"></div></div>
+                    <div id="act-more" class="adm-more"></div>
                 </div>
-                
-                <!-- Pending Approvals Tab -->
-                <div class="admin-tab-content" id="tab-pending" role="tabpanel" aria-labelledby="tab-pending">
-                    <div class="admin-stats-row" id="pending-stats">
-                        <div class="admin-stat-card"><div class="admin-stat-label">Pending Roads</div><div class="admin-stat-value warning" id="stat-pending-roads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Pending Places</div><div class="admin-stat-value warning" id="stat-pending-places">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">Pending Airstrips</div><div class="admin-stat-value warning" id="stat-pending-airstrips">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">High Confidence (&gt;75%)</div><div class="admin-stat-value" id="stat-high-confidence">-</div></div>
+
+                <!-- Learner: what the event learner decided, on what evidence
+                     (srv/admin_learner.go). admin_tab=pending|features land here. -->
+                <div class="admin-tab-content" id="tab-learning" role="tabpanel" aria-labelledby="admin-tab-learning">
+                    <header class="adm-page-head">
+                        <div>
+                            <h2>Learner</h2>
+                            <p id="lrn-intro">Airstrips, camps and tracks inferred from how patrols move. Each carries a score &mdash; the probability it is used again &mdash; and goes on the map by itself once the score clears its family&rsquo;s line. Your decision always overrides the learner&rsquo;s.</p>
+                        </div>
+                    </header>
+                    <div id="lrn-queue"></div>
+                    <div id="lrn-summary" class="lrn-summary"></div>
+                    <div class="adm-toolbar" id="lrn-toolbar">
+                        <label class="adm-select"><span class="sr-only">Park</span>
+                            <select id="lrn-park" aria-label="Park"><option value="">All parks</option></select></label>
+                        <div class="adm-seg" id="lrn-state" role="group" aria-label="State">
+                            <button type="button" class="on" data-v="map" aria-pressed="true">On the map</button>
+                            <button type="button" data-v="pending" aria-pressed="false">Undecided</button>
+                            <button type="button" data-v="rejected" aria-pressed="false">Rejected</button>
+                            <button type="button" data-v="all" aria-pressed="false">All</button>
+                        </div>
+                        <label class="adm-select adm-toolbar-end"><span class="sr-only">Sort</span>
+                            <select id="lrn-sort" aria-label="Sort">
+                                <option value="score">Highest score</option>
+                                <option value="low">Lowest score</option>
+                                <option value="recent">Last seen</option>
+                                <option value="events">Most evidence</option>
+                            </select></label>
                     </div>
-                    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-                        <button class="admin-btn approve" onclick="approveAllHighConfidence()">✓ Approve All &gt;75% Confidence</button>
-                        <a href="#" onclick="event.preventDefault();downloadLearnedKML('pending')" title="Download all pending features as KML" style="color:#666;font-size:11px;text-decoration:none;margin-left:auto;"><i class="icon-download" style="font-size:10px;"></i> KML</a>
-                    </div>
-                    <div id="pending-coverage" style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.5;"></div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead><tr><th>Park</th><th>Type</th><th>Details</th><th>Location</th><th>Confidence</th><th>Date</th><th>Actions</th></tr></thead>
-                            <tbody id="pending-table-body"><tr><td colspan="7" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
-                        </table>
-                    </div>
+                    <div id="lrn-count" class="adm-count"></div>
+                    <div id="lrn-list" class="adm-list" aria-live="polite"></div>
+                    <div id="lrn-more" class="adm-more"></div>
                 </div>
-                
-                <!-- Learning Results Tab -->
-                <div class="admin-tab-content" id="tab-learning" role="tabpanel" aria-labelledby="tab-learning">
-                    <div class="admin-stats-row" id="learning-stats">
-                        <div class="admin-stat-card"><div class="admin-stat-label">Total Results</div><div class="admin-stat-value" id="stat-total-results">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">New Roads Found</div><div class="admin-stat-value" id="stat-new-roads">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">New Places Found</div><div class="admin-stat-value" id="stat-new-places">-</div></div>
-                        <div class="admin-stat-card"><div class="admin-stat-label">New Airstrips</div><div class="admin-stat-value" id="stat-new-airstrips">-</div></div>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead><tr><th>Park</th><th>Roads</th><th>Places</th><th>Airstrips</th><th>Summary</th><th>Date</th></tr></thead>
-                            <tbody id="learning-table-body"><tr><td colspan="6" style="text-align:center;color:#666;">Loading...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Learned Features Tab -->
-                <div class="admin-tab-content" id="tab-features" role="tabpanel" aria-labelledby="tab-features">
-                    <div style="margin-bottom:16px;">
-                        <label style="color:#888;font-size:12px;margin-right:8px;">Filter by Park:</label>
-                        <select id="features-park-filter" onchange="loadLearnedFeatures()" style="background:#222;border:1px solid rgba(255,255,255,0.1);color:#fff;padding:8px 12px;border-radius:6px;font-size:13px;">
-                            <option value="">All Parks</option>
-                        </select>
-                    </div>
-                    <div id="features-content">
-                        <div style="color:#666;text-align:center;padding:40px;">Select a park to view learned features</div>
-                    </div>
-                </div>
-                
+
                 <!-- Automated Fetch Tab -->
-                <div class="admin-tab-content" id="tab-autofetch">
-                    <p style="color:#888;font-size:12px;margin:0 0 12px;line-height:1.6;">
-                        Connect an EarthRanger / PAMDAS server and its patrol tracks are fetched on a schedule,
-                        anonymised (no names, no animal collars) and drawn as effort pixels. Each source decides
-                        <em>who</em> sees its pixels &mdash; only you, a few logins, or every account.
-                    </p>
+                <div class="admin-tab-content" id="tab-autofetch" role="tabpanel" aria-labelledby="admin-tab-autofetch">
+                    <header class="adm-page-head">
+                        <div>
+                            <h2>Automated fetch</h2>
+                            <p>Connect an EarthRanger / PAMDAS server and its patrol tracks are fetched on a schedule,
+                            anonymised (no names, no animal collars) and drawn as effort pixels. Each source decides
+                            <em>who</em> sees its pixels &mdash; only you, a few logins, or every account.</p>
+                        </div>
+                    </header>
                     <div class="af-security">
                         <i class="icon-shield icon-color-success" style="font-size:11px;"></i>
                         <span>Server passwords are sealed with the installation&rsquo;s master key (AES-256-GCM) and never leave this
@@ -26493,7 +25844,7 @@ ${starredItems.narratives.map(n => {
 
                 <!-- Access & Sharing Tab: share links + AOI ownership/queue.
                      See docs/agents/sharing.md. -->
-                <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="tab-access">
+                <div class="admin-tab-content" id="tab-access" role="tabpanel" aria-labelledby="admin-tab-access">
                     <h4 style="color:#fff;font-size:13px;font-weight:600;margin:0 0 6px;" id="adm-share-links" class="adm-h">Share links</h4>
                     <p class="sh-intro">The short links <em>this login</em> has issued. Other logins keep their own list.</p>
                     <dl class="sh-legend">
@@ -26522,7 +25873,7 @@ ${starredItems.narratives.map(n => {
                 </div>
 
                 <!-- Map Settings Tab -->
-                <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="tab-map-settings">
+                <div class="admin-tab-content" id="tab-map-settings" role="tabpanel" aria-labelledby="admin-tab-map-settings">
                     <div style="max-width:600px;">
                         <div style="margin-bottom:24px;" data-mapsettings="basemap">
                             <h3 style="color:#fff;font-size:14px;font-weight:600;margin-bottom:12px;" id="adm-basemap" class="adm-h">Background Map</h3>
@@ -26578,20 +25929,6 @@ ${starredItems.narratives.map(n => {
     </div>
     
     <!-- Feature Detail Modal -->
-    <div class="feature-modal" id="feature-modal" role="dialog" aria-modal="true" aria-label="Feature details">
-        <div class="feature-modal-content">
-            <div class="feature-modal-header">
-                <div class="feature-modal-title" id="feature-modal-title">Feature Details</div>
-                <button class="feature-modal-close" onclick="closeFeatureModal()" aria-label="Close feature details">&times;</button>
-            </div>
-            <div class="feature-modal-body" id="feature-modal-body">
-                <div class="feature-map-preview" id="feature-map-preview"></div>
-                <div class="feature-info-grid" id="feature-info-grid"></div>
-                <div class="feature-history" id="feature-history"></div>
-            </div>
-            <div class="feature-modal-footer" id="feature-modal-footer"></div>
-        </div>
-    </div>
 
     <div class="star-modal" id="star-modal" role="dialog" aria-modal="true" aria-label="Starred items">
         <div class="star-modal-content">
