@@ -367,11 +367,6 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 			l.processBoundarySegment(ctx, parkID, seg, result)
 		}
 
-		// Check for aircraft patterns
-		if seg.MovementType == "aircraft" && len(seg.Points) > 10 {
-			l.processAircraftSegment(ctx, parkID, uploadID, seg, result)
-		}
-
 		// Store vehicle tracks (simplified). Patrol segments don't carry
 		// GeoJSON, so fall back to building it from recovered Points.
 		if seg.MovementType == "vehicle" {
@@ -404,6 +399,13 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 				l.processStop(ctx, parkID, stop, result)
 			}
 		}
+	}
+
+	// Airfields: one pass over whole journeys, not one per segment. A segment
+	// ends where a time window or the park boundary ends; only a journey shows
+	// where the aircraft actually stood on the ground (AirfieldObservations).
+	for _, obs := range AirfieldObservations(segments) {
+		l.recordAirfieldObservation(ctx, parkID, obs, result)
 	}
 
 	// Calculate aggregate statistics
@@ -680,6 +682,63 @@ func (l *GPXLearner) processDeparture(ctx context.Context, parkID string, upload
 			ConfidencePct: ptrFloat64(confidence),
 			ID:            airstrip.ID,
 		})
+	}
+}
+
+// recordAirfieldObservation adds one observed take-off or landing to the
+// park's learned airstrips: a visit to an existing one within ~1 km, or a new
+// pending candidate. Runway length is not measured here and is left unset
+// rather than guessed.
+func (l *GPXLearner) recordAirfieldObservation(ctx context.Context, parkID string, obs AirfieldObservation, result *LearningResult) {
+	aircraftType := obs.Subtype
+	if aircraftType == "" {
+		aircraftType = "mixed"
+	}
+	var landings, takeoffs int64
+	if obs.Kind == "landing" {
+		landings = 1
+	} else {
+		takeoffs = 1
+	}
+	existing, err := l.queries.FindNearbyAirstrips(ctx, dbgen.FindNearbyAirstripsParams{ParkID: parkID, Lat: obs.Lat, Lon: obs.Lon})
+	if err == nil && len(existing) > 0 {
+		as := existing[0]
+		total := landings + takeoffs
+		if as.LandingCount != nil {
+			total += *as.LandingCount
+		}
+		if as.TakeoffCount != nil {
+			total += *as.TakeoffCount
+		}
+		confidence := math.Min(float64(total)*20.0, 90.0)
+		// UpdateAirstripStats ADDS its count arguments.
+		l.queries.UpdateAirstripStats(ctx, dbgen.UpdateAirstripStatsParams{
+			LandingCount:  ptrInt64(landings),
+			TakeoffCount:  ptrInt64(takeoffs),
+			ConfidencePct: ptrFloat64(confidence),
+			ID:            as.ID,
+		})
+		if confidence >= AutoApprovalConfidenceThreshold && total >= AutoApprovalMinLandings {
+			l.autoApproveAirstrip(ctx, parkID, as.ID, as.Lat, as.Lon, as.HeadingDeg, as.LengthM, aircraftType, total, confidence)
+		}
+		return
+	}
+	var heading *float64
+	if !math.IsNaN(obs.HeadingDeg) {
+		heading = ptrFloat64(obs.HeadingDeg)
+	}
+	if _, err := l.queries.CreateLearnedAirstrip(ctx, dbgen.CreateLearnedAirstripParams{
+		ParkID:        parkID,
+		Lat:           obs.Lat,
+		Lon:           obs.Lon,
+		HeadingDeg:    heading,
+		AircraftType:  ptrString(aircraftType),
+		LandingCount:  ptrInt64(landings),
+		TakeoffCount:  ptrInt64(takeoffs),
+		ConfidencePct: ptrFloat64(20.0),
+	}); err == nil {
+		result.NewAirstrips++
+		result.AirstripConfidence = 20.0
 	}
 }
 
@@ -1972,7 +2031,10 @@ func RunCrossTrackAnalysis(segments []ClassifiedSegment, cellSizeMeters float64)
 	result.Roads = analyzer.detectRoadsFromTracks(segments)
 
 	// Detect airstrips from straight segments
-	result.Airstrips = detectAirstrips(segments)
+	// Airstrips are no longer inferred here. detectAirstrips called any
+	// straight 500 m with an abrupt end an airstrip — on every segment, trucks
+	// included. They come from observed take-offs and landings instead
+	// (AirfieldObservations, recorded once per job in processJob).
 
 	// Detect bases from track endpoints
 	result.Bases = detectBases(segments)
@@ -2622,4 +2684,59 @@ func (l *GPXLearner) calculateSegmentLength(coords [][]float64) float64 {
 		totalKm += haversineDistance(coords[i-1][1], coords[i-1][0], coords[i][1], coords[i][0])
 	}
 	return totalKm
+}
+
+// AirfieldObservation is one take-off or landing the learner would record.
+type AirfieldObservation struct {
+	Kind       string // "takeoff" | "landing"
+	Lat, Lon   float64
+	HeadingDeg float64
+	Subtype    string // fixed_wing | rotor_wing | ""
+}
+
+// AirfieldObservations returns the take-offs and landings in a set of
+// classified segments: one pass per journey (JourneyChains), so the taxi
+// windows classified "vehicle" on either side of a flight are seen together
+// with it. Pure — cmd/movement-eval scores it against known airfields.
+func AirfieldObservations(segs []ClassifiedSegment) []AirfieldObservation {
+	var out []AirfieldObservation
+	for _, chain := range JourneyChains(segs) {
+		sub, air := "", false
+		for _, i := range chain {
+			if segs[i].MovementType == "aircraft" {
+				air = true
+				if sub == "" {
+					sub = segs[i].MovementSubtype
+				}
+			}
+		}
+		if !air {
+			continue
+		}
+		for _, e := range gpx.DetectAirfieldEvents(ChainPoints(segs, chain)) {
+			out = append(out, AirfieldObservation{e.Kind, e.Lat, e.Lon, e.HeadingDeg, sub})
+		}
+	}
+	return out
+}
+
+// LegacyAirfieldObservations is the rule AirfieldObservations replaced (every
+// aircraft segment's two ends), kept only so the harness can show the
+// difference on the same corpus.
+func LegacyAirfieldObservations(segs []ClassifiedSegment) []AirfieldObservation {
+	var out []AirfieldObservation
+	l := &GPXLearner{}
+	for _, seg := range segs {
+		if seg.MovementType != "aircraft" || len(seg.Points) <= 10 {
+			continue
+		}
+		approach, departure := l.extractAircraftPatterns(seg)
+		if approach != nil {
+			out = append(out, AirfieldObservation{"landing", approach.EndLat, approach.EndLon, 0, seg.MovementSubtype})
+		}
+		if departure != nil {
+			out = append(out, AirfieldObservation{"takeoff", departure.StartLat, departure.StartLon, 0, seg.MovementSubtype})
+		}
+	}
+	return out
 }

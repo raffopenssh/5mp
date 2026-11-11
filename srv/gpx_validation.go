@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"srv.exe.dev/srv/gpx"
@@ -79,22 +80,26 @@ type MovementStats struct {
 
 // ClassifiedSegment represents a classified portion of a GPX track
 type ClassifiedSegment struct {
-	Classification  string        `json:"classification"`             // patrol, boundary, road, poi, static, auto_generated, aircraft
-	MovementType    string        `json:"movement_type,omitempty"`    // foot, vehicle, aircraft
-	MovementSubtype string        `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
-	ActivityType    string        `json:"activity_type,omitempty"`    // patrol, reconnaissance, transit, logistics
-	StartIndex      int           `json:"start_index"`
-	EndIndex        int           `json:"end_index"`
-	DistanceKm      float64       `json:"distance_km"`
-	Duration        time.Duration `json:"-"`
-	DurationStr     string        `json:"duration,omitempty"`
-	AvgSpeedKmh     float64       `json:"avg_speed_kmh,omitempty"`
-	Smoothness      float64       `json:"smoothness,omitempty"` // 0-1, trajectory smoothness
-	Reason          string        `json:"reason"`
-	IncludeInEffort bool          `json:"include_in_effort"`
-	GeoJSON         string        `json:"geojson,omitempty"`
-	Points          []gpx.Point   `json:"-"`                          // For internal processing
-	OriginalIndices []int         `json:"original_indices,omitempty"` // Input segment indices covered by this classified segment (after merging)
+	Classification  string `json:"classification"`             // patrol, boundary, road, poi, static, auto_generated, aircraft
+	MovementType    string `json:"movement_type,omitempty"`    // foot, vehicle, aircraft
+	MovementSubtype string `json:"movement_subtype,omitempty"` // boat, fixed_wing, rotor_wing
+	// Hint is what the source said about this segment's tracker (device
+	// metadata, track name). Carried so the journey-level subtype pass can
+	// honour it; never serialised.
+	Hint            gpx.MovementHint `json:"-"`
+	ActivityType    string           `json:"activity_type,omitempty"` // patrol, reconnaissance, transit, logistics
+	StartIndex      int              `json:"start_index"`
+	EndIndex        int              `json:"end_index"`
+	DistanceKm      float64          `json:"distance_km"`
+	Duration        time.Duration    `json:"-"`
+	DurationStr     string           `json:"duration,omitempty"`
+	AvgSpeedKmh     float64          `json:"avg_speed_kmh,omitempty"`
+	Smoothness      float64          `json:"smoothness,omitempty"` // 0-1, trajectory smoothness
+	Reason          string           `json:"reason"`
+	IncludeInEffort bool             `json:"include_in_effort"`
+	GeoJSON         string           `json:"geojson,omitempty"`
+	Points          []gpx.Point      `json:"-"`                          // For internal processing
+	OriginalIndices []int            `json:"original_indices,omitempty"` // Input segment indices covered by this classified segment (after merging)
 
 	// SampledPoints is a compact serialization of (up to ~300) evenly sampled
 	// track points: [lon, lat, unixSeconds, elevM]. unixSeconds is 0 when the
@@ -339,6 +344,7 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 			Classification:  classType,
 			MovementType:    movementType,
 			MovementSubtype: classification.MovementSubtype,
+			Hint:            hint,
 			ActivityType:    activityType,
 			StartIndex:      0,
 			EndIndex:        len(seg) - 1,
@@ -438,7 +444,12 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 	// Merge adjacent segments to fix fragmentation from 30-min time splitting.
 	// When a flight is split into [aircraft, tiny-foot, aircraft], the tiny
 	// middle segment is a boundary artifact, not real foot patrol.
+	refineTypesByJourney(result.ClassifiedSegments)
 	result.ClassifiedSegments = mergeAdjacentSegments(result.ClassifiedSegments)
+
+	// Subtype (boat / fixed_wing / rotor_wing) is a property of the journey,
+	// not of a 30-minute window: decide it once, on the whole thing.
+	assignJourneySubtypes(result.ClassifiedSegments)
 
 	// Recompute all stats from merged segments (the per-segment accumulation
 	// above is now stale because segments were merged/absorbed).
@@ -502,6 +513,18 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 		return nPts < 5 && cs.DistanceKm < 0.2
 	}
 
+	// contiguous: b continues a — the same tracker, a moment later. An upload
+	// is many tracks end to end (an autofetch file carries every subject), and
+	// "adjacent in the slice" is not "adjacent on the ground": without this the
+	// last segment of one truck fused with the first of the next, and the
+	// learner was handed a "track" that teleported between vehicles.
+	contiguous := func(a, b *ClassifiedSegment) bool {
+		if len(a.Points) == 0 || len(b.Points) == 0 {
+			return false
+		}
+		return pointsContiguous(a.Points[len(a.Points)-1], b.Points[0])
+	}
+
 	// mergeInto absorbs src into dst.
 	mergeInto := func(dst, src *ClassifiedSegment) {
 		dst.DistanceKm += src.DistanceKm
@@ -557,7 +580,8 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 			nxt := input[i]
 			if mergeableType(&current) && mergeableType(&nxt) &&
 				current.MovementType == nxt.MovementType &&
-				current.Classification == nxt.Classification {
+				current.Classification == nxt.Classification &&
+				contiguous(&current, &nxt) {
 				mergeInto(&current, &nxt)
 				updateReason(&current)
 			} else {
@@ -601,7 +625,8 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 				if next < 0 || !mergeableType(&input[next]) {
 					continue
 				}
-				if input[prev].MovementType == input[next].MovementType {
+				if input[prev].MovementType == input[next].MovementType &&
+					contiguous(&input[prev], &input[i]) && contiguous(&input[i], &input[next]) {
 					mergeInto(&input[prev], &input[i])
 					absorbed[i] = true
 					changed = true
@@ -634,6 +659,30 @@ func mergeAdjacentSegments(segs []ClassifiedSegment) []ClassifiedSegment {
 	}
 
 	return result
+}
+
+// mergeMaxGap is the longest silence two segments may be joined across. The
+// slowest trackers in the field report every 5 minutes; three missed fixes is
+// still one journey, an hour is not.
+const mergeMaxGap = 20 * time.Minute
+
+// pointsContiguous reports whether b can be the next fix of the tracker that
+// reported a: time moves forward, not by long, and the hop is physically
+// possible. Untimed points cannot be ordered, so they only join when they
+// coincide (a hand-drawn track split into pieces).
+func pointsContiguous(a, b gpx.Point) bool {
+	km := haversineDistanceKm(a.Lat, a.Lon, b.Lat, b.Lon)
+	if a.Time == nil || b.Time == nil {
+		return a.Time == nil && b.Time == nil && km < 0.5
+	}
+	dt := b.Time.Sub(*a.Time)
+	if dt < 0 || dt > mergeMaxGap {
+		return false
+	}
+	if dt == 0 {
+		return km < 0.05
+	}
+	return km/dt.Hours() <= 400
 }
 
 // recomputeStatsFromSegments recalculates all stats from the (potentially merged)
@@ -999,4 +1048,185 @@ func pointsToGeoJSON(points []gpx.Point) string {
 
 	bytes, _ := json.Marshal(geojson)
 	return string(bytes)
+}
+
+// JourneyChains groups classified segments into journeys: maximal runs of
+// segments that are one tracker's continuous movement, whatever each window
+// was classified as. A flight is [vehicle taxi, aircraft, aircraft, vehicle
+// taxi]; the taxi windows are exactly what tells a plane from a helicopter,
+// so the aircraft segments must be read together with them.
+func JourneyChains(segs []ClassifiedSegment) [][]int {
+	var chains [][]int
+	for i := range segs {
+		if len(segs[i].Points) == 0 {
+			continue
+		}
+		if n := len(chains); n > 0 {
+			last := chains[n-1]
+			prev := segs[last[len(last)-1]].Points
+			if pointsContiguous(prev[len(prev)-1], segs[i].Points[0]) {
+				chains[n-1] = append(last, i)
+				continue
+			}
+		}
+		chains = append(chains, []int{i})
+	}
+	return chains
+}
+
+// ChainPoints concatenates the points of one journey chain.
+func ChainPoints(segs []ClassifiedSegment, chain []int) []gpx.Point {
+	var pts []gpx.Point
+	for _, i := range chain {
+		pts = append(pts, segs[i].Points...)
+	}
+	return pts
+}
+
+// assignJourneySubtypes replaces each segment's per-window subtype with the
+// journey-level answer. Aircraft: one answer per chain (an airframe does not
+// change mid-journey). Vehicle: per merged segment (a ranger does step from a
+// truck into a boat), and only when the segment itself shows a boat's plateau.
+func assignJourneySubtypes(segs []ClassifiedSegment) {
+	for _, chain := range JourneyChains(segs) {
+		var airSub string
+		airDone := false
+		for _, i := range chain {
+			cs := &segs[i]
+			if cs.Classification != "patrol" && cs.Classification != "aircraft" {
+				continue
+			}
+			switch cs.MovementType {
+			case "aircraft":
+				if s, _ := gpx.JourneySubtype(nil, "aircraft", cs.Hint); s != "" {
+					cs.MovementSubtype = s
+					continue
+				}
+				if !airDone {
+					airDone = true
+					airSub, _ = gpx.JourneySubtype(ChainPoints(segs, chain), "aircraft", cs.Hint)
+				}
+				cs.MovementSubtype = airSub
+			case "vehicle":
+				cs.MovementSubtype, _ = gpx.JourneySubtype(cs.Points, "vehicle", cs.Hint)
+			default:
+				cs.MovementSubtype = ""
+			}
+		}
+	}
+}
+
+// hopSpeeds returns the ground speed (km/h) and duration (s) of each
+// fix-to-fix hop in a segment.
+func hopSpeeds(pts []gpx.Point) (kmh, sec []float64) {
+	for i := 1; i < len(pts); i++ {
+		if pts[i].Time == nil || pts[i-1].Time == nil {
+			continue
+		}
+		dt := pts[i].Time.Sub(*pts[i-1].Time).Seconds()
+		if dt <= 0 {
+			continue
+		}
+		d := haversineDistanceKm(pts[i-1].Lat, pts[i-1].Lon, pts[i].Lat, pts[i].Lon)
+		kmh = append(kmh, d/(dt/3600))
+		sec = append(sec, dt)
+	}
+	return
+}
+
+// Journey-level type thresholds (cmd/movement-eval measures every one).
+const (
+	journeyFlightKmh    = 90.0 // faster than any park vehicle sustains
+	journeyFlightMinSec = 120  // ...for two consecutive hops lasting this long
+	journeyDwellKmh     = 1.0  // net progress below this is waiting, not patrolling
+	journeyAirHopKmh    = 60.0 // a window beside a flight with hops this fast is still the flight
+)
+
+// sustainedFlight: a run of at least two consecutive hops at flight speed
+// lasting two minutes. One fast hop is what a GPS glitch looks like — a truck
+// "doing 180 km/h" between two fixes.
+func sustainedFlight(pts []gpx.Point) bool {
+	kmh, sec := hopSpeeds(pts)
+	n, dur := 0, 0.0
+	for i := range kmh {
+		if kmh[i] > journeyFlightKmh && kmh[i] < 400 {
+			n++
+			dur += sec[i]
+			if n >= 2 && dur >= journeyFlightMinSec {
+				return true
+			}
+		} else {
+			n, dur = 0, 0
+		}
+	}
+	return false
+}
+
+// refineTypesByJourney corrects what a 30-minute window cannot see by looking
+// at the journey it belongs to (JourneyChains). It runs before the merge, on
+// movement only, and never overrides a type the source stated outright.
+//
+//  1. Flight must be sustained. A window called aircraft in a journey with no
+//     two consecutive hops at flight speed is a vehicle with a GPS glitch.
+//  2. Flight continues through its slow windows. A window called vehicle that
+//     sits beside an aircraft window of a flying journey, and itself has hops
+//     no road vehicle makes, is the same flight (climb-out, orbit, approach).
+//  3. Waiting is not walking. A window called foot only because it barely
+//     moved (under 1 km/h), directly beside a vehicle window of the same
+//     journey, is the vehicle standing — not a foot patrol around the truck.
+//     Left as foot it paints foot-patrol coverage wherever trucks park.
+func refineTypesByJourney(segs []ClassifiedSegment) {
+	scorable := func(cs *ClassifiedSegment) bool {
+		return (cs.Classification == "patrol" || cs.Classification == "aircraft") && cs.Hint.Confidence < 0.9
+	}
+	set := func(cs *ClassifiedSegment, t, why string) {
+		cs.MovementType = t
+		cs.MovementSubtype = ""
+		cs.Classification = "patrol"
+		if t == "aircraft" {
+			cs.Classification = "aircraft"
+		}
+		cs.Reason = fmt.Sprintf("%s (avg %.0f km/h; %s)", strings.ToUpper(t[:1])+t[1:], cs.AvgSpeedKmh, why)
+	}
+	for _, chain := range JourneyChains(segs) {
+		flight := sustainedFlight(ChainPoints(segs, chain))
+		// 1.
+		for _, i := range chain {
+			cs := &segs[i]
+			if scorable(cs) && cs.MovementType == "aircraft" && !flight {
+				if cs.AvgSpeedKmh < 7 {
+					set(cs, "foot", "no sustained flight in this journey")
+				} else {
+					set(cs, "vehicle", "no sustained flight in this journey")
+				}
+			}
+		}
+		neighbour := func(k int, t string) bool {
+			return (k > 0 && segs[chain[k-1]].MovementType == t) || (k+1 < len(chain) && segs[chain[k+1]].MovementType == t)
+		}
+		// 2. and 3., forwards then backwards so a run inherits from either end.
+		pass := func(k int) {
+			cs := &segs[chain[k]]
+			if !scorable(cs) {
+				return
+			}
+			switch {
+			case flight && cs.MovementType == "vehicle" && neighbour(k, "aircraft"):
+				kmh, _ := hopSpeeds(cs.Points)
+				if len(kmh) > 0 && percentile(kmh, 90) >= journeyAirHopKmh {
+					set(cs, "aircraft", "part of the adjoining flight")
+				}
+			case cs.MovementType == "foot" && neighbour(k, "vehicle"):
+				if h := cs.Duration.Hours(); h > 0 && cs.DistanceKm/h < journeyDwellKmh {
+					set(cs, "vehicle", "standing; part of the adjoining drive")
+				}
+			}
+		}
+		for k := range chain {
+			pass(k)
+		}
+		for k := len(chain) - 1; k >= 0; k-- {
+			pass(k)
+		}
+	}
 }

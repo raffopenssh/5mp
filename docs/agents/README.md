@@ -24,6 +24,7 @@ lives here, one file per subsystem, loaded only when a task touches it.
 | `nightlights.md` | VNP46A3 Black Marble — measured once (mine sites are dark), folded; read before any nightlight work |
 | `zoning.md` | Zoning planner: legible mesh, four classes with stored rationale, `optimize` bootstrap proposals, `assess()` recursion, validation vs drawn zones/WDPA, the planner map |
 | `easyplan.md` | `scripts/easyplan.py`: plan.yaml + solver/deploy outputs → facts.json → budget (.txt/.xlsx) → PIP summary from a Jinja template |
+| `movement.md` | GPX movement type + subtype classification from movement alone, the airstrip learner, and the `cmd/movement-eval` harness that scores both |
 | `easydocs.md` | The EASY document dump: extraction, vision OCR, relevance + legal-status tagging, people/org roster |
 
 ## Where a new note goes

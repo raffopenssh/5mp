@@ -299,6 +299,7 @@ func TestMergeAdjacentSegments_OrphanAbsorption(t *testing.T) {
 		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 21.0, EndIndex: 100, IncludeInEffort: true, OriginalIndices: []int{2}},
 	}
 
+	chainPoints(segs, time.Minute)
 	merged := mergeAdjacentSegments(segs)
 
 	// The orphan foot segment should be absorbed, then the two aircraft segments merged
@@ -320,6 +321,36 @@ func TestMergeAdjacentSegments_OrphanAbsorption(t *testing.T) {
 	// OriginalIndices should include all three
 	if len(merged[0].OriginalIndices) != 3 {
 		t.Errorf("Expected 3 original indices, got %d: %v", len(merged[0].OriginalIndices), merged[0].OriginalIndices)
+	}
+}
+
+// chainPoints gives each segment two points on one continuous timeline, gap
+// apart at every seam — the shape a single tracker's 30-minute windows have.
+func chainPoints(segs []ClassifiedSegment, gap time.Duration) {
+	t0 := time.Date(2026, 1, 1, 6, 0, 0, 0, time.UTC)
+	for i := range segs {
+		a, b := t0, t0.Add(10*time.Minute)
+		segs[i].Points = []gpx.Point{{Lat: -8, Lon: 37, Time: &a}, {Lat: -8, Lon: 37, Time: &b}}
+		t0 = b.Add(gap)
+	}
+}
+
+// Two trackers in one upload: same type, adjacent in the slice, but the second
+// starts hours before the first ends (every autofetch file looks like this).
+// They are two journeys and must stay two segments.
+func TestMergeAdjacentSegments_OtherTrackerNotMerged(t *testing.T) {
+	segs := []ClassifiedSegment{
+		{Classification: "patrol", MovementType: "vehicle", DistanceKm: 20, EndIndex: 30, IncludeInEffort: true, OriginalIndices: []int{0}},
+		{Classification: "patrol", MovementType: "vehicle", DistanceKm: 30, EndIndex: 30, IncludeInEffort: true, OriginalIndices: []int{1}},
+		{Classification: "patrol", MovementType: "vehicle", DistanceKm: 10, EndIndex: 30, IncludeInEffort: true, OriginalIndices: []int{2}},
+	}
+	chainPoints(segs, -6*time.Hour) // each segment starts before the previous one ended
+	if got := mergeAdjacentSegments(segs); len(got) != 3 {
+		t.Fatalf("segments of different trackers merged: got %d, want 3", len(got))
+	}
+	chainPoints(segs, 3*time.Hour) // same tracker, but a long silence between
+	if got := mergeAdjacentSegments(segs); len(got) != 3 {
+		t.Fatalf("segments hours apart merged: got %d, want 3", len(got))
 	}
 }
 
@@ -351,6 +382,7 @@ func TestMergeAdjacentSegments_ConsecutiveSameType(t *testing.T) {
 		{Classification: "aircraft", MovementType: "aircraft", DistanceKm: 50.0, EndIndex: 100, IncludeInEffort: true, OriginalIndices: []int{3}},
 	}
 
+	chainPoints(segs, time.Minute)
 	merged := mergeAdjacentSegments(segs)
 
 	// Should produce 2 segments: merged foot + aircraft
@@ -377,6 +409,7 @@ func TestMergeAdjacentSegments_IdleNotMerged(t *testing.T) {
 		{Classification: "patrol", MovementType: "foot", DistanceKm: 3.0, EndIndex: 20, IncludeInEffort: true, OriginalIndices: []int{2}},
 	}
 
+	chainPoints(segs, time.Minute)
 	merged := mergeAdjacentSegments(segs)
 
 	// The idle segment is tiny and between two foot patrols.
@@ -483,5 +516,32 @@ func TestMovementBasedRoadTraceSkip(t *testing.T) {
 	}
 	if result.MovementStats.AircraftKm == 0 {
 		t.Errorf("expected aircraft km > 0, got stats %+v", result.MovementStats)
+	}
+}
+
+func TestSustainedFlight_GlitchIsNotFlight(t *testing.T) {
+	t0 := time.Date(2026, 1, 1, 6, 0, 0, 0, time.UTC)
+	mk := func(kmh []float64, stepSec float64) []gpx.Point {
+		lat := -8.0
+		ti := t0
+		pts := []gpx.Point{{Lat: lat, Lon: 37, Time: &ti}}
+		for i, s := range kmh {
+			lat += s * stepSec / 3600 / 111.2
+			tt := t0.Add(time.Duration(float64(i+1)*stepSec) * time.Second)
+			pts = append(pts, gpx.Point{Lat: lat, Lon: 37, Time: &tt})
+		}
+		return pts
+	}
+	// A truck pinging every 3 minutes with one impossible hop.
+	if sustainedFlight(mk([]float64{30, 35, 180, 32, 28, 30}, 180)) {
+		t.Error("a single fast hop is a GPS glitch, not a flight")
+	}
+	// A plane pinging every 15 s.
+	fl := make([]float64, 40)
+	for i := range fl {
+		fl[i] = 150
+	}
+	if !sustainedFlight(mk(fl, 15)) {
+		t.Error("ten minutes at 150 km/h is a flight")
 	}
 }

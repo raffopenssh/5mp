@@ -76,7 +76,8 @@ type MovementHint struct {
 	Confidence float64 // 0.0 to 1.0
 
 	// SubtypeHint provides finer-grained classification from ER metadata.
-	// Values: "boat", "helicopter", "fixed_wing", or "" (unknown).
+	// Values: "boat", "land" (a named land vehicle: never a boat),
+	// "helicopter", "fixed_wing", or "" (unknown).
 	// Does NOT affect base Type classification; used only by ClassifyMovementSubtype.
 	SubtypeHint string
 }
@@ -374,6 +375,14 @@ func mergeERSubjectHint(base MovementHint, subjectType, subjectSubtype, patrolTy
 		base.IsVehicle = true
 		base.Type = "vehicle"
 		base.Confidence = 1.0
+		// The device says which kind of vehicle: a tracker bolted to a truck
+		// is not a boat however steadily it drives.
+		switch {
+		case strings.Contains(subjectSubtype, "boat") || strings.Contains(subjectSubtype, "vessel"):
+			base.SubtypeHint = "boat"
+		case subjectSubtype != "" && subjectSubtype != "vehicle" && subjectSubtype != "unassigned":
+			base.SubtypeHint = "land"
+		}
 	case "person":
 		// Person-carried devices need subtype disambiguation:
 		// - "ranger" (InReach) = almost always foot patrol

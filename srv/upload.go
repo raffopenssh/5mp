@@ -1718,6 +1718,11 @@ func (s *Server) persistUploadWithValidation(ctx context.Context, userID, userEm
 					seg := segments[origIdx]
 					if cs.MovementType != "" {
 						seg.MovementType = cs.MovementType
+						// The subtype was decided on the whole journey
+						// (assignJourneySubtypes); the 30-minute window's own
+						// guess must not reach the effort map — it called one
+						// truck-km in six a boat.
+						seg.MovementSubtype = cs.MovementSubtype
 					}
 					patrolOnlySegments = append(patrolOnlySegments, seg)
 				}
