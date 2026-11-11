@@ -13815,15 +13815,16 @@ window.addEventListener('load', function () {
                     isAOI(paId) ? Promise.resolve(null)
                                 : fetch(`/api/parks/${encodeURIComponent(paId)}/stats`),
                     fetch(`${base}/infrastructure`),
-                    fetch(`/api/admin/learned-features?park_id=${encodeURIComponent(paId)}`),
+                    // same source as the pins these rows toggle, so a row
+                    // exists exactly where its pin can draw (guest links too)
+                    learnedForPark(paId).catch(() => null),
                     fetch(`${base}/basin`)
                 ]);
                 const basin = basinResp.ok ? await basinResp.json() : { basins: [] };
                 
                 const data = (statsResp && statsResp.ok) ? await statsResp.json() : {};
                 const infra = infraResp.ok ? await infraResp.json() : { rivers: [], roads: [], places: [], summary: {} };
-                const learned = (learnedResp.ok && (learnedResp.headers.get('content-type') || '').includes('json'))
-                    ? await learnedResp.json() : { airstrips: [], places: [] };
+                const learned = learnedResp || { airstrips: [], places: [] };
                 
                 const s = infra.summary || {};
                 const parkName = el.closest('.pa-popup')?.querySelector('.pa-popup-name span')?.textContent || paId;
@@ -21856,10 +21857,10 @@ ${starredItems.narratives.map(n => {
                 geojson = await buildTurbidityGeoJSON(parkId);
             } else if (type === 'visits') {
                 // Patrol-visited locations learned from GPX uploads (camps, outposts, gates)
-                const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&type=places`);
-                if (response.status === 401 || response.status === 403) throw Object.assign(new Error('not available on this link'), { withheld: true });
-                if (!response.ok) throw new Error('Failed to fetch features');
-                const learned = await response.json();
+                // From /api/learned-map, like the Airstrips pin: the admin
+                // list is 401 on a guest link, so a link made after pinning
+                // could not carry this pin.
+                const learned = await learnedForPark(parkId);
                 const features = [];
                 (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved').forEach(p => {
                     if (p.lat && p.lon) {
@@ -21885,15 +21886,11 @@ ${starredItems.narratives.map(n => {
                 // made this the one pin a share link could not carry) and
                 // is empty where patrol is withheld. Airstrips only: the row
                 // says "Airstrips"; learned places are Patrol visits / Places.
-                const response = await fetch(`/api/learned-map?park_id=${encodeURIComponent(parkId)}`);
-                if (response.status === 401 || response.status === 403) throw Object.assign(new Error('not available on this link'), { withheld: true });
-                if (!response.ok) throw new Error('Failed to fetch features');
-                const learned = await response.json();
-                const features = (learned.features || [])
-                    .filter(f => f.geometry && f.geometry.type === 'Point' && f.properties && f.properties.family === 'airfield')
-                    .map(f => ({ type: 'Feature', geometry: f.geometry, properties: {
-                        feature_type: 'airstrip', feature_id: `airstrip_${f.properties.id}`,
-                        name: f.properties.kind === 'landing_zone' ? 'Helicopter landing zone' : 'Airstrip', type: 'airstrip' } }));
+                const learned = await learnedForPark(parkId);
+                const features = learned.airstrips.map(a => ({ type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [a.lon, a.lat] },
+                    properties: { feature_type: 'airstrip', feature_id: `airstrip_${a.id}`,
+                        name: a.kind === 'landing_zone' ? 'Helicopter landing zone' : 'Airstrip', type: 'airstrip' } }));
                 geojson = { type: 'FeatureCollection', features };
             } else {
                 // Geography layers carry the detail tier; everything else
@@ -22860,6 +22857,22 @@ ${starredItems.narratives.map(n => {
     // A Patrol visits circle and a learned-place dot are one site; the circle
     // borrows the dot's tip (srv/static/learned.js). '' when the learned map
     // has no such place (other tenant, not yet loaded) → the plain tip.
+    // Approved learned airstrips and places of one park, in the shape the
+    // popup rows and the Airstrips / Patrol visits pins read. One source
+    // (/api/learned-map) for the rows, the pins and the learned layer: it
+    // answers a guest link that carries patrol data and is empty otherwise.
+    async function learnedForPark(parkId) {
+        const response = await fetch(`/api/learned-map?park_id=${encodeURIComponent(parkId)}`);
+        if (response.status === 401 || response.status === 403) throw Object.assign(new Error('not available on this link'), { withheld: true });
+        if (!response.ok) throw new Error('Failed to fetch features');
+        const pts = ((await response.json()).features || []).filter(f => f.geometry && f.geometry.type === 'Point');
+        const row = f => Object.assign({}, f.properties, { lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] });
+        return {
+            airstrips: pts.filter(f => f.properties.family === 'airfield').map(row),
+            places: pts.filter(f => f.properties.family === 'place').map(f => Object.assign(row(f), { place_type: f.properties.kind })),
+        };
+    }
+
     function learnedPlaceTip(props) {
         const LM = window.LearnedMap;
         const m = /^visited_place_(\d+)$/.exec(String(props && props.feature_id || ''));

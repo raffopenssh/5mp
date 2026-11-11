@@ -90,7 +90,8 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 
-	rows, err = s.DB.QueryContext(ctx, `SELECT id, park_id, lat, lon, COALESCE(place_type,'stop'), COALESCE(name,''), status, score, last_seen, evidence_json
+	rows, err = s.DB.QueryContext(ctx, `SELECT id, park_id, lat, lon, COALESCE(place_type,'stop'), COALESCE(name,''), status, score, last_seen, evidence_json,
+			COALESCE(visit_count,0), COALESCE(avg_duration_minutes,0), COALESCE(confidence_pct,0)
 		FROM learned_places`+where, park, park)
 	if err == nil {
 		for rows.Next() {
@@ -99,10 +100,14 @@ func (s *Server) HandleAPILearnedMap(w http.ResponseWriter, r *http.Request) {
 			var lat, lon float64
 			var score sql.NullFloat64
 			var last, ev sql.NullString
-			if rows.Scan(&id, &pid, &lat, &lon, &kind, &name, &status, &score, &last, &ev) != nil {
+			var visits int64
+			var avgMin, conf float64
+			if rows.Scan(&id, &pid, &lat, &lon, &kind, &name, &status, &score, &last, &ev, &visits, &avgMin, &conf) != nil {
 				continue
 			}
-			p := map[string]any{"family": "place", "kind": kind, "id": id, "park_id": pid, "status": status, "last_seen": last.String, "name": name}
+			p := map[string]any{"family": "place", "kind": kind, "id": id, "park_id": pid, "status": status, "last_seen": last.String, "name": name,
+				// what the Patrol visits pin sizes and labels its circles by
+				"visit_count": visits, "avg_duration_minutes": avgMin, "confidence_pct": conf}
 			if score.Valid {
 				p["score"] = score.Float64
 			}
