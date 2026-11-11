@@ -1905,6 +1905,9 @@
         .pinned-layer-chip.place { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
         .pinned-layer-chip.river { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
         .pinned-layer-chip.water { background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.3); }
+        .pinned-layer-chip.basin { background: rgba(14,165,233,0.18); color: #0ea5e9; border: 1px solid rgba(14,165,233,0.3); }
+        .pinned-layer-chip.basin_rivers { background: rgba(56,189,248,0.18); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+        .pinned-layer-chip.basin_downstream { background: rgba(34,211,238,0.18); color: #22d3ee; border: 1px solid rgba(34,211,238,0.3); }
         .pinned-layer-chip.active-fire { background: rgba(239,68,68,0.3); color: #ff6b6b; border: 1px solid rgba(239,68,68,0.5); animation: pulse-glow 2s ease-in-out infinite; }
         @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 4px rgba(239,68,68,0.3); } 50% { box-shadow: 0 0 8px rgba(239,68,68,0.6); } }
         .pinned-layer-chip .chip-icon { font-size: 9px; }
@@ -2546,6 +2549,54 @@
                three options plus the label still fit inside the 260px popup. */
             .geo-detail-opt { padding: 6px 9px; font-size: 11px; }
             .geo-detail-label { margin-right: 4px; }
+        }
+        /* --- Layer rows (Roads, rivers, places & infrastructure) ------
+           One full-width row per layer, in the stats panel's vocabulary for a
+           layer switch: eye, accent bar and tint in the layer's OWN colour
+           (--c, the colour it is drawn in on the map), value on the right.
+           A row list cannot overflow sideways — the nowrap button strip this
+           replaces clipped its last button behind the card's edge. */
+        .geo-detail-seg .geo-all-btn { margin-left: auto; padding: 3px 7px; background: none;
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; color: #9ca3af;
+            font-family: inherit; font-size: 10px; line-height: 1.4; cursor: pointer; white-space: nowrap;
+            transition: color 0.15s, background 0.15s, border-color 0.15s; }
+        .geo-detail-seg .geo-all-btn:hover { color: #22c55e; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.1); }
+        .geo-detail-seg .geo-all-btn[data-mode=hide]:hover { color: #f87171; border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.08); }
+        .geo-group { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+        .geo-group-label { font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: #6b7280; margin-bottom: 2px; }
+        .geo-note { font-size: 10px; color: #9ca3af; line-height: 1.5; padding: 0 0 4px; overflow-wrap: anywhere; }
+        .geo-note b { color: #d1d5db; font-weight: 600; }
+        .geo-row { display: flex; align-items: center; gap: 7px; width: 100%; min-width: 0; min-height: 26px;
+            padding: 3px 7px 3px 6px; margin: 0; text-align: left; font-family: inherit; font-size: 11px;
+            color: #9ca3af; background: rgba(255,255,255,0.03); border: 0; border-left: 3px solid transparent;
+            border-radius: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s, color 0.15s, border-color 0.15s; }
+        .geo-row:hover:not(:disabled) { background: rgba(255,255,255,0.08); color: #e5e7eb; }
+        .geo-row:active:not(:disabled) { background: rgba(255,255,255,0.12); }
+        .geo-row:disabled { opacity: 0.35; cursor: default; }
+        .geo-row-mark { flex: none; width: 14px; text-align: center; color: var(--c); opacity: 0.55; font-size: 11px; line-height: 1; }
+        .geo-row-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .geo-row-meta { color: #6b7280; font-size: 9.5px; margin-left: 3px; }
+        .geo-row-value { flex: none; font-variant-numeric: tabular-nums; font-size: 10.5px; color: #7d8590; }
+        .geo-row-eye { flex: none; width: 14px; text-align: center; font-size: 12px; opacity: 0.4; }
+        .geo-row .chip-dots { display: none; flex: none; color: var(--c); }
+        .geo-row.pinned { color: #f3f4f6; border-left-color: var(--c);
+            background: color-mix(in srgb, var(--c) 14%, transparent); }
+        .geo-row.pinned:hover { background: color-mix(in srgb, var(--c) 22%, transparent); }
+        .geo-row.pinned .geo-row-mark { opacity: 1; }
+        .geo-row.pinned .geo-row-value { color: var(--c); font-weight: 600; }
+        .geo-row.pinned .geo-row-eye { opacity: 0.9; color: var(--c); }
+        .geo-row.is-loading { color: #d1d5db; border-left-color: color-mix(in srgb, var(--c) 45%, transparent); }
+        .geo-row.is-loading .chip-dots { display: inline-flex; }
+        .geo-row.is-loading .geo-row-value { display: none; }
+        .geo-row:focus-visible, .geo-all-btn:focus-visible { outline: 2px solid #22c55e; outline-offset: 1px; }
+        @media (max-width: 640px), (pointer: coarse) {
+            .geo-row { min-height: 38px; font-size: 12.5px; gap: 9px; padding: 6px 10px 6px 8px; }
+            .geo-row-value { font-size: 12px; }
+            .geo-row-meta { font-size: 10.5px; }
+            .geo-row-eye { font-size: 15px; width: 18px; }
+            .geo-group { gap: 3px; }
+            .geo-detail-seg .geo-all-btn { padding: 6px 10px; font-size: 11px; }
         }
         .pa-export-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; padding: 0; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #888; cursor: pointer; line-height: 1; flex-shrink: 0; font-family: inherit; }
         .pa-export-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }

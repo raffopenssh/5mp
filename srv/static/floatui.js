@@ -891,6 +891,8 @@
         // nothing brings it back until the first user gesture happens to
         // detach it. So once the map settles, if the bar is not visible,
         // hand the card to the screen and clamp it into view.
+        // Clear of the footer strip and the slider's fade at the map's foot.
+        const FOOT = 44;
         function ensureVisible() {
             if (detached || container.classList.contains('fui-sheet') ||
                 container.classList.contains('fui-docked')) return;
@@ -901,6 +903,18 @@
             if (r.top < mr.top + 2 || r.top > mr.bottom - 60 ||
                 r.right < mr.left + 60 || r.left > mr.right - 60) {
                 detach();
+                clampIntoView();
+                return;
+            }
+            // THE BOTTOM COUNTS TOO. A card anchored below its point (anchor
+            // top) grows DOWNWARD: a link that opens the last accordion
+            // rendered that section under the time slider, and the card's own
+            // scroll could not reach it because the card itself ran off the
+            // map. If it fits, hand it to the screen and lift it; the card is
+            // capped at 70vh, so "fits" is the normal case.
+            if (r.bottom > mr.bottom - FOOT && r.height <= mr.height - MARGIN - FOOT) {
+                detach();
+                container.style.top = Math.max(MARGIN, mr.height - r.height - FOOT) + 'px';
                 clampIntoView();
             }
         }
@@ -916,10 +930,30 @@
         // anchored ones re-check visibility (but never mid-flight — a fly-to
         // in progress puts the card anywhere for a frame).
         if (window.ResizeObserver) {
+            let lastH = container.getBoundingClientRect().height;
             const ro = new ResizeObserver(() => {
                 if (container.classList.contains('fui-sheet') ||
                     container.classList.contains('fui-docked')) return;
-                if (detached) { clampIntoView(); return; }
+                if (detached) {
+                    // A card the user parked fully on screen stays fully on
+                    // screen when a section opens; one they dragged half off
+                    // the edge is left where they put it.
+                    const mapEl = container.offsetParent || container.parentElement;
+                    if (mapEl) {
+                        const mr = mapEl.getBoundingClientRect();
+                        const r = container.getBoundingClientRect();
+                        const grew = r.height - lastH;
+                        if (grew > 0 && r.bottom > mr.bottom - FOOT &&
+                            r.bottom - grew <= mr.bottom - FOOT + 1 &&
+                            r.height <= mr.height - MARGIN - FOOT) {
+                            container.style.top = Math.max(MARGIN, mr.height - r.height - FOOT) + 'px';
+                        }
+                        lastH = r.height;
+                    }
+                    clampIntoView();
+                    return;
+                }
+                lastH = container.getBoundingClientRect().height;
                 try { if (popup._map && popup._map.isMoving()) return; } catch (err) { }
                 ensureVisible();
             });

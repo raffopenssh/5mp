@@ -13862,45 +13862,87 @@ window.addEventListener('load', function () {
                         ${off ? 'disabled' : ''} title="${escapeHtml(tip)}"
                         onclick="event.stopPropagation(); setGeoDetail('${paId}', '${tier}')">${label}</button>`;
                 });
-                html += `</div>`;
+                html += `<!--geo-all--></div>`;
 
-                // Three pin buttons only - clean and simple
-                html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 4px 0;">';
-
-                // Counts follow the selected tier: the number on the button is
-                // the number of features the button draws.
+                // ONE ROW PER LAYER, ALL OF THEM REACHABLE.
+                //
+                // These were `flex: 1` buttons in a nowrap row inside a section
+                // that clips its overflow: three fitted, and the watershed row
+                // has three with long labels, so "Downstream" was cut off at
+                // the card's edge with no way to scroll to it. A row list
+                // cannot overflow sideways, gives every layer a full-width
+                // target on a phone, and is the same vocabulary the stats panel
+                // uses for a layer switch: eye, accent bar in the layer's own
+                // colour, number on the right. The on/off state is NOT written
+                // here — syncPinCategoryButtons() reads it from pinnedLayers,
+                // so the Pinned Layers box, a share link restoring mid-render
+                // and a failed load all leave these rows telling the truth.
                 const nRivers = dc.river ? (dc.river[geoDetail] || 0) : (s.total_rivers || 0);
                 const nRoads = dc.road ? (dc.road[geoDetail] || 0) : (s.total_roads || 0);
                 const nPlaces = dc.place ? (dc.place[geoDetail] || 0) : (s.total_places || 0);
+                const fmt = n => Number(n || 0).toLocaleString();
+                const row = (type, glyph, color, label, value, o = {}) =>
+                    `<button type="button" class="geo-row pin-category-btn" data-park-id="${paId}" data-type="${type}"
+                        style="--c:${color}" aria-pressed="false" ${o.disabled ? 'disabled' : ''}
+                        ${o.tip ? `title="${escapeHtml(o.tip)}"` : ''}
+                        onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', '${type}', this)">
+                        <span class="geo-row-mark">${glyph}</span>
+                        <span class="geo-row-label">${label}${o.meta ? ` <span class="geo-row-meta">${o.meta}</span>` : ''}</span>
+                        <span class="geo-row-value">${value}</span>
+                        <span class="chip-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <i class="geo-row-eye icon-eye-off" aria-hidden="true"></i>
+                    </button>`;
+                const group = (label, rows, note = '') => rows.length
+                    ? `<div class="geo-group"><div class="geo-group-label">${label}</div>${note}${rows.join('')}</div>` : '';
 
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="river" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'river', this)" style="flex: 1;${nRivers === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRivers === 0 ? 'disabled' : ''}>
-                    <span style="color: #3b82f6;">∿</span> Rivers ${nRivers}
-                </button>`;
-
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="road" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'road', this)" style="flex: 1;${nRoads === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nRoads === 0 ? 'disabled' : ''}>
-                    <span style="color: #60a5fa;">═</span> Roads ${nRoads}
-                </button>`;
-
-                html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="place" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'place', this)" style="flex: 1;${nPlaces === 0 ? 'opacity:0.4;cursor:default;' : ''}" ${nPlaces === 0 ? 'disabled' : ''}>
-                    <span style="color: #a855f7;">●</span> Places ${nPlaces}
-                </button>`;
-                
-                // Learned infrastructure (airstrips) - show only if there are approved ones
+                const geoRows = [
+                    row('river', '∿', '#3b82f6', 'Rivers', fmt(nRivers), { disabled: nRivers === 0 }),
+                    row('road', '═', '#60a5fa', 'Roads', fmt(nRoads), { disabled: nRoads === 0 }),
+                    row('place', '●', '#a855f7', 'Places', fmt(nPlaces), { disabled: nPlaces === 0 }),
+                ];
+                // Learned infrastructure (airstrips) - only if there are approved ones
                 const airstripsApproved = (learned.airstrips || []).filter(a => a.status === 'auto_approved' || a.status === 'approved');
                 if (airstripsApproved.length > 0) {
-                    html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="infrastructure" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'infrastructure', this)" style="flex: 1;">
-                        <span style="color: #22c55e;">✈</span> Infra ${airstripsApproved.length}
-                    </button>`;
+                    geoRows.push(row('infrastructure', '✈', '#22c55e', 'Airstrips', fmt(airstripsApproved.length),
+                        { tip: 'Airstrips learned from patrol GPX tracks' }));
                 }
-                
-                html += '</div>';
+                // Patrol-visited locations (learned places from GPX uploads)
+                const placesVisited = (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved');
+                if (placesVisited.length > 0) {
+                    const totalVisits = placesVisited.reduce((s, p) => s + (p.visit_count || 0), 0);
+                    geoRows.push(row('visits', '◉', '#10b981', 'Patrol visits', fmt(placesVisited.length),
+                        { meta: `${fmt(totalVisits)} visits`, tip: 'Camps, outposts & gates detected from patrol GPX tracks, sized by visit count' }));
+                }
+
+                const upstream = (basin.basins || []).find(b => b.kind === 'upstream');
+                const downstream = (basin.basins || []).find(b => b.kind === 'downstream');
+                const waterRows = [];
+                if (upstream) {
+                    const nUp = basin.upstream_count || 0;
+                    waterRows.push(row('basin', '⌬', '#0ea5e9', nUp > 1 ? 'Upstream basins' : 'Upstream basin',
+                        `${fmt(Math.round(upstream.area_km2 || 0))} km²`,
+                        { meta: nUp > 1 ? `${nUp}` : '', tip: "Every contributing watershed upstream of this area's river exits (mghydro / MERIT-Hydro), drawn separately and named by the river that carries it. Anything happening in one drains through the area." }));
+                }
+                if (upstream && (basin.upstream_reaches || 0) > 0) {
+                    const n3 = basin.upstream_reaches_order3plus || 0;
+                    const km3 = Math.round(basin.upstream_river_km_order3plus || 0).toLocaleString();
+                    waterRows.push(row('basin_rivers', '∿', '#38bdf8', 'Upstream rivers',
+                        `${fmt(Math.round(basin.upstream_river_km || 0))} km`,
+                        { tip: `Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}, ${km3} km) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.` }));
+                }
+                if (downstream) {
+                    waterRows.push(row('basin_downstream', '⇣', '#22d3ee', 'Downstream',
+                        `${fmt(Math.round(downstream.length_km || 0))} km`,
+                        { tip: "River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins)." }));
+                }
+
+                html += group('Access', geoRows);
 
                 // Watershed context: the contributing (upstream) basin and the
                 // downstream trace. This is the frame in which upstream pressure
                 // (mining, deforestation) on this park is expressible at all -
                 // see docs/MINING_FINDINGS_2026-08.md.
-                const upstream = (basin.basins || []).find(b => b.kind === 'upstream');
-                const downstream = (basin.basins || []).find(b => b.kind === 'downstream');
+                let waterNote = '';
                 if (upstream || downstream) {
                     // One plain-language line first. The basin layer is a
                     // deliverable in its own right (docs/MINING_FINDINGS_2026-08.md
@@ -13930,53 +13972,20 @@ window.addEventListener('load', function () {
                         bits.push(`leaves down ${names.length ? names.join(' → ') : 'the river network'} for <b>${Math.round(downstream.length_km).toLocaleString()} km</b>`);
                     }
                     if (bits.length) {
-                        html += `<div style="font-size:10px;color:#9ca3af;line-height:1.5;padding:2px 0 5px 0;" title="Upstream contributing watershed (mghydro / MERIT-Hydro) and downstream trace to the sea or terminal sink (global-river-runner). Any pressure inside the upstream polygon — mining, deforestation, effluent — drains through this park.">${bits.join(', ')}.</div>`;
+                        waterNote = `<div class="geo-note" title="Upstream contributing watershed (mghydro / MERIT-Hydro) and downstream trace to the sea or terminal sink (global-river-runner). Any pressure inside the upstream polygon — mining, deforestation, effluent — drains through this park.">${bits.join(', ')}.</div>`;
                     }
-                    html += '<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">';
-                    if (upstream) {
-                        const a = Math.round(upstream.area_km2 || 0).toLocaleString();
-                        const nUp = basin.upstream_count || 0;
-                        const label = nUp > 1 ? `Upstream basins (${nUp})` : 'Upstream basin';
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin', this)" style="flex: 1;" title="Every contributing watershed upstream of this area's river exits (mghydro / MERIT-Hydro), drawn separately and named by the river that carries it. Anything happening in one drains through the area.">
-                            <span style="color: #0ea5e9;">⌬</span> ${label} <span style="color:#888;font-size:9px;">${a} km²</span>
-                        </button>`;
-                    }
-                    if (upstream && (basin.upstream_reaches || 0) > 0) {
-                        const n3 = basin.upstream_reaches_order3plus || 0;
-                        const km3 = Math.round(basin.upstream_river_km_order3plus || 0).toLocaleString();
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_rivers" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin_rivers', this)" style="flex: 1;" title="Upstream river network with Strahler stream order. Only order 3+ reaches (${n3} of ${basin.upstream_reaches}, ${km3} km) are wide enough for Sentinel-2 to see the water surface, so only those support turbidity analysis.">
-                            <span style="color: #38bdf8;">∿</span> Upstream rivers <span style="color:#888;font-size:9px;">${Math.round(basin.upstream_river_km || 0).toLocaleString()} km</span>
-                        </button>`;
-                    }
-                    if (downstream) {
-                        const l = Math.round(downstream.length_km || 0).toLocaleString();
-                        html += `<button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="basin_downstream" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'basin_downstream', this)" style="flex: 1;" title="River path traced from this park's outlet to the sea or terminal sink (global-river-runner / MERIT-Basins).">
-                            <span style="color: #22d3ee;">⇣</span> Downstream <span style="color:#888;font-size:9px;">${l} km</span>
-                        </button>`;
-                    }
-                    html += '</div>';
                 }
+                html += group('Watershed', waterRows, waterNote);
 
-                // Patrol-visited locations (learned places from GPX uploads) with visit counts
-                const placesVisited = (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved');
-                if (placesVisited.length > 0) {
-                    const totalVisits = placesVisited.reduce((s, p) => s + (p.visit_count || 0), 0);
-                    html += `<div class="road-pin-buttons" style="display: flex; gap: 8px; padding: 0 0 4px 0;">
-                    <button class="pa-popup-btn pin-category-btn" data-park-id="${paId}" data-type="visits" onclick="event.stopPropagation(); togglePinCategory('${paId}', '${jsq(parkName)}', 'visits', this)" style="flex: 1;" title="Camps, outposts & gates detected from patrol GPX tracks, sized by visit count">
-                        <span style="color: #10b981;">◉</span> Patrol Visits ${placesVisited.length} <span style="color:#888;font-size:9px;">(${totalVisits} visits)</span>
-                    </button>
-                    </div>`;
-                }
-                
+                // The master switch sits beside the tier control: both govern
+                // every row below. Its label is written by the sync, because
+                // "Show all" / "Hide all" is a statement about the rows' state.
+                html = html.replace('<!--geo-all-->',
+                    `<button type="button" class="geo-all-btn" data-park-id="${paId}"
+                        onclick="event.stopPropagation(); toggleAllPinCategories('${paId}', '${jsq(parkName)}', this)">Show all</button>`);
+
                 el.innerHTML = html || '<div class="pa-popup-section-empty">No data available</div>';
-                
-                // Restore pinned highlight state on the buttons
-                el.querySelectorAll('.pin-category-btn').forEach(b => {
-                    if (isPinned(paId, b.dataset.type)) {
-                        b.classList.add('pinned');
-                        b.style.background = 'rgba(34,197,94,0.3)';
-                    }
-                });
+                syncPinCategoryButtons();
             } catch (e) {
                 el.innerHTML = '<div class="pa-popup-section-empty">Data not available</div>';
                 console.error('Road data error:', e);
@@ -21617,21 +21626,64 @@ ${starredItems.narratives.map(n => {
         const key = getPinKey(parkId, type);
         
         if (pinnedLayers[key]) {
-            // Unpin
             removePinnedLayer(key);
-            if (btn) {
-                btn.classList.remove('pinned');
-                btn.style.background = '';
-            }
-        } else {
-            // Pin
-            if (btn) {
-                btn.classList.add('pinned');
-                btn.style.background = 'rgba(34,197,94,0.3)';
-            }
-            await addPinnedLayer(parkId, parkName, type);
+        } else if (!pinCategoryPending[key]) {
+            // The row says "loading" until the layer exists — and says "off"
+            // again if it never does. It used to be painted on before the
+            // fetch and left on after a failure.
+            pinCategoryPending[key] = true;
+            syncPinCategoryButtons();
+            try { await addPinnedLayer(parkId, parkName, type); }
+            finally { delete pinCategoryPending[key]; }
         }
         
+        updatePinnedIndicator();   // also re-syncs the rows
+        savePinnedToURL();
+    }
+
+    // The popup's layer rows (.pin-category-btn) are a VIEW of pinnedLayers.
+    // Three other things change a pin — the × in the Pinned Layers box, a share
+    // link restoring after the popup rendered, a load that fails — and each
+    // used to leave a row lit or dark against the map. One reader, called
+    // wherever the pins repaint.
+    var pinCategoryPending = {};
+    function syncPinCategoryButtons() {
+        const byPark = {};
+        document.querySelectorAll('.pin-category-btn').forEach(b => {
+            const key = getPinKey(b.dataset.parkId, b.dataset.type);
+            const on = !!pinnedLayers[key];
+            const loading = !on && !!pinCategoryPending[key] || !!(on && pinnedLayers[key].loading);
+            b.classList.toggle('pinned', on);
+            b.classList.toggle('is-loading', loading);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            const eye = b.querySelector('.geo-row-eye');
+            if (eye) eye.className = 'geo-row-eye ' + (on ? 'icon-eye' : 'icon-eye-off');
+            if (!b.disabled) {
+                const t = byPark[b.dataset.parkId] || (byPark[b.dataset.parkId] = { n: 0, on: 0 });
+                t.n++; if (on) t.on++;
+            }
+        });
+        document.querySelectorAll('.geo-all-btn').forEach(b => {
+            const t = byPark[b.dataset.parkId] || { n: 0, on: 0 };
+            b.hidden = t.n < 2;
+            b.dataset.mode = t.on ? 'hide' : 'show';
+            b.textContent = t.on ? 'Hide all' : 'Show all';
+        });
+    }
+
+    // Master switch: anything on → all off (the cheap, always-safe direction);
+    // nothing on → every row on. Loads run together; each row carries its own
+    // dots, so the wait is shown where each answer lands.
+    async function toggleAllPinCategories(parkId, parkName, btn) {
+        const scope = (btn && btn.closest('.pa-popup-section-content')) || document;
+        const rows = Array.from(scope.querySelectorAll('.pin-category-btn'))
+            .filter(b => b.dataset.parkId === parkId && !b.disabled);
+        const on = rows.filter(b => pinnedLayers[getPinKey(parkId, b.dataset.type)]);
+        if (on.length) {
+            on.forEach(b => removePinnedLayer(getPinKey(parkId, b.dataset.type)));
+        } else {
+            await Promise.all(rows.map(b => togglePinCategory(parkId, parkName, b.dataset.type, b)));
+        }
         updatePinnedIndicator();
         savePinnedToURL();
     }
@@ -21805,6 +21857,7 @@ ${starredItems.narratives.map(n => {
             } else if (type === 'visits') {
                 // Patrol-visited locations learned from GPX uploads (camps, outposts, gates)
                 const response = await fetch(`/api/admin/learned-features?park_id=${parkId}&type=places`);
+                if (response.status === 401 || response.status === 403) throw Object.assign(new Error('not available on this link'), { withheld: true });
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 const features = [];
@@ -21827,6 +21880,7 @@ ${starredItems.narratives.map(n => {
                 geojson = { type: 'FeatureCollection', features };
             } else if (type === 'infrastructure') {
                 const response = await fetch(`/api/admin/learned-features?park_id=${parkId}`);
+                if (response.status === 401 || response.status === 403) throw Object.assign(new Error('not available on this link'), { withheld: true });
                 if (!response.ok) throw new Error('Failed to fetch features');
                 const learned = await response.json();
                 
@@ -22246,6 +22300,10 @@ ${starredItems.narratives.map(n => {
             showToast(`Pinned ${geojson.features.length} ${type} features from ${parkName}`, 'success', { routine: true });
             
         } catch (error) {
+            // Patrol-derived layers are withheld from a guest link by design
+            // (docs/agents/sharing.md). A link that carries such a pin is not
+            // broken, so it does not get two red toasts on arrival.
+            if (error && error.withheld) { console.info(`[pin] ${type} withheld on this link`); return; }
             console.error('Error adding pinned layer:', error.message || error);
             showToast(`Failed to load ${type} features: ${error.message || error}`, 'error');
         }
@@ -22447,6 +22505,7 @@ ${starredItems.narratives.map(n => {
             window._reconcilingPins = true;
             try { reconcileViewLayerDuplicates(); } finally { window._reconcilingPins = false; }
         }
+        syncPinCategoryButtons();
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');
         const categoryKeys = Object.keys(pinnedLayers);
@@ -22465,13 +22524,15 @@ ${starredItems.narratives.map(n => {
         const typeIcons = {
             'fire': '◇', 'fire_trajectory': '◇', 'settlement': '◻', 'deforestation': '△', 
             'road': '═', 'place': '●', 'river': '~', 'water': '○', 'visits': '◉',
-            'active-fire': '◆', 'infrastructure': '▣', 'turbidity': '◈'
+            'active-fire': '◆', 'infrastructure': '▣', 'turbidity': '◈',
+            'basin': '⌬', 'basin_rivers': '∿', 'basin_downstream': '⇣'
         };
         const typeLabels = {
             'fire': 'Fire trajectories', 'fire_trajectory': 'Fire trajectories',
             'settlement': 'Settlements', 'deforestation': 'Deforestation',
             'road': 'Roads', 'place': 'Places', 'river': 'Rivers', 'water': 'Waterbodies', 'visits': 'Patrol visits',
-            'active-fire': 'Active fire', 'infrastructure': 'Infrastructure', 'turbidity': 'Mining / turbidity'
+            'active-fire': 'Active fire', 'infrastructure': 'Infrastructure', 'turbidity': 'Mining / turbidity',
+            'basin': 'Upstream basins', 'basin_rivers': 'Upstream rivers', 'basin_downstream': 'Downstream path'
         };
         
         // Group pins by park

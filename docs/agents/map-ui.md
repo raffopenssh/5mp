@@ -710,3 +710,27 @@ Two rules that bite from this side:
 * **The pill must not truncate silently** (invariant 8): the word count is a
   property of the cell (`matchMedia('(max-width: 768px)')`), and the label
   ellipsizes inside the pill rather than being sliced by the grid cell.
+
+## The popup's "Roads, rivers, places & infrastructure" section (2026-11-11)
+
+`fetchPopupRoadData` renders **one full-width row per layer** (`.geo-row`,
+grouped Access / Watershed), not a strip of `flex:1` buttons. The strip sat in
+a section with `overflow:hidden`: the three-button watershed row was 342 px in
+a 252 px card, so "Downstream" was clipped with nothing to scroll.
+
+* **The rows are a view of `pinnedLayers`** — `syncPinCategoryButtons()`, called
+  from `updatePinnedIndicator()`. State used to be painted on click and at
+  render time only, so a share link whose road pin landed after the popup, the
+  × in the Pinned Layers box, and a failed load each left a row lying.
+  `pinCategoryPending` carries the dots while a layer loads.
+* Each row is tinted in the layer's **map colour** (`--c`), eye + accent bar —
+  the stats panel's vocabulary for a layer switch. `Show all` / `Hide all`
+  (`toggleAllPinCategories`) sits beside the Detail tier.
+* **Guests:** `/api/admin/learned-features` is 401 on a guest link (patrol
+  data, by design). The airstrip / patrol-visit rows are simply absent, and a
+  link that *carries* those pins skips them silently (`error.withheld`) rather
+  than raising two red toasts.
+* **The card's bottom counts** (`floatui.js` `ensureVisible`, `FOOT`): an
+  anchor-top popup grows downward, and `?sections=road` opened the last
+  accordion under the time slider. If the card fits it is detached and lifted;
+  a detached card that was fully on screen stays so when a section opens.
