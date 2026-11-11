@@ -1667,11 +1667,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 1.0,
-    "narrative": "Agricultural settlement 0km south-southwest of M\u00e9l\u00e9. Fire activity (1992 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.48 km\u00b2 deforestation nearby indicates active land conversion. 34% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 14% in 2000-2003.",
-    "fires_5km": 1992,
+    "narrative": "Agricultural settlement 0km south-southwest of M\u00e9l\u00e9. Fire activity (1994 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.48 km\u00b2 deforestation nearby indicates active land conversion. 34% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 14% in 2000-2003.",
+    "fires_5km": 1994,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.48219999999999996,
-    "classified_at": "2026-10-14 07:30:23",
+    "classified_at": "2026-11-07 07:30:25",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.71928_21.59050"
   },
   {
@@ -1693,10 +1693,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 0.8,
     "narrative": "Temporary camp 4km south of M\u00e9l\u00e9. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 1973,
+    "fires_5km": 1974,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.48219999999999996,
-    "classified_at": "2026-10-14 07:30:23",
+    "classified_at": "2026-11-07 07:30:26",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.68712_21.59170"
   },
   {
@@ -1717,11 +1717,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.9999999999999999,
-    "narrative": "Agricultural settlement 4km south-southeast of Kitkinang. Fire activity (1596 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 2.48 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1596,
+    "narrative": "Agricultural settlement 4km south-southeast of Kitkinang. Fire activity (1626 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 2.48 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1626,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 2.4844,
-    "classified_at": "2026-10-14 07:30:24",
+    "classified_at": "2026-11-07 07:30:26",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.50443_21.03473"
   },
   {
@@ -1742,11 +1742,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.9999999999999999,
-    "narrative": "Agricultural settlement 3km southeast of Massambagne, 4.0km from Bahr Aouk River. Fire activity (2064 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.70 km\u00b2 deforestation nearby indicates active land conversion. 1% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
-    "fires_5km": 2064,
+    "narrative": "Agricultural settlement 3km southeast of Massambagne, 4.0km from Bahr Aouk River. Fire activity (2065 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.70 km\u00b2 deforestation nearby indicates active land conversion. 1% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
+    "fires_5km": 2065,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 3.6969,
-    "classified_at": "2026-10-14 07:30:24",
+    "classified_at": "2026-11-07 07:30:26",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.41351_20.87870"
   },
   {
@@ -1767,11 +1767,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 12km west-southwest of Massambagne 2. Fire activity (1753 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.56 km\u00b2 deforestation nearby indicates active land conversion. 2% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
-    "fires_5km": 1753,
+    "narrative": "Agricultural settlement 12km west-southwest of Massambagne 2. Fire activity (1788 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.56 km\u00b2 deforestation nearby indicates active land conversion. 2% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
+    "fires_5km": 1788,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 4.559,
-    "classified_at": "2026-10-14 07:30:24",
+    "classified_at": "2026-11-07 07:30:27",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.39116_20.74657,settlement_CAF_Manovo_Gounda_St_Floris_9.38303_20.74274"
   },
   {
@@ -1796,7 +1796,7 @@
     "fires_5km": 1425,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.020999999999999998,
-    "classified_at": "2026-10-14 07:30:24",
+    "classified_at": "2026-11-07 07:30:27",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.39034_21.31449"
   },
   {
@@ -1817,11 +1817,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 14km west-southwest of Massambagne 2. Fire activity (1730 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 5.17 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1730,
+    "narrative": "Agricultural settlement 14km west-southwest of Massambagne 2. Fire activity (1769 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 5.17 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1769,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 5.1669,
-    "classified_at": "2026-10-14 07:30:25",
+    "classified_at": "2026-11-07 07:30:27",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.38831_20.72282"
   },
   {
@@ -1842,11 +1842,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 8km east of Miabessi. Fire activity (1773 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.02 km\u00b2 deforestation nearby indicates active land conversion. 2% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
-    "fires_5km": 1773,
+    "narrative": "Agricultural settlement 8km east of Miabessi. Fire activity (1799 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.02 km\u00b2 deforestation nearby indicates active land conversion. 2% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
+    "fires_5km": 1799,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 4.0158,
-    "classified_at": "2026-10-14 07:30:25",
+    "classified_at": "2026-11-07 07:30:27",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.32775_20.60238"
   },
   {
@@ -1866,12 +1866,12 @@
     "tile_col": null,
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
-    "classification_confidence": 0.9999999999999999,
-    "narrative": "Agricultural settlement 10km east-southeast of Miabessi. Fire activity (1636 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.40 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1636,
-    "fire_seasonality": "dry_season",
+    "classification_confidence": 0.7999999999999999,
+    "narrative": "Agricultural settlement 10km east-southeast of Miabessi. Fire activity (1650 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.40 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1650,
+    "fire_seasonality": "year_round",
     "deforest_nearby_km2": 4.3995999999999995,
-    "classified_at": "2026-10-14 07:30:25",
+    "classified_at": "2026-11-07 07:30:28",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.31718_20.61960,settlement_CAF_Manovo_Gounda_St_Floris_9.31149_20.62543"
   },
   {
@@ -1892,11 +1892,11 @@
     "detected_at": "2026-08-13 18:35:01",
     "classification": "agricultural",
     "classification_confidence": 0.8999999999999999,
-    "narrative": "Agricultural settlement 17km south of Malam. Fire activity (1702 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.76 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1702,
+    "narrative": "Agricultural settlement 17km south of Malam. Fire activity (1722 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.76 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1722,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 3.7573,
-    "classified_at": "2026-10-14 07:30:26",
+    "classified_at": "2026-11-07 07:30:28",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.26841_20.89445"
   },
   {
@@ -1917,11 +1917,11 @@
     "detected_at": "2026-08-13 18:35:02",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 6km northeast of Daha, 1.0km from Bahr Aouk River. Fire activity (1648 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.46 km\u00b2 deforestation nearby indicates active land conversion. 1% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
-    "fires_5km": 1648,
+    "narrative": "Agricultural settlement 6km northeast of Daha, 1.0km from Bahr Aouk River. Fire activity (1674 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 3.46 km\u00b2 deforestation nearby indicates active land conversion. 1% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
+    "fires_5km": 1674,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 3.4576,
-    "classified_at": "2026-10-14 07:30:26",
+    "classified_at": "2026-11-07 07:30:28",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.26380_20.51271"
   },
   {
@@ -1942,11 +1942,11 @@
     "detected_at": "2026-08-13 18:35:02",
     "classification": "agricultural",
     "classification_confidence": 0.8999999999999999,
-    "narrative": "Agricultural settlement 9km east of Daha, 6.2km from Bahr Aouk River. Fire activity (1780 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.50 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1780,
+    "narrative": "Agricultural settlement 9km east of Daha, 6.2km from Bahr Aouk River. Fire activity (1789 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 4.50 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1789,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 4.5016,
-    "classified_at": "2026-10-14 07:30:26",
+    "classified_at": "2026-11-07 07:30:29",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.23671_20.55834"
   },
   {
@@ -1968,10 +1968,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement at coordinates (9.140\u00b0, 21.906\u00b0). Seasonal fire pattern suggests grazing management. Minimal deforestation (0.20 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1656,
+    "fires_5km": 1677,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.1991,
-    "classified_at": "2026-10-14 07:30:26",
+    "classified_at": "2026-11-07 07:30:29",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_9.14161_21.90607,settlement_CAF_Manovo_Gounda_St_Floris_9.13818_21.90588"
   },
   {
@@ -1993,10 +1993,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 1.0,
     "narrative": "Temporary camp 37km east-southeast of Koundi. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2199,
+    "fires_5km": 2208,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0362,
-    "classified_at": "2026-10-14 07:30:27",
+    "classified_at": "2026-11-07 07:30:29",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.70121_21.01898"
   },
   {
@@ -2018,10 +2018,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 1.0,
     "narrative": "Temporary camp at coordinates (8.682\u00b0, 21.256\u00b0). Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2232,
+    "fires_5km": 2233,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.058,
-    "classified_at": "2026-10-14 07:30:27",
+    "classified_at": "2026-11-07 07:30:30",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.68171_21.25647"
   },
   {
@@ -2046,7 +2046,7 @@
     "fires_5km": 1936,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0896,
-    "classified_at": "2026-10-14 07:30:27",
+    "classified_at": "2026-11-07 07:30:30",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.63216_22.09577"
   },
   {
@@ -2071,7 +2071,7 @@
     "fires_5km": 2083,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2553,
-    "classified_at": "2026-10-14 07:30:28",
+    "classified_at": "2026-11-07 07:30:30",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.58180_21.79153"
   },
   {
@@ -2096,7 +2096,7 @@
     "fires_5km": 2134,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 1.9323000000000001,
-    "classified_at": "2026-10-14 07:30:28",
+    "classified_at": "2026-11-07 07:30:31",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.55256_21.51321"
   },
   {
@@ -2118,10 +2118,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.8,
     "narrative": "Pastoral settlement at coordinates (8.519\u00b0, 21.188\u00b0). Seasonal fire pattern suggests grazing management. Minimal deforestation (0.07 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1992,
+    "fires_5km": 1993,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.06709999999999999,
-    "classified_at": "2026-10-14 07:30:28",
+    "classified_at": "2026-11-07 07:30:31",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.52088_21.19564,settlement_CAF_Manovo_Gounda_St_Floris_8.51763_21.18046"
   },
   {
@@ -2146,7 +2146,7 @@
     "fires_5km": 1976,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1604,
-    "classified_at": "2026-10-14 07:30:29",
+    "classified_at": "2026-11-07 07:30:31",
     "polygon_ids": "settlement_CAF_Manovo_Gounda_St_Floris_8.49232_21.79893"
   }
 ]

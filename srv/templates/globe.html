@@ -21895,15 +21895,8 @@ ${starredItems.narratives.map(n => {
                         });
                     }
                 });
-                (learned.places || []).filter(p => p.status === 'auto_approved' || p.status === 'approved').forEach(p => {
-                    if (p.lat && p.lon) {
-                        features.push({
-                            type: 'Feature',
-                            geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
-                            properties: { feature_type: 'learned_place', feature_id: `learned_place_${p.id}`, name: p.name || p.place_type, place_type: p.place_type }
-                        });
-                    }
-                });
+                // Airstrips only: the row says "Airstrips" and counts airstrips.
+                // Learned places are the Patrol visits / Places pins.
                 geojson = { type: 'FeatureCollection', features };
             } else {
                 // Geography layers carry the detail tier; everything else

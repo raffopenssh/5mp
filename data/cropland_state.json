@@ -153,7 +153,7 @@
   "version": "2026-08-14b"
  },
  "CAF_Bamingui-Bangoran": {
-  "at": "2026-10-14T06:20:02Z",
+  "at": "2026-11-07T06:20:01Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "3cb0e635d4a049266a81fc8163ed4fe5c1616708215cb435392edab976bfe671",
@@ -170,14 +170,14 @@
   "version": "2026-08-14b"
  },
  "CAF_Chinko": {
-  "at": "2026-10-12T06:20:03Z",
+  "at": "2026-11-05T06:20:03Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "1b842e51048a628012baacbb303246fa8a40553d6a321734ef2cc170f5c0d366",
    "2019": "79e0fcdc6f8d2e462621c63ca238cabfcb4d5f31459f0b174c050802389b92f9"
   },
   "defo_conversion_km2": 0.0,
-  "deforestation_events": 284,
+  "deforestation_events": 283,
   "mean_frac_2003": 0.0,
   "mean_frac_2019": 0.0,
   "settlements": 20,
@@ -187,14 +187,14 @@
   "version": "2026-08-14b"
  },
  "CAF_Dzanga_Park": {
-  "at": "2026-10-09T06:20:03Z",
+  "at": "2026-11-10T06:20:02Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "8f0845d08639340623209d8e7ed3dcbc5e411bf2ab5aec87b50df56bdd31e4c1",
    "2019": "76856321ff42526e37491f7aba8366fb21784769947d5335d814f93dbc4926ec"
   },
   "defo_conversion_km2": 0.01,
-  "deforestation_events": 150,
+  "deforestation_events": 145,
   "mean_frac_2003": 0.0,
   "mean_frac_2019": 0.0,
   "settlements": 4,
@@ -204,14 +204,14 @@
   "version": "2026-08-14b"
  },
  "CAF_Manovo_Gounda_St_Floris": {
-  "at": "2026-10-15T06:20:02Z",
+  "at": "2026-11-08T06:20:02Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "8a4f1dfccd37ad8d96eca0d8fcb2edaae3fb8e5c79eb0d16f74e1eaae4d1757d",
    "2019": "c337badae40c77ce7e703e40724a96a7baddaaf2f4f88a203dae5d77b8bdfdd1"
   },
   "defo_conversion_km2": 0.25,
-  "deforestation_events": 220,
+  "deforestation_events": 222,
   "mean_frac_2003": 0.0069,
   "mean_frac_2019": 0.0204,
   "settlements": 20,
@@ -1675,14 +1675,14 @@
   "version": "2026-08-14b"
  },
  "SSD_Badingilo": {
-  "at": "2026-10-16T06:20:02Z",
+  "at": "2026-11-09T06:20:02Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "78b19b77d2856b5e3344ad1b72515f3e26530ca88bf7a20f9c01dc7f76044a95",
    "2019": "7a1db7a5cda2e6935af6e49896930affeabb8e71993f7d3ca96cc5d0bdfeffe5"
   },
   "defo_conversion_km2": 0.09,
-  "deforestation_events": 37,
+  "deforestation_events": 40,
   "mean_frac_2003": 0.0002,
   "mean_frac_2019": 0.0267,
   "settlements": 13,
@@ -1692,14 +1692,14 @@
   "version": "2026-08-14b"
  },
  "SSD_Boma": {
-  "at": "2026-10-10T06:20:03Z",
+  "at": "2026-11-11T06:20:03Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "afc0d345085798333e0d3874e11acdc0d8809e7a0eb56eb63fe412f019e1a70c",
    "2019": "a8ea451e797b673cfdd84b4320eafa2377f34da458a4bd442a8496643b49c2c1"
   },
   "defo_conversion_km2": 0.0,
-  "deforestation_events": 150,
+  "deforestation_events": 148,
   "mean_frac_2003": 0.0,
   "mean_frac_2019": 0.0,
   "settlements": 9,
@@ -1709,7 +1709,7 @@
   "version": "2026-08-14b"
  },
  "SSD_Southern": {
-  "at": "2026-10-11T06:20:03Z",
+  "at": "2026-11-04T06:20:03Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "a15df56a3ae14b301d8455ff6bd60c07aedd319713be1739d7fb5efeabb8874e",
@@ -1726,7 +1726,7 @@
   "version": "2026-08-14b"
  },
  "SSD_Zeraf": {
-  "at": "2026-10-13T06:20:03Z",
+  "at": "2026-11-06T06:20:02Z",
   "citation": "Potapov P. et al. (2021) Global maps of cropland extent and change... Nature Food. doi:10.1038/s43016-021-00429-z",
   "clips": {
    "2003": "101d12998cc48c1b721513ce283776ee7f7b953c58ef7a8eec7f1edfcb556580",

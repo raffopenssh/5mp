@@ -1,20 +1,20 @@
-3f996073 2026-09-24 13:22:01 Disk: drop 2 dead fire indexes, gzip fire_groups_v5/fire_narratives stores and http_cache bodies
-601aea01 2026-09-24 12:51:52 GFW tile cache: key by tile not by cutoff, gzip, prune expired (3.7 GB -> 20 MB, -80 MB/day)
-83634214 2026-09-19 13:17:09 Toasts stay under an open modal overlay instead of printing across it
-06bbafae 2026-09-19 13:16:21 Link previews per methods section: section-aware OG/title on password + globe page, /s/{slug} OG document for unfurlers, rendered sitemap with one URL per section, og-methods.png
-58a10e98 2026-09-19 13:00:27 About modal: reading-grade UX — segmented section track, sticky TOC/dropdown, mobile bottom sheet
-20b03338 2026-09-19 12:41:05 About modal: reading-grade UX — derived TOC with active tracking, progress bar, read time, mobile bottom sheet with swipe-to-close, remembered scroll, typography pass
-85d3de21 2026-09-19 12:29:51 Methods · Fire: rewritten a third shorter in plain language (1,445 → 985 words); catches up with the last week's diffs — speed is contour weight not a raster, front is one surface per landscape (neighbours agree), compare seasons, patrol front + pressure isopleths
-6d6cbf18 2026-09-19 05:53:29 Security final pass: tenant-scope /api/upload/status/{id} (sequential-id oracle onto other tenants' patrol upload summaries), RequireAdminOrLocal ignores loopback when X-Forwarded-For is present; api test + sharing.md audit note
-ebb34098 2026-09-19 05:40:55 Security follow-up: drop Protected Planet token shipped as dead MAPTILER_KEY in globe.html, bump Go toolchain to 1.25.13 (22 reachable stdlib CVEs -> 0), record stale-httpd finding
-5c3a8dad 2026-09-18 16:32:41 Autofetch hardening for new-park onboarding: exactly-once ingestion ledger, high-water mark only on success, failure backoff without credential purge
-6bef0b02 2026-09-18 10:41:32 docs(sharing): record the 2026-09-18 security audit findings and fixes
-f12a2bf8 2026-09-18 10:41:09 Security audit fixes: bind merged.kml dates (SQLi), hide patrol-bearing exports from scope-less guests, key rate limiter on last XFF hop, meter failed ?pwd= attempts
-61019d33 2026-09-18 08:25:25 Vanguard frames: kill the draw→emit→draw echo, per-chain static segment table, run-batched strokes (same pixels, ~2× faster); season speed gets its own rendering glyph (weight)
-6100bd67 2026-09-18 08:07:42 Season front: one season-year per mosaic, de-quantised surface; animator drives paint through feature-state, not per-frame filters
-759b7899 2026-09-18 07:04:43 Season front is one surface per landscape: fire_front.py measures every grid from all detections within a window's reach, on the landscape's season calendar (seams 20 d → 0 d); mosaic joins by hard ownership + seamRamp, fire_season_own.go deleted; tests + fire.md
-e20675cc 2026-09-18 06:16:35 WIP: season speed as contour weight (speed_contours); viewport front mosaic (feathered) — mosaic still shows staircase seams, see follow-up
-cccb9bc1 2026-09-18 05:42:33 ui test season_every_park_in_view; animator.md: every park's patrols/pressure/early-burn ground, speed bbox wire off pending rework
-0c216bbd 2026-09-18 05:41:54 Patrol isochrones, pressure and early-burn ground for every park in view; speed bbox wire (off)
-fbc65a21 2026-09-17 19:55:06 Fire front for every park in view; animator patrol follows the pixels row; animator + fire-tile stress phases
-11aa1f93 2026-09-17 06:06:20 Animator chip row: fold on any 'eye on the map' gesture — play, playhead grab, hand on the canvas
+9c116e65 2026-11-11 20:08:18 Learned airstrips, runways and landing zones follow the Airstrips pin
+80939fe5 2026-11-11 20:05:29 Learned airstrips: plane glyph on the disc, larger — a bare white dot read as a rendering fault
+7347184d 2026-11-11 13:24:01 Learned tracks drawn over pinned roads with a casing; visits circles replace the learned dot
+74ec8b92 2026-11-11 13:01:24 Learned places follow the Places / Patrol visits toggles
+f21c9f80 2026-11-11 12:59:56 Learned tracks follow the Roads toggle instead of being always drawn
+70ffda18 2026-11-11 12:56:24 Popup roads/rivers section: one toggle row per layer, synced to pins; card lifts clear of the slider
+7823f526 2026-11-11 12:27:53 OSM rotation: memory-bounded multi-extract (renumber nodes, chunked), OOM-expendable osmium, run lock
+5a7ed36f 2026-11-11 12:06:45 Settle interrupted learning jobs at startup; remove superseded admin endpoints and CSS
+b82b475b 2026-11-11 11:57:39 Admin panel: rail navigation, Activity and Learner tabs, autofetch fetch log
+2f2d34e2 2026-11-11 11:55:47 ops.md: record timed TZA OSM rotation (748 s; multi-extract OOM-killed, prefilter fallback)
+5cd50c4d 2026-11-11 11:42:43 OSM rotation: filter the country once, cut all parks in one pass
+4c8813c9 2026-11-11 11:21:06 learned tip: no '(river)' after a name that says so
+e4cda9b2 2026-11-11 11:20:46 learned context: force the lat/lon index for the village lookup
+9b5c3b1d 2026-11-11 11:19:26 OSM rotation: river names from lines, hydro fallback, compact geometry, stale-PBF guard; learned tips name village + river
+bcebc0e7 2026-11-11 10:26:40 learner_rebuild_backup: SCOPE_FILE override, restore check in one transaction
+6d399750 2026-11-11 08:57:13 docs: event learner
+ebff5681 2026-11-11 08:56:01 learned.js: zoom expression outermost in circle-opacity (points layer failed to add)
+afe5967a 2026-11-11 08:39:02 backfill: wait on this upload's learning jobs only
+e83b3922 2026-11-11 08:26:13 Learner: events as evidence, calibrated approval, autofetch backfill + archive
+e756dd5a 2026-11-11 07:01:26 Movement: classify by journey, learned plane/heli model, real airfield events, eval harness

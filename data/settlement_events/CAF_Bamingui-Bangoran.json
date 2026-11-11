@@ -2596,7 +2596,7 @@
     "fires_5km": 2036,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:21",
+    "classified_at": "2026-11-06 07:30:28",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.70654_19.10594,settlement_CAF_Bamingui-Bangoran_8.69892_19.11601"
   },
   {
@@ -2621,7 +2621,7 @@
     "fires_5km": 1962,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:22",
+    "classified_at": "2026-11-06 07:30:28",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.68064_19.11845"
   },
   {
@@ -2640,13 +2640,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:34:20",
-    "classification": "temporary_camp",
+    "classification": "pastoral",
     "classification_confidence": 0.8,
-    "narrative": "Temporary camp 13km south-southwest of Marinda. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
+    "narrative": "Pastoral settlement 13km south-southwest of Marinda. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.00 km\u00b2) indicates grassland/savanna habitat.",
     "fires_5km": 1933,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:22",
+    "classified_at": "2026-11-06 07:30:29",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.67698_19.53134"
   },
   {
@@ -2671,7 +2671,7 @@
     "fires_5km": 1914,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:22",
+    "classified_at": "2026-11-06 07:30:30",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.58195_19.04627"
   },
   {
@@ -2696,7 +2696,7 @@
     "fires_5km": 2023,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:22",
+    "classified_at": "2026-11-06 07:30:30",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.00831_19.50871"
   },
   {
@@ -2721,7 +2721,7 @@
     "fires_5km": 1922,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1177,
-    "classified_at": "2026-10-13 07:30:23",
+    "classified_at": "2026-11-06 07:30:31",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_8.01155_20.22525"
   },
   {
@@ -2746,7 +2746,7 @@
     "fires_5km": 1804,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1237,
-    "classified_at": "2026-10-13 07:30:23",
+    "classified_at": "2026-11-06 07:30:31",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.98152_20.20726"
   },
   {
@@ -2771,7 +2771,7 @@
     "fires_5km": 1875,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0943,
-    "classified_at": "2026-10-13 07:30:23",
+    "classified_at": "2026-11-06 07:30:32",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.85326_20.18080"
   },
   {
@@ -2790,13 +2790,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:34:20",
-    "classification": "temporary_camp",
+    "classification": "pastoral",
     "classification_confidence": 0.8,
-    "narrative": "Temporary camp 14km northwest of Vata. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
+    "narrative": "Pastoral settlement 14km northwest of Vata. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.06 km\u00b2) indicates grassland/savanna habitat.",
     "fires_5km": 1843,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.061900000000000004,
-    "classified_at": "2026-10-13 07:30:24",
+    "classified_at": "2026-11-06 07:30:32",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.78752_20.10458"
   },
   {
@@ -2821,7 +2821,7 @@
     "fires_5km": 1882,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.0,
-    "classified_at": "2026-10-13 07:30:24",
+    "classified_at": "2026-11-06 07:30:32",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.65442_19.76155,settlement_CAF_Bamingui-Bangoran_7.65360_19.76253"
   },
   {
@@ -2845,8 +2845,8 @@
     "narrative": "Agricultural settlement 3km west of Niango. Fire activity (2248 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.41 km\u00b2 deforestation nearby indicates active land conversion. 2% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch).",
     "fires_5km": 2248,
     "fire_seasonality": "dry_season",
-    "deforest_nearby_km2": 0.41,
-    "classified_at": "2026-10-13 07:30:24",
+    "deforest_nearby_km2": 0.4096,
+    "classified_at": "2026-11-06 07:30:33",
     "polygon_ids": "settlement_CAF_Bamingui-Bangoran_7.57245_20.13943,settlement_CAF_Bamingui-Bangoran_7.57002_20.15641"
   }
 ]

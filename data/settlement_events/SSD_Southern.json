@@ -15,13 +15,13 @@
     "tile_row": null,
     "tile_col": null,
     "detected_at": "2026-08-13 18:36:24",
-    "classification": "agricultural",
-    "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 16km south-southwest of Agangrial. Fire activity (2462 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.21 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2462,
-    "fire_seasonality": "dry_season",
+    "classification": "pastoral",
+    "classification_confidence": 0.6000000000000001,
+    "narrative": "Pastoral settlement 16km south-southwest of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.21 km\u00b2) indicates grassland/savanna habitat.",
+    "fires_5km": 2512,
+    "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-10-10 07:30:36",
+    "classified_at": "2026-11-11 07:30:38",
     "polygon_ids": "settlement_SSD_Southern_6.72374_29.16393,settlement_SSD_Southern_6.72131_29.16384,settlement_SSD_Southern_6.70591_29.16929,settlement_SSD_Southern_6.72212_29.16488,settlement_SSD_Southern_6.71807_29.16172"
   },
   {
@@ -43,10 +43,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.8,
     "narrative": "Pastoral settlement 19km south-southwest of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.21 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 2499,
+    "fires_5km": 2558,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-10-10 07:30:36",
+    "classified_at": "2026-11-11 07:30:38",
     "polygon_ids": "settlement_SSD_Southern_6.70307_29.14313"
   },
   {
@@ -68,10 +68,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement 19km south of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.21 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1951,
+    "fires_5km": 1996,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2134,
-    "classified_at": "2026-10-10 07:30:36",
+    "classified_at": "2026-11-11 07:30:38",
     "polygon_ids": "settlement_SSD_Southern_6.68563_29.21964,settlement_SSD_Southern_6.68320_29.22256,settlement_SSD_Southern_6.68401_29.22058"
   },
   {
@@ -93,10 +93,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement 25km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.24 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1893,
+    "fires_5km": 1937,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2446,
-    "classified_at": "2026-10-10 07:30:37",
+    "classified_at": "2026-11-11 07:30:39",
     "polygon_ids": "settlement_SSD_Southern_6.63779_29.30004,settlement_SSD_Southern_6.63617_29.30098,settlement_SSD_Southern_6.63779_29.31206"
   },
   {
@@ -118,10 +118,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.6000000000000001,
     "narrative": "Pastoral settlement 29km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.27 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1866,
+    "fires_5km": 1914,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2697,
-    "classified_at": "2026-10-10 07:30:37",
+    "classified_at": "2026-11-11 07:30:39",
     "polygon_ids": "settlement_SSD_Southern_6.62157_29.32049,settlement_SSD_Southern_6.61428_29.32222,settlement_SSD_Southern_6.59725_29.31709,settlement_SSD_Southern_6.59644_29.31055,settlement_SSD_Southern_6.60779_29.31547"
   },
   {
@@ -143,10 +143,10 @@
     "classification": "pastoral",
     "classification_confidence": 0.8,
     "narrative": "Pastoral settlement 33km south-southeast of Agangrial. Seasonal fire pattern suggests grazing management. Minimal deforestation (0.26 km\u00b2) indicates grassland/savanna habitat.",
-    "fires_5km": 1784,
+    "fires_5km": 1842,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.2553,
-    "classified_at": "2026-10-10 07:30:38",
+    "classified_at": "2026-11-11 07:30:39",
     "polygon_ids": "settlement_SSD_Southern_6.57536_29.33683"
   },
   {
@@ -171,7 +171,7 @@
     "fires_5km": 1687,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1505,
-    "classified_at": "2026-10-10 07:30:38",
+    "classified_at": "2026-11-11 07:30:40",
     "polygon_ids": "settlement_SSD_Southern_6.42739_28.32283"
   },
   {
@@ -196,7 +196,7 @@
     "fires_5km": 2181,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3262,
-    "classified_at": "2026-10-10 07:30:38",
+    "classified_at": "2026-11-11 07:30:40",
     "polygon_ids": "settlement_SSD_Southern_6.32585_28.01590"
   },
   {
@@ -221,7 +221,7 @@
     "fires_5km": 2665,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3718,
-    "classified_at": "2026-10-10 07:30:39",
+    "classified_at": "2026-11-11 07:30:41",
     "polygon_ids": "settlement_SSD_Southern_6.27620_28.09236"
   },
   {
@@ -246,7 +246,7 @@
     "fires_5km": 2237,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4519,
-    "classified_at": "2026-10-10 07:30:39",
+    "classified_at": "2026-11-11 07:30:41",
     "polygon_ids": "settlement_SSD_Southern_6.27215_28.87338"
   },
   {
@@ -271,7 +271,7 @@
     "fires_5km": 2497,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4185,
-    "classified_at": "2026-10-10 07:30:39",
+    "classified_at": "2026-11-11 07:30:41",
     "polygon_ids": "settlement_SSD_Southern_6.23689_28.95530"
   },
   {
@@ -296,7 +296,7 @@
     "fires_5km": 2743,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.17099999999999999,
-    "classified_at": "2026-10-10 07:30:40",
+    "classified_at": "2026-11-11 07:30:42",
     "polygon_ids": "settlement_SSD_Southern_6.22756_28.17887"
   },
   {
@@ -317,11 +317,11 @@
     "detected_at": "2026-08-13 18:36:25",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement 34km south of Wulu. Fire activity (2413 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.84 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2413,
+    "narrative": "Agricultural settlement 34km south of Wulu. Fire activity (2459 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.84 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 2459,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.8388,
-    "classified_at": "2026-10-10 07:30:40",
+    "classified_at": "2026-11-11 07:30:42",
     "polygon_ids": "settlement_SSD_Southern_6.20730_29.62022,settlement_SSD_Southern_6.20487_29.62214,settlement_SSD_Southern_6.19392_29.63157"
   },
   {
@@ -343,10 +343,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 0.8,
     "narrative": "Temporary camp 43km south-southwest of Wulu. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2014,
+    "fires_5km": 2046,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.6593,
-    "classified_at": "2026-10-10 07:30:40",
+    "classified_at": "2026-11-11 07:30:42",
     "polygon_ids": "settlement_SSD_Southern_6.14407_29.50389"
   },
   {
@@ -371,7 +371,7 @@
     "fires_5km": 2909,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6979,
-    "classified_at": "2026-10-10 07:30:40",
+    "classified_at": "2026-11-11 07:30:43",
     "polygon_ids": "settlement_SSD_Southern_6.05329_29.01722,settlement_SSD_Southern_6.05248_29.02119"
   },
   {
@@ -396,7 +396,7 @@
     "fires_5km": 2886,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2338,
-    "classified_at": "2026-10-10 07:30:41",
+    "classified_at": "2026-11-11 07:30:43",
     "polygon_ids": "settlement_SSD_Southern_6.02655_28.19936"
   },
   {
@@ -417,11 +417,11 @@
     "detected_at": "2026-08-13 18:36:25",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement at coordinates (6.003\u00b0, 29.420\u00b0). Fire activity (1966 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.44 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 1966,
+    "narrative": "Agricultural settlement at coordinates (6.003\u00b0, 29.420\u00b0). Fire activity (1968 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.44 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 1968,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.4439,
-    "classified_at": "2026-10-10 07:30:41",
+    "classified_at": "2026-11-11 07:30:43",
     "polygon_ids": "settlement_SSD_Southern_6.00264_29.42002"
   },
   {
@@ -446,7 +446,7 @@
     "fires_5km": 2202,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6082,
-    "classified_at": "2026-10-10 07:30:41",
+    "classified_at": "2026-11-11 07:30:44",
     "polygon_ids": "settlement_SSD_Southern_5.95766_29.13721,settlement_SSD_Southern_5.95199_29.13702,settlement_SSD_Southern_5.95361_29.13808,settlement_SSD_Southern_5.95482_29.14012,settlement_SSD_Southern_5.95523_29.13563,settlement_SSD_Southern_5.95361_29.13307"
   },
   {
@@ -471,7 +471,7 @@
     "fires_5km": 2879,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6317,
-    "classified_at": "2026-10-10 07:30:42",
+    "classified_at": "2026-11-11 07:30:44",
     "polygon_ids": "settlement_SSD_Southern_5.95523_29.01900"
   },
   {
@@ -496,7 +496,7 @@
     "fires_5km": 2382,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6151,
-    "classified_at": "2026-10-10 07:30:42",
+    "classified_at": "2026-11-11 07:30:44",
     "polygon_ids": "settlement_SSD_Southern_5.93983_29.07206"
   },
   {
@@ -521,7 +521,7 @@
     "fires_5km": 2232,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1928,
-    "classified_at": "2026-10-10 07:30:42",
+    "classified_at": "2026-11-11 07:30:45",
     "polygon_ids": "settlement_SSD_Southern_5.93805_28.10384"
   },
   {
@@ -542,11 +542,11 @@
     "detected_at": "2026-08-13 18:36:25",
     "classification": "agricultural",
     "classification_confidence": 0.7999999999999999,
-    "narrative": "Agricultural settlement at coordinates (5.930\u00b0, 29.370\u00b0). Fire activity (2538 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.33 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2538,
+    "narrative": "Agricultural settlement at coordinates (5.930\u00b0, 29.370\u00b0). Fire activity (2545 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.33 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 2545,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3296,
-    "classified_at": "2026-10-10 07:30:43",
+    "classified_at": "2026-11-11 07:30:45",
     "polygon_ids": "settlement_SSD_Southern_5.93213_29.36863,settlement_SSD_Southern_5.92848_29.37151,settlement_SSD_Southern_5.92929_29.36903"
   },
   {
@@ -571,7 +571,7 @@
     "fires_5km": 2808,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.6386000000000001,
-    "classified_at": "2026-10-10 07:30:43",
+    "classified_at": "2026-11-11 07:30:45",
     "polygon_ids": "settlement_SSD_Southern_5.91471_28.99766,settlement_SSD_Southern_5.91390_29.00514"
   },
   {
@@ -593,10 +593,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 1.0,
     "narrative": "Temporary camp at coordinates (5.826\u00b0, 28.957\u00b0). Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2596,
+    "fires_5km": 2598,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.2544,
-    "classified_at": "2026-10-10 07:30:43",
+    "classified_at": "2026-11-11 07:30:46",
     "polygon_ids": "settlement_SSD_Southern_5.82556_28.95676"
   },
   {
@@ -621,7 +621,7 @@
     "fires_5km": 1788,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.19490000000000002,
-    "classified_at": "2026-10-10 07:30:44",
+    "classified_at": "2026-11-11 07:30:46",
     "polygon_ids": "settlement_SSD_Southern_5.78910_29.14678"
   },
   {
@@ -643,10 +643,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 1.0,
     "narrative": "Temporary camp 40km west-northwest of Onayo. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2199,
+    "fires_5km": 2202,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.1387,
-    "classified_at": "2026-10-10 07:30:44",
+    "classified_at": "2026-11-11 07:30:46",
     "polygon_ids": "settlement_SSD_Southern_5.69510_29.40503"
   },
   {
@@ -667,11 +667,11 @@
     "detected_at": "2026-08-13 18:36:25",
     "classification": "agricultural",
     "classification_confidence": 0.6,
-    "narrative": "Agricultural settlement 30km west-northwest of Gira. Fire activity (2113 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.43 km\u00b2 deforestation nearby indicates active land conversion.",
-    "fires_5km": 2113,
+    "narrative": "Agricultural settlement 30km west-northwest of Gira. Fire activity (2173 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.43 km\u00b2 deforestation nearby indicates active land conversion.",
+    "fires_5km": 2173,
     "fire_seasonality": "year_round",
     "deforest_nearby_km2": 0.4265,
-    "classified_at": "2026-10-10 07:30:44",
+    "classified_at": "2026-11-11 07:30:47",
     "polygon_ids": "settlement_SSD_Southern_6.17082_29.68184,settlement_SSD_Southern_6.16920_29.69781,settlement_SSD_Southern_6.16839_29.70579,settlement_SSD_Southern_6.16880_29.70280,settlement_SSD_Southern_6.16920_29.69480,settlement_SSD_Southern_6.16569_29.68534,settlement_SSD_Southern_6.16758_29.68273,settlement_SSD_Southern_6.17001_29.67781"
   },
   {
@@ -692,11 +692,11 @@
     "detected_at": "2026-08-13 18:36:25",
     "classification": "agricultural",
     "classification_confidence": 1.0,
-    "narrative": "Agricultural settlement 19km west-northwest of Gira, 7.1km from River Rohl River. Fire activity (2621 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.34 km\u00b2 deforestation nearby indicates active land conversion. 5% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
-    "fires_5km": 2621,
+    "narrative": "Agricultural settlement 19km west-northwest of Gira, 7.1km from River Rohl River. Fire activity (2700 detections within 5km) concentrated in dry season suggests slash-and-burn farming. 0.34 km\u00b2 deforestation nearby indicates active land conversion. 5% of the surrounding 1km is mapped cropland (GLAD 30m, 2016-2019 epoch), up from 0% in 2000-2003.",
+    "fires_5km": 2700,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3366,
-    "classified_at": "2026-10-10 07:30:44",
+    "classified_at": "2026-11-11 07:30:47",
     "polygon_ids": "settlement_SSD_Southern_6.09544_29.76837,settlement_SSD_Southern_6.09463_29.76934"
   },
   {
@@ -718,10 +718,10 @@
     "classification": "temporary_camp",
     "classification_confidence": 0.8,
     "narrative": "Temporary camp 21km west-northwest of Gira, 9.3km from River Rohl River. Small footprint (10000 m\u00b2) and remote location suggest seasonal occupation, possibly hunting or resource extraction.",
-    "fires_5km": 2516,
+    "fires_5km": 2598,
     "fire_seasonality": "dry_season",
     "deforest_nearby_km2": 0.3366,
-    "classified_at": "2026-10-10 07:30:45",
+    "classified_at": "2026-11-11 07:30:47",
     "polygon_ids": "settlement_SSD_Southern_6.09139_29.74420"
   }
 ]
