@@ -79,7 +79,7 @@
         if (p.near_river) {
             var m = Number(p.near_river_m) || 0;
             out.push((m < 100 ? 'on the ' : (m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m') + ' from the ') + esc(p.near_river)
-                + ' <span style="opacity:.6">(river)</span>');
+                + (/river|mto\b/i.test(p.near_river) ? '' : ' <span style="opacity:.6">(river)</span>'));
         }
         return out.join('<br>');
     }
