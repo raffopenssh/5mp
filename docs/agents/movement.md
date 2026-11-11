@@ -122,12 +122,15 @@ stop: that was the >1,000 pending places.
 - **Movement only**: `classifyByMovementOnly` (`srv/upload_queue.go`) moves ER
   device labels into `ClassifiedSegment.Label` before classifying.
 - **Map**: `GET /api/learned-map` (client tenant only, approved only) +
-  `srv/static/learned.js` (`?learned=0` hides). Airstrips and landing zones
-  are on by default; road sections draw only for parks whose `road` pin is on
+  `srv/static/learned.js` (`?learned=0` hides). Nothing is drawn unasked
+  (a guest link showed seven unexplained white discs, reported as a Safari
+  fault): airstrips, runways and landing zones draw only for parks whose
+  `infrastructure` ("Airstrips") pin is on, and that pin's own dot is hidden
+  in their favour; road sections draw only for parks whose `road` pin is on
   and places only for parks whose `place` pin is on *and* `visits` pin is off
   (the visits circles are the same sites and borrow the learned tip via
   `learnedPlaceTip`). Fed from `updatePinnedIndicator`
-  (`LearnedMap.setRoadParks` / `setPlaceParks`). Stacking is re-asserted by
+  (`LearnedMap.setRoadParks` / `setPlaceParks` / `setAirParks`). Stacking is re-asserted by
   `LearnedMap.lift()` — also called from `lodlayer.js` `restack` — tracks
   (dark casing + dashes) over pinned roads, pin markers/labels over tracks. A MapLibre zoom
   expression must be outermost — nesting it in a `case` silently dropped the

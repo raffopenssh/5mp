@@ -1,5 +1,7 @@
 /* What the learner approved, drawn on the map with no user action --
- * except road sections, which follow the Roads toggle (setRoadParks).
+ * for the parks whose matching row in the popup's roads/rivers section is
+ * pinned: tracks follow Roads, places follow Places, airstrips and landing
+ * zones follow Airstrips. Nothing here is drawn unasked.
  *
  * GET /api/learned-map returns approved airstrips (a runway LINE where the
  * ground runs measured one), helicopter landing zones, places and road
@@ -12,7 +14,7 @@
  * measured, and then as "at least": the tracks show the ground actually
  * rolled on, not the cleared strip.
  *
- * ?learned=0 hides the layer.
+ * ?learned=0 keeps all of it off whatever is pinned.
  */
 (function () {
     'use strict';
@@ -91,8 +93,7 @@
     }
 
     // Learned tracks are a ROADS layer: drawn only for the parks whose Roads
-    // row is on (popup or stats panel -- both are the 'road' pin). Airstrips,
-    // landing zones and places stay on by default.
+    // row is on (popup or stats panel -- both are the 'road' pin).
     var roadParks = [];
     function roadFilter() {
         return ['all', ['==', ['get', 'family'], 'road'], ['in', ['get', 'park_id'], ['literal', roadParks]]];
@@ -101,12 +102,17 @@
     // Learned places likewise: only for parks whose Places row is on. The
     // Patrol visits pin draws the same sites as visit-sized circles (with this
     // file's tip), so where that is on the dot would be a second marker and
-    // the caller leaves the park out. Airstrips share the layer, ungated.
-    var placeParks = [];
+    // the caller leaves the park out. Airstrips share the layer and follow the
+    // Airstrips pin (airParks), as do runways and landing zones.
+    var placeParks = [], airParks = [];
+    function inParks(ids) { return ['in', ['get', 'park_id'], ['literal', ids]]; }
     function ptFilter() {
         return ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'landing_zone'],
-            ['any', ['!=', ['get', 'family'], 'place'], ['in', ['get', 'park_id'], ['literal', placeParks]]]];
+            ['case', ['==', ['get', 'family'], 'place'], inParks(placeParks), inParks(airParks)]];
     }
+    function runwayFilter() { return ['all', ['==', ['get', 'runway'], true], inParks(airParks)]; }
+    function airFilter() { return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'family'], 'airfield'], ['!=', ['get', 'kind'], 'landing_zone'], inParks(airParks)]; }
+    function lzFilter() { return ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone'], inParks(airParks)]; }
 
     // A bare white disc reads as a rendering fault, not as a landing site
     // (reported as "Safari shows white dots"). The disc carries a plane.
@@ -133,9 +139,9 @@
         map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
             layout: { 'line-cap': 'butt', 'line-join': 'round' },
             paint: { 'line-color': COL.road, 'line-width': z.concat([7, 1.3, 12, 2.8]), 'line-dasharray': [2.2, 1.4] } });
-        map.addLayer({ id: L.runwayCase, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
+        map.addLayer({ id: L.runwayCase, type: 'line', source: SRC, minzoom: 9, filter: runwayFilter(),
             paint: { 'line-color': '#0f172a', 'line-width': z.concat([9, 4, 14, 14]) } });
-        map.addLayer({ id: L.runway, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
+        map.addLayer({ id: L.runway, type: 'line', source: SRC, minzoom: 9, filter: runwayFilter(),
             paint: { 'line-color': COL.airstrip, 'line-width': z.concat([9, 2, 14, 9]) } });
         map.addLayer({ id: L.pt, type: 'circle', source: SRC, minzoom: 5,
             filter: ptFilter(),
@@ -147,12 +153,12 @@
                 // (a zoom expression must be outermost, so the case sits in the stop)
                 'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         if (planeImage(map)) map.addLayer({ id: L.air, type: 'symbol', source: SRC, minzoom: 5,
-            filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'family'], 'airfield'], ['!=', ['get', 'kind'], 'landing_zone']],
+            filter: airFilter(),
             layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.4, 11, 0.6]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
             paint: { 'icon-color': '#0f172a',
                 'icon-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
-            filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone']],
+            filter: lzFilter(),
             paint: { 'circle-radius': z.concat([5, 3, 11, 6]), 'circle-color': 'rgba(15,23,42,0.6)',
                 'circle-stroke-color': COL.landing_zone, 'circle-stroke-width': 2 } });
         if (window.MapTip && MapTip.register) {
@@ -195,6 +201,16 @@
             var map = LearnedMap.map;
             if (map && map.getLayer(L.pt)) map.setFilter(L.pt, ptFilter());
         },
+        setAirParks: function (ids) {
+            ids = (ids || []).slice().sort();
+            if (ids.join('|') === airParks.join('|')) return;
+            airParks = ids;
+            var map = LearnedMap.map;
+            if (!map || !map.getLayer(L.pt)) return;
+            var set = function (id, f) { if (map.getLayer(id)) map.setFilter(id, f); };
+            set(L.pt, ptFilter()); set(L.runwayCase, runwayFilter()); set(L.runway, runwayFilter());
+            set(L.air, airFilter()); set(L.ptH, lzFilter());
+        },
         // After a reviewer decision in the admin panel: redraw from the server.
         reload: function () {
             var map = LearnedMap.map;
@@ -217,6 +233,8 @@
                         map.addSource(SRC, { type: 'geojson', data: fc });
                         addLayers(map);
                         LearnedMap.lift();
+                        // pins restored from a link may have landed before us
+                        if (typeof window.updatePinnedIndicator === 'function') window.updatePinnedIndicator();
                     };
                     if (map.isStyleLoaded && map.isStyleLoaded()) go(); else map.once('idle', go);
                     // A basemap switch replaces the style and drops our layers.

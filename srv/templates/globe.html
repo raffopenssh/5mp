@@ -4436,8 +4436,8 @@ window.addEventListener('load', function () {
             }
             if (window.MapTip) {
                 window.MapTip.init(map);
-                // Approved learned airstrips / landing zones / places / tracks:
-                // on the map by default (srv/static/learned.js).
+                // Approved learned airstrips / landing zones / places / tracks,
+                // each drawn only where its pin is on (srv/static/learned.js).
                 if (window.LearnedMap) window.LearnedMap.init(map);
                 // NO BACKDROP GUARD ANY MORE. There used to be one here: "if a
                 // park polygon covers this point, every negative-priority tip
@@ -22076,6 +22076,13 @@ ${starredItems.narratives.map(n => {
                             'circle-stroke-opacity': 0.8
                         }
                     });
+                    // The Airstrips pin is drawn by srv/static/learned.js
+                    // (runway line, plane disc, landing-zone ring, evidence
+                    // tip) for this park; the pin's own dot would be a
+                    // second, poorer marker on the same site.
+                    if (normalizedType === 'infrastructure' && window.LearnedMap && LearnedMap.data) {
+                        map.setLayoutProperty(layerId, 'visibility', 'none');
+                    }
                     
                     // For fire: also add line layer for trajectories (mixed geometry support)
                     if (normalizedType === 'fire' && hasLines) {
@@ -22514,6 +22521,13 @@ ${starredItems.narratives.map(n => {
             const pins = Object.values(pinnedLayers).filter(Boolean);
             const visitParks = new Set(pins.filter(p => p.type === 'visits').map(p => p.parkId));
             LearnedMap.setPlaceParks([...new Set(pins.filter(p => p.type === 'place' && !visitParks.has(p.parkId)).map(p => p.parkId))]);
+            // …and airstrips, runways and landing zones the Airstrips toggle.
+            LearnedMap.setAirParks([...new Set(pins.filter(p => p.type === 'infrastructure').map(p => p.parkId))]);
+            // (the pin's own dot steps aside — also when the learned layer
+            // arrived after a pin restored from a link)
+            if (LearnedMap.data) pins.forEach(p => {
+                if (p.type === 'infrastructure' && p.layerId && map.getLayer(p.layerId)) map.setLayoutProperty(p.layerId, 'visibility', 'none');
+            });
             LearnedMap.lift();
         }
         const indicator = document.getElementById('pinned-indicator');
