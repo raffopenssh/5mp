@@ -120,11 +120,13 @@
     function planeImage(map) {
         if (map.hasImage('learned-plane')) return true;
         try {
-            var c = document.createElement('canvas'); c.width = c.height = 48;
+            // Not an SDF: thresholding a 2-unit stroke's alpha is what made
+            // the icon muddy at 1x. A plain bitmap at 4x stays a clean line.
+            var c = document.createElement('canvas'); c.width = c.height = 96;
             var g = c.getContext('2d');
             // drawn as Lucide draws it: 24-unit grid, 2-unit round stroke, no fill
-            g.scale(2, 2); g.strokeStyle = '#000'; g.lineWidth = 2; g.lineCap = g.lineJoin = 'round'; g.stroke(new Path2D(PLANE));
-            map.addImage('learned-plane', g.getImageData(0, 0, 48, 48), { sdf: true, pixelRatio: 2 });
+            g.scale(4, 4); g.strokeStyle = '#0f172a'; g.lineWidth = 2; g.lineCap = g.lineJoin = 'round'; g.stroke(new Path2D(PLANE));
+            map.addImage('learned-plane', g.getImageData(0, 0, 96, 96), { pixelRatio: 4 });
             return true;
         } catch (e) { return false; }
     }
@@ -147,7 +149,7 @@
         map.addLayer({ id: L.pt, type: 'circle', source: SRC, minzoom: 5,
             filter: ptFilter(),
             paint: {
-                'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 6, 2], 11, ['match', ['get', 'family'], 'airfield', 9, 5]]),
+                'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 9, 2], 11, ['match', ['get', 'family'], 'airfield', 11.5, 5]]),
                 'circle-color': ['match', ['get', 'family'], 'airfield', COL.airstrip, COL.place],
                 'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5,
                 // An airstrip with a drawn runway steps back once the line is legible.
@@ -155,8 +157,8 @@
                 'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         if (planeImage(map)) map.addLayer({ id: L.air, type: 'symbol', source: SRC, minzoom: 5,
             filter: airFilter(),
-            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.42, 11, 0.62]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
-            paint: { 'icon-color': '#0f172a',
+            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.56, 11, 0.72]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
+            paint: {
                 'icon-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
             filter: lzFilter(),
