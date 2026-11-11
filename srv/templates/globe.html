@@ -23231,13 +23231,18 @@ ${starredItems.narratives.map(n => {
             });
         }
 
-        setTimeout(() => {
+        const settle = () => {
             updatePinnedIndicator();
             // Update icon states for all parks with pinned layers
             parkIds.forEach(parkId => {
                 updateIconPinStates(parkId);
             });
-        }, 1000);
+        };
+        setTimeout(settle, 1000);
+        // …and again when the pins have actually landed: a pin slower than
+        // the second above never reached the indicator, nor the learned
+        // layers that follow it (srv/static/learned.js).
+        Promise.all(inFlight).then(settle);
     }
     
     async function restoreSinglePinnedFromURL() {
