@@ -126,7 +126,9 @@ stop: that was the >1,000 pending places.
   (a guest link showed seven unexplained white discs, reported as a Safari
   fault): airstrips, runways and landing zones draw only for parks whose
   `infrastructure` ("Airstrips") pin is on, and that pin's own dot is hidden
-  in their favour; road sections draw only for parks whose `road` pin is on
+  in their favour. The pin reads `/api/learned-map` (not the admin list,
+  401 for guests), so a share link made after pinning carries it wherever
+  the link carries patrol data. The disc icon is Lucide `plane`, stroked; road sections draw only for parks whose `road` pin is on
   and places only for parks whose `place` pin is on *and* `visits` pin is off
   (the visits circles are the same sites and borrow the learned tip via
   `learnedPlaceTip`). Fed from `updatePinnedIndicator`
