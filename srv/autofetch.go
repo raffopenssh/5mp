@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"srv.exe.dev/db/dbgen"
 	"strconv"
 	"strings"
@@ -1095,6 +1096,14 @@ func (s *Server) queueAutofetchFile(ctx context.Context, path, env string) error
 	if ex, err := q.GetGPXUploadByHash(ctx, dbgen.GetGPXUploadByHashParams{FileHash: &hash, Env: env}); err == nil && ex.ID > 0 {
 		return nil
 	}
+	// Keep the raw file for good (gzip, data/autofetch_archive/<env>/). The
+	// queue row is deleted after 7 days and gpx_upload_logs keeps only a
+	// sample, so without this a classifier or learner change can never be
+	// replayed over history -- which is what the 2026-11 backfill had to
+	// re-fetch five months from EarthRanger for.
+	if _, aerr := archiveAutofetchGPX(env, "live-"+time.Now().UTC().Format("20060102T150405")+"-"+hash[:8], content); aerr != nil {
+		slog.Error("autofetch: raw GPX not archived", "env", env, "error", aerr)
+	}
 	_, err = q.QueueUpload(ctx, dbgen.QueueUploadParams{
 		UserID:      "autofetch",
 		UserEmail:   "",
@@ -1129,15 +1138,54 @@ func (s *Server) StartUploadQueueCleanup(ctx context.Context) {
 }
 
 func (s *Server) cleanupUploadQueue(ctx context.Context) {
-	result, err := s.DB.ExecContext(ctx,
-		`DELETE FROM upload_queue WHERE completed_at < datetime('now', '-7 days')`)
+	// Autofetch rows leave the queue only once their raw GPX is in the
+	// archive. Rows queued before archiving existed are archived here, by
+	// hash, so the step is idempotent; a row that cannot be archived stays.
+	rows, err := s.DB.QueryContext(ctx, `SELECT id, env, COALESCE(file_hash,''), file_content, created_at FROM upload_queue
+		WHERE user_id = 'autofetch' AND completed_at < datetime('now', '-7 days') LIMIT 50`)
 	if err != nil {
 		slog.Error("upload queue cleanup failed", "error", err)
 		return
 	}
-	if n, _ := result.RowsAffected(); n > 0 {
-		slog.Info("upload queue cleanup", "deleted", n)
+	var done []int64
+	for rows.Next() {
+		var id int64
+		var env, hash string
+		var content []byte
+		var created string
+		if rows.Scan(&id, &env, &hash, &content, &created) != nil || len(hash) < 8 {
+			continue
+		}
+		if matches, _ := filepath.Glob(filepath.Join(AutofetchArchiveDir, env, "*-"+hash[:8]+".gpx.gz")); len(matches) == 0 {
+			if _, err := archiveAutofetchGPX(env, "live-"+archiveStamp(created)+"-"+hash[:8], content); err != nil {
+				slog.Error("upload queue cleanup: archive failed, row kept", "id", id, "error", err)
+				continue
+			}
+		}
+		done = append(done, id)
 	}
+	rows.Close()
+	deleted := int64(len(done))
+	for _, id := range done {
+		s.DB.ExecContext(ctx, `DELETE FROM upload_queue WHERE id = ?`, id)
+	}
+	result, err := s.DB.ExecContext(ctx,
+		`DELETE FROM upload_queue WHERE user_id != 'autofetch' AND completed_at < datetime('now', '-7 days')`)
+	if err != nil {
+		slog.Error("upload queue cleanup failed", "error", err)
+		return
+	}
+	if n, _ := result.RowsAffected(); n+deleted > 0 {
+		slog.Info("upload queue cleanup", "deleted", n+deleted, "autofetch_archived", deleted)
+	}
+}
+
+// archiveStamp turns a stored "2026-11-04 11:36:55" into 20261104T113655.
+func archiveStamp(created string) string {
+	if t, err := time.Parse("2006-01-02 15:04:05", strings.TrimSuffix(strings.Replace(created, "T", " ", 1), "Z")); err == nil {
+		return t.Format("20060102T150405")
+	}
+	return time.Now().UTC().Format("20060102T150405")
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────

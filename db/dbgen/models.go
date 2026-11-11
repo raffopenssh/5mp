@@ -82,24 +82,32 @@ type AoiPark struct {
 	FracOfPark float64 `json:"frac_of_park"`
 }
 
+type AutofetchSeen struct {
+	SourceID   int64  `json:"source_id"`
+	KeyHash    int64  `json:"key_hash"`
+	RecordedAt string `json:"recorded_at"`
+}
+
 type AutofetchSource struct {
-	ID         int64      `json:"id"`
-	ApiType    string     `json:"api_type"`
-	ServiceUrl string     `json:"service_url"`
-	Username   string     `json:"username"`
-	Password   string     `json:"password"`
-	IntervalH  int64      `json:"interval_h"`
-	Enabled    int64      `json:"enabled"`
-	ParkNames  string     `json:"park_names"`
-	CreatedAt  *time.Time `json:"created_at"`
-	LastRunAt  *time.Time `json:"last_run_at"`
-	LastStatus *string    `json:"last_status"`
-	LastPoints *int64     `json:"last_points"`
-	Env        string     `json:"env"`
-	OwnerRef   string     `json:"owner_ref"`
-	Visibility string     `json:"visibility"`
-	DataEnv    string     `json:"data_env"`
-	Title      string     `json:"title"`
+	ID                  int64      `json:"id"`
+	ApiType             string     `json:"api_type"`
+	ServiceUrl          string     `json:"service_url"`
+	Username            string     `json:"username"`
+	Password            string     `json:"password"`
+	IntervalH           int64      `json:"interval_h"`
+	Enabled             int64      `json:"enabled"`
+	ParkNames           string     `json:"park_names"`
+	CreatedAt           *time.Time `json:"created_at"`
+	LastRunAt           *time.Time `json:"last_run_at"`
+	LastStatus          *string    `json:"last_status"`
+	LastPoints          *int64     `json:"last_points"`
+	Env                 string     `json:"env"`
+	OwnerRef            string     `json:"owner_ref"`
+	Visibility          string     `json:"visibility"`
+	DataEnv             string     `json:"data_env"`
+	Title               string     `json:"title"`
+	LastAttemptAt       *time.Time `json:"last_attempt_at"`
+	ConsecutiveFailures int64      `json:"consecutive_failures"`
 }
 
 type AutofetchViewer struct {
@@ -179,6 +187,8 @@ type FeatureGeometry struct {
 	StatValue      *float64   `json:"stat_value"`
 	DistToParkKm   *float64   `json:"dist_to_park_km"`
 	TrajDays       *string    `json:"traj_days"`
+	LeadStart      *int64     `json:"lead_start"`
+	Vanguard       int64      `json:"vanguard"`
 }
 
 type FireDailyGrid struct {
@@ -227,6 +237,42 @@ type FireDetection struct {
 	ProtectedAreaID *string  `json:"protected_area_id"`
 }
 
+type FireEarlyGround struct {
+	AreaID        string   `json:"area_id"`
+	Rule          string   `json:"rule"`
+	AheadDays     int64    `json:"ahead_days"`
+	MinShare      float64  `json:"min_share"`
+	SeasonsHeld   int64    `json:"seasons_held"`
+	SeasonsJson   string   `json:"seasons_json"`
+	Res           *float64 `json:"res"`
+	X0            *float64 `json:"x0"`
+	Y0            *float64 `json:"y0"`
+	Nx            *int64   `json:"nx"`
+	Ny            *int64   `json:"ny"`
+	CellsJson     *string  `json:"cells_json"`
+	FirstBurnJson *string  `json:"first_burn_json"`
+	StatsJson     *string  `json:"stats_json"`
+	ComputedAt    string   `json:"computed_at"`
+}
+
+type FireFrontNowcast struct {
+	AreaID        string  `json:"area_id"`
+	StartMonth    int64   `json:"start_month"`
+	FractionsJson string  `json:"fractions_json"`
+	SeasonsJson   string  `json:"seasons_json"`
+	Res           float64 `json:"res"`
+	X0            float64 `json:"x0"`
+	Y0            float64 `json:"y0"`
+	Nx            int64   `json:"nx"`
+	Ny            int64   `json:"ny"`
+	Rem           []byte  `json:"rem"`
+	Season        *string `json:"season"`
+	AsOf          *string `json:"as_of"`
+	Nowcast       []byte  `json:"nowcast"`
+	StatsJson     *string `json:"stats_json"`
+	ComputedAt    string  `json:"computed_at"`
+}
+
 type FireGroupAlert struct {
 	ID                int64      `json:"id"`
 	ParkID            string     `json:"park_id"`
@@ -246,12 +292,41 @@ type FireGroupAlert struct {
 	CreatedAt         *time.Time `json:"created_at"`
 }
 
+type FireSeasonFront struct {
+	AreaID       string  `json:"area_id"`
+	Season       string  `json:"season"`
+	SeasonStart  string  `json:"season_start"`
+	SeasonEnd    string  `json:"season_end"`
+	StartMonth   int64   `json:"start_month"`
+	Complete     int64   `json:"complete"`
+	LatestDay    *string `json:"latest_day"`
+	Res          float64 `json:"res"`
+	X0           float64 `json:"x0"`
+	Y0           float64 `json:"y0"`
+	Nx           int64   `json:"nx"`
+	Ny           int64   `json:"ny"`
+	Front        []byte  `json:"front"`
+	Usual        []byte  `json:"usual"`
+	ContoursJson *string `json:"contours_json"`
+	StatsJson    *string `json:"stats_json"`
+	ComputedAt   string  `json:"computed_at"`
+}
+
 type FireSensorEpoch struct {
 	Month       string `json:"month"`
 	Sensors     string `json:"sensors"`
 	SensorCount int64  `json:"sensor_count"`
 	Detections  int64  `json:"detections"`
 	ComputedAt  string `json:"computed_at"`
+}
+
+type FireVanguardKf struct {
+	AreaID         string  `json:"area_id"`
+	ComputedAt     string  `json:"computed_at"`
+	TrackerVersion string  `json:"tracker_version"`
+	SeasonsJson    string  `json:"seasons_json"`
+	Chains         int64   `json:"chains"`
+	StatsJson      *string `json:"stats_json"`
 }
 
 type GeopackageJob struct {
@@ -430,6 +505,14 @@ type LearnedAirstrip struct {
 	ApproachJson  *string    `json:"approach_json"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
+	Kind          string     `json:"kind"`
+	SeedLat       *float64   `json:"seed_lat"`
+	SeedLon       *float64   `json:"seed_lon"`
+	Score         *float64   `json:"score"`
+	EvidenceJson  *string    `json:"evidence_json"`
+	StatusReason  *string    `json:"status_reason"`
+	LineGeojson   *string    `json:"line_geojson"`
+	LastSeen      *string    `json:"last_seen"`
 }
 
 type LearnedAirstripsHistory struct {
@@ -451,6 +534,25 @@ type LearnedAirstripsHistory struct {
 	ActionAt     *time.Time `json:"action_at"`
 }
 
+type LearnedEvent struct {
+	ID         int64      `json:"id"`
+	ParkID     string     `json:"park_id"`
+	Kind       string     `json:"kind"`
+	Tracker    string     `json:"tracker"`
+	TStart     string     `json:"t_start"`
+	TEnd       string     `json:"t_end"`
+	Lat        float64    `json:"lat"`
+	Lon        float64    `json:"lon"`
+	HeadingDeg *float64   `json:"heading_deg"`
+	Subtype    string     `json:"subtype"`
+	Journey    string     `json:"journey"`
+	DwellMin   *float64   `json:"dwell_min"`
+	RollJson   *string    `json:"roll_json"`
+	FeatureID  int64      `json:"feature_id"`
+	UploadID   *int64     `json:"upload_id"`
+	CreatedAt  *time.Time `json:"created_at"`
+}
+
 type LearnedPlace struct {
 	ID                 int64      `json:"id"`
 	ParkID             string     `json:"park_id"`
@@ -466,6 +568,12 @@ type LearnedPlace struct {
 	ApprovedAt         *time.Time `json:"approved_at"`
 	CreatedAt          *time.Time `json:"created_at"`
 	UpdatedAt          *time.Time `json:"updated_at"`
+	SeedLat            *float64   `json:"seed_lat"`
+	SeedLon            *float64   `json:"seed_lon"`
+	Score              *float64   `json:"score"`
+	EvidenceJson       *string    `json:"evidence_json"`
+	StatusReason       *string    `json:"status_reason"`
+	LastSeen           *string    `json:"last_seen"`
 }
 
 type LearnedPlacesHistory struct {
@@ -498,6 +606,10 @@ type LearnedRoad struct {
 	ApprovedAt    *time.Time `json:"approved_at"`
 	CreatedAt     *time.Time `json:"created_at"`
 	UpdatedAt     *time.Time `json:"updated_at"`
+	Score         *float64   `json:"score"`
+	EvidenceJson  *string    `json:"evidence_json"`
+	StatusReason  *string    `json:"status_reason"`
+	LastSeen      *string    `json:"last_seen"`
 }
 
 type LearnedRoadsHistory struct {
@@ -758,6 +870,13 @@ type Principal struct {
 	Ref       string     `json:"ref"`
 	Label     *string    `json:"label"`
 	CreatedAt *time.Time `json:"created_at"`
+}
+
+type ServerMemo struct {
+	Key         string `json:"key"`
+	Fingerprint string `json:"fingerprint"`
+	ValueJson   string `json:"value_json"`
+	ComputedAt  string `json:"computed_at"`
 }
 
 type Session struct {

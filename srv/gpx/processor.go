@@ -2,6 +2,8 @@
 package gpx
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -48,6 +50,37 @@ type Track struct {
 	ERSubjectType    string // e.g., "vehicle", "aircraft", "person"
 	ERSubjectSubtype string // e.g., "truck", "plane", "helicopter", "er_mobile", "ranger"
 	ERPatrolType     string // e.g., "plane_patrol_operations", "vehicle_patrol"
+
+	// Tracker identifies the recording device without describing it: a short
+	// hash of the track name (an EarthRanger subject id is already opaque).
+	// It survives StripDeviceLabels; the learner counts distinct trackers and
+	// de-duplicates events with it.
+	Tracker string
+	// Label is the device's own description ("vehicle/truck"), for scoring.
+	Label string
+}
+
+// TrackerKey derives Track.Tracker from a track name.
+func TrackerKey(name string) string {
+	if name == "" {
+		return ""
+	}
+	h := sha256.Sum256([]byte(name))
+	return hex.EncodeToString(h[:6])
+}
+
+// StripDeviceLabels removes what the source said the device IS (EarthRanger
+// subject type / subtype / patrol type), leaving its identity and, in Label,
+// the removed description for later scoring. After this the track is
+// classified from movement alone -- the path cmd/movement-eval measures.
+func StripDeviceLabels(t *Track) {
+	if t.Label == "" && (t.ERSubjectType != "" || t.ERSubjectSubtype != "") {
+		t.Label = strings.ToLower(t.ERSubjectType + "/" + t.ERSubjectSubtype)
+		if t.ERPatrolType != "" {
+			t.Label += "/" + strings.ToLower(t.ERPatrolType)
+		}
+	}
+	t.ERSubjectType, t.ERSubjectSubtype, t.ERPatrolType = "", "", ""
 }
 
 // GPXData represents the parsed GPX file data.
@@ -80,6 +113,13 @@ type MovementHint struct {
 	// "helicopter", "fixed_wing", or "" (unknown).
 	// Does NOT affect base Type classification; used only by ClassifyMovementSubtype.
 	SubtypeHint string
+
+	// Tracker is an opaque identity of the device that recorded the segment
+	// (Track.Tracker); Label is what the source CALLED that device, kept for
+	// scoring only. Neither is read by any classifier: they ride along here
+	// because the hint is the one value every split and merge preserves.
+	Tracker string
+	Label   string
 }
 
 // AirstripWaypoint represents a waypoint identified as an airstrip,
@@ -493,6 +533,7 @@ func ParseGPX(r io.Reader) (*GPXData, error) {
 			ERSubjectType:    trk.Extensions.ERSubjectType,
 			ERSubjectSubtype: trk.Extensions.ERSubjectSubtype,
 			ERPatrolType:     trk.Extensions.ERPatrolType,
+			Tracker:          TrackerKey(trk.Name),
 		}
 
 		for _, seg := range trk.Segments {
@@ -549,6 +590,7 @@ func SplitIntoSegments(data *GPXData, maxDuration time.Duration) []Segment {
 		// 4. Airstrip proximity (track starts/ends near known airstrip waypoint)
 		// 5. Waypoint text analysis (lowest)
 		trackHint := hint
+		trackHint.Tracker, trackHint.Label = track.Tracker, track.Label
 		trackHint = mergeTrackActivityHint(trackHint, track.Activity)
 		trackHint = mergeTrackNameHint(trackHint, track.Name)                                                      // After Locus: user names override Locus auto-classification
 		trackHint = mergeERSubjectHint(trackHint, track.ERSubjectType, track.ERSubjectSubtype, track.ERPatrolType) // ER metadata is most authoritative

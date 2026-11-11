@@ -108,13 +108,24 @@ type ClassifiedSegment struct {
 	// instead of guessing indices into the (sampled, effort-only) track_points
 	// table — which broke for any upload with >1000 points or excluded segments.
 	SampledPoints [][4]float64 `json:"sampled_points,omitempty"`
+
+	// Tracker is the opaque identity of the recording device (gpx.Track.Tracker):
+	// the learner counts distinct trackers and de-duplicates events on it.
+	// Label is what the source called the device ("vehicle/truck") when that
+	// was withheld from the classifier -- stored for scoring, read by no decision.
+	Tracker string `json:"tracker,omitempty"`
+	Label   string `json:"label,omitempty"`
 }
 
 // sampledElevMissing is the sentinel elevation for points without elevation data.
 const sampledElevMissing = -100000
 
 // sampledPointsMax caps how many points are embedded per classified segment.
-const sampledPointsMax = 300
+// It was 300 until 2026-11: a merged multi-hour journey thinned to one fix per
+// minute or worse, which hides exactly what the learner reads (the minute an
+// aircraft stands before take-off; where a truck left the road). 3,600 keeps
+// every fix of any tracker reporting slower than 1 Hz for an hour.
+const sampledPointsMax = 3600
 
 // buildSampledPoints compactly serializes points for storage in
 // classified_segments_json (see ClassifiedSegment.SampledPoints).
@@ -444,6 +455,13 @@ func ValidateAndClassifyGPX(segments []gpx.Segment) *GPXValidationResult {
 	// Merge adjacent segments to fix fragmentation from 30-min time splitting.
 	// When a flight is split into [aircraft, tiny-foot, aircraft], the tiny
 	// middle segment is a boundary artifact, not real foot patrol.
+	for i := range result.ClassifiedSegments {
+		cs := &result.ClassifiedSegments[i]
+		if len(cs.OriginalIndices) > 0 && cs.OriginalIndices[0] < len(segments) {
+			h := segments[cs.OriginalIndices[0]].Hint
+			cs.Tracker, cs.Label = h.Tracker, h.Label
+		}
+	}
 	refineTypesByJourney(result.ClassifiedSegments)
 	result.ClassifiedSegments = mergeAdjacentSegments(result.ClassifiedSegments)
 

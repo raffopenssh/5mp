@@ -569,6 +569,7 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/rollback-feature", s.RequireAdmin(s.HandleAPIRollbackFeature))
 	mux.HandleFunc("GET /api/parks/{id}/patrol-mcp", s.HandleAPIPatrolMCP)
 	mux.HandleFunc("GET /api/parks/{id}/learned-stats", s.HandleAPILearnedFeatureStats)
+	mux.HandleFunc("GET /api/learned-map", s.HandleAPILearnedMap)
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
 	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
 	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))

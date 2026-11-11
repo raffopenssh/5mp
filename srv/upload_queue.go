@@ -124,6 +124,16 @@ func (p *UploadQueueProcessor) processUpload(ctx context.Context, item dbgen.Get
 		return
 	}
 
+	// Movement only: what EarthRanger says a device IS (vehicle, aircraft,
+	// helicopter) must not decide what a track is classified as. The label is
+	// moved aside -- it still rides along as ClassifiedSegment.Label, where
+	// cmd/movement-eval scores the classifier against it.
+	if classifyByMovementOnly {
+		for i := range gpxData.Tracks {
+			gpx.StripDeviceLabels(&gpxData.Tracks[i])
+		}
+	}
+
 	// Count points
 	var totalPoints int
 	for _, track := range gpxData.Tracks {
@@ -192,3 +202,7 @@ func stringOrEmpty(s *string) string {
 	}
 	return *s
 }
+
+// classifyByMovementOnly: see processUpload. One switch, so the decision is
+// reversible in one place and greppable.
+const classifyByMovementOnly = true

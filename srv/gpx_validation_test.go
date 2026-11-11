@@ -473,7 +473,7 @@ func TestSampledPointsRoundtrip(t *testing.T) {
 // TestBuildSampledPoints_Caps verifies downsampling above the cap.
 func TestBuildSampledPoints_Caps(t *testing.T) {
 	var points []gpx.Point
-	for i := 0; i < 2000; i++ {
+	for i := 0; i < sampledPointsMax+2000; i++ {
 		points = append(points, gpx.Point{Lat: float64(i), Lon: float64(i)})
 	}
 	sp := buildSampledPoints(points)
@@ -481,7 +481,7 @@ func TestBuildSampledPoints_Caps(t *testing.T) {
 		t.Errorf("expected %d sampled points, got %d", sampledPointsMax, len(sp))
 	}
 	// First and last must be preserved
-	if sp[0][1] != 0 || sp[len(sp)-1][1] != 1999 {
+	if sp[0][1] != 0 || sp[len(sp)-1][1] != float64(sampledPointsMax+1999) {
 		t.Errorf("endpoints not preserved: first=%v last=%v", sp[0], sp[len(sp)-1])
 	}
 	// No-timestamp, no-elevation points decode as nil

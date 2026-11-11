@@ -160,6 +160,7 @@ type report struct {
 	Hinted      score                   `json:"hinted_strong"`         // reference: what production stores today
 	BySource    map[string]score        `json:"plain_by_source"`
 	Learner     map[string]learnerScore `json:"learner"`
+	Replay      *replayReport           `json:"replay,omitempty"`
 	misses      []miss
 	subtypeMiss []miss
 }
@@ -522,10 +523,36 @@ func main() {
 	sources := flag.String("source", "raw,history,labelled", "which corpora to score")
 	resample := flag.Float64("resample", 0, "decimate every track to one point per N seconds before classifying (robustness check)")
 	dump := flag.String("dump", "", "write one CSV row of metrics per scored segment")
+	archive := flag.String("archive", "data/autofetch_archive/af12", "autofetch archive the learner replay reads (*.gpx.gz)")
+	refDB := flag.String("ref-db", "db.sqlite3", "database the replay reads reference roads and places from")
+	replayParks := flag.String("replay-parks", "TZA_Nyerere,TZA_Ruaha", "parks the learner replay scores")
+	dumpLearner := flag.String("dump-learner", "", "write the learner training table (one row per feature per day)")
+	replayOnly := flag.Bool("replay-only", false, "run only the learner replay")
 	dumpAir := flag.String("dump-aircraft", "", "write the aircraft-subtype training table (one row per labelled aircraft journey)")
 	flag.Parse()
 	if *basePath == "" {
 		*basePath = filepath.Join(*root, "baseline.json")
+	}
+
+	doReplay := func() *replayReport {
+		var known []srv.KnownAirfield
+		for _, a := range loadAirfields(*root) {
+			known = append(known, srv.KnownAirfield{Name: a.Name, Lat: a.Lat, Lon: a.Lon})
+		}
+		r, err := replayLearner(*archive, *refDB, strings.Split(*replayParks, ","), known, *dumpLearner)
+		if err != nil {
+			fatal(err)
+		}
+		if r == nil {
+			fmt.Printf("\n== LEARNER REPLAY: unmeasured (no archive in %s)\n", *archive)
+			return nil
+		}
+		printReplay(r)
+		return r
+	}
+	if *replayOnly {
+		doReplay()
+		return
 	}
 
 	if *snap != "" {
@@ -736,6 +763,8 @@ func main() {
 	printScore("PLAIN vs person-carried truth (weak: inferred, or the classifier's own stored answer)", rep.PlainWeak)
 	printScore("HINTED reference, raw only (what production stores)", rep.Hinted)
 
+	rep.Replay = doReplay()
+
 	if *nMiss > 0 {
 		printMisses("misclassified type", rep.misses, *nMiss)
 		printMisses("misclassified aircraft subtype", rep.subtypeMiss, *nMiss)
@@ -771,6 +800,15 @@ func main() {
 		delta("land vehicle NOT called boat, km", base.VehSubtype.RecallKm["land"], rep.VehSubtype.RecallKm["land"])
 		for _, k := range keys(rep.BySource) {
 			delta(k+" macro km", base.BySource[k].MacroKm, rep.BySource[k].MacroKm)
+		}
+		if base.Replay != nil && rep.Replay != nil {
+			if base.Replay.Archives != rep.Replay.Archives {
+				fmt.Printf("  ! replay archive grew since baseline (%d -> %d files): replay deltas mix code and data\n", base.Replay.Archives, rep.Replay.Archives)
+			}
+			for _, k := range []string{"airfield", "place", "road"} {
+				delta("replay "+k+" approve precision", base.Replay.Family[k].Precision, rep.Replay.Family[k].Precision)
+				delta("replay "+k+" approve recall", base.Replay.Family[k].Recall, rep.Replay.Family[k].Recall)
+			}
 		}
 	} else {
 		fmt.Println("\nno baseline at", *basePath, "(-write-baseline to freeze)")

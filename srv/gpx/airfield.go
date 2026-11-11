@@ -12,6 +12,10 @@ type AirfieldEvent struct {
 	Time       time.Time
 	HeadingDeg float64 // direction of the take-off / landing run; NaN if unknown
 	GroundMin  float64 // minutes observed on the ground next to the event
+	// Roll is every fix between standing and flying (the take-off or landing
+	// run and the minute either side). The learner measures a runway from
+	// these across many events; one event rarely has more than two or three.
+	Roll []Point
 }
 
 const (
@@ -100,6 +104,16 @@ func DetectAirfieldEvents(points []Point) []AirfieldEvent {
 		return float64(n) * journeyGridSec / 60, still
 	}
 
+	between := func(a, b time.Time) []Point {
+		var out []Point
+		for _, p := range pts {
+			if !p.Time.Before(a) && !p.Time.After(b) {
+				out = append(out, p)
+			}
+		}
+		return out
+	}
+
 	var events []AirfieldEvent
 	for s := 0; s < len(v); {
 		if v[s] <= flightSpeedKmh {
@@ -119,7 +133,8 @@ func DetectAirfieldEvents(points []Point) []AirfieldEvent {
 				if gm, still := groundMinutes(g, -1); still && gm >= airfieldMinGroundMin && observed(at(g), at(s+1)) {
 					p := fixAt(at(g+1), false)
 					q := fixAt(at(s+1), true)
-					events = append(events, AirfieldEvent{"takeoff", p.Lat, p.Lon, *p.Time, bearingDeg(p, q), gm})
+					events = append(events, AirfieldEvent{"takeoff", p.Lat, p.Lon, *p.Time, bearingDeg(p, q), gm,
+						between(at(g).Add(-time.Minute), at(s+1))})
 				}
 				break
 			}
@@ -131,7 +146,8 @@ func DetectAirfieldEvents(points []Point) []AirfieldEvent {
 				if gm, still := groundMinutes(g, +1); still && gm >= airfieldMinGroundMin && observed(at(e-1), at(g+1)) {
 					p := fixAt(at(g), true)
 					q := fixAt(at(e-1), false)
-					events = append(events, AirfieldEvent{"landing", p.Lat, p.Lon, *p.Time, bearingDeg(q, p), gm})
+					events = append(events, AirfieldEvent{"landing", p.Lat, p.Lon, *p.Time, bearingDeg(q, p), gm,
+						between(at(e-1), at(g+1).Add(time.Minute))})
 				}
 				break
 			}

@@ -267,3 +267,5 @@ data/plan_zones/solver
 data/disk_watch/
 data/fire_vanguard_kf/
 data/climate/era5/*.nc
+data/autofetch_archive/
+data/autofetch_backfill/

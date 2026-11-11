@@ -32,6 +32,7 @@
     <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet">
     <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
     <script src="/static/maptip.js?v={{.Version}}"></script>
+    <script src="/static/learned.js?v={{.Version}}"></script>
     <!-- One loader for every viewport feature layer (stats toggles + pins):
          mode=auto, geometry or centroids decided by the server from the true
          count in view, cross-faded. See srv/static/lodlayer.js. -->
@@ -4434,6 +4435,9 @@ window.addEventListener('load', function () {
             }
             if (window.MapTip) {
                 window.MapTip.init(map);
+                // Approved learned airstrips / landing zones / places / tracks:
+                // on the map by default (srv/static/learned.js).
+                if (window.LearnedMap) window.LearnedMap.init(map);
                 // NO BACKDROP GUARD ANY MORE. There used to be one here: "if a
                 // park polygon covers this point, every negative-priority tip
                 // stands down", because the park owned the click outright and

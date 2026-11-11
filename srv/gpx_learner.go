@@ -294,6 +294,7 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 
 	slog.Info("learner loaded segments", "total", len(segments), "with_points", countSegmentsWithPoints(segments))
 
+	allSegments := segments // journeys and stays cross the park filter below
 	// Filter segments to only those within (or near) the target park.
 	// Multi-subject ER uploads span multiple parks; without filtering,
 	// every park gets identical learner results.
@@ -332,13 +333,6 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	var vehicleSpeeds, footSpeeds []float64
 	var footPoints []gpx.Point // For MCP calculation
 
-	// Road learning state, loaded once per job: HeiGIT reference roads and
-	// existing learned road corridors (see road_learner.go). Lazily
-	// initialized on the first vehicle segment.
-	var roadHeigit *corridorIndex
-	var roadCandidates []*learnedRoadCandidate
-	roadStateLoaded := false
-
 	// Process each segment — use MovementType from classifier (which
 	// already incorporates ER hints), falling back to speed inference.
 	for _, seg := range segments {
@@ -357,55 +351,25 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 			}
 		}
 
-		// Process by classification
-		switch seg.Classification {
-		case "patrol":
-			l.processPatrolSegment(ctx, parkID, seg, result)
-		case "road":
-			l.processRoadSegment(ctx, parkID, uploadID, seg, result)
-		case "boundary":
-			l.processBoundarySegment(ctx, parkID, seg, result)
-		}
-
-		// Store vehicle tracks (simplified). Patrol segments don't carry
-		// GeoJSON, so fall back to building it from recovered Points.
+		// Vehicle tracks are still archived per upload (the effort views
+		// read them); what they TEACH is decided below, from events.
 		if seg.MovementType == "vehicle" {
 			if seg.GeoJSON == "" && len(seg.Points) >= 2 {
 				seg.GeoJSON = pointsToGeoJSON(seg.Points)
 			}
 			if seg.GeoJSON != "" {
-				isNew := l.storeVehicleTrack(ctx, parkID, uploadID, seg)
-
-				// Incremental road learning: only for tracks we haven't
-				// seen before (ER autofetch redelivers overlapping data).
-				if isNew {
-					if !roadStateLoaded {
-						roadHeigit = l.heigitIndexForPark(ctx, parkID)
-						roadCandidates = l.loadLearnedRoadCandidates(ctx, parkID)
-						roadStateLoaded = true
-					}
-					coords := l.parseGeoJSONCoords(seg.GeoJSON)
-					if len(coords) >= 2 {
-						l.learnRoadsFromTrack(ctx, parkID, coords, roadHeigit, &roadCandidates, result)
-					}
-				}
-			}
-		}
-
-		// Detect stops for place learning
-		if len(seg.Points) > 3 {
-			stops := l.detectStops(seg)
-			for _, stop := range stops {
-				l.processStop(ctx, parkID, stop, result)
+				l.storeVehicleTrack(ctx, parkID, uploadID, seg)
 			}
 		}
 	}
 
-	// Airfields: one pass over whole journeys, not one per segment. A segment
-	// ends where a time window or the park boundary ends; only a journey shows
-	// where the aircraft actually stood on the ground (AirfieldObservations).
-	for _, obs := range AirfieldObservations(segments) {
-		l.recordAirfieldObservation(ctx, parkID, obs, result)
+	// Airfields, places and roads: every landing, take-off, stop and road
+	// traversal is one de-duplicated event, and the features are aggregates
+	// over events (srv/learned_events.go). This replaced four per-segment
+	// recorders that incremented counters.
+	if err := l.learnFromUpload(ctx, parkID, uploadID, allSegments, segments, result); err != nil {
+		slog.Error("event learner failed", "park", parkID, "upload", uploadID, "error", err)
+		return err
 	}
 
 	// Calculate aggregate statistics
@@ -445,11 +409,6 @@ func (l *GPXLearner) processJob(ctx context.Context, job dbgen.GpxLearningQueue)
 	// Calculate 90% MCP for foot patrols
 	if len(footPoints) > 10 {
 		result.FootMCPArea = calculateMCP90(footPoints)
-	}
-
-	// Run cross-track analysis to detect roads, airstrips, and bases
-	if len(segments) >= 2 {
-		l.processCrossTrackAnalysis(ctx, parkID, uploadID, segments, result)
 	}
 
 	// Enrich with context from reference data (rivers, roads, places, settlements)

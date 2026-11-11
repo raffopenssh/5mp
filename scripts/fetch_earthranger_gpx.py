@@ -54,6 +54,7 @@ import json
 import os
 import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -163,19 +164,48 @@ def er_get_all(session: requests.Session, api: str, path: str, params: dict,
     out.extend(results)
     pages = 1
     while nxt and pages < max_pages:
-        resp = session.get(nxt, timeout=60)
-        resp.raise_for_status()
-        results, nxt = unwrap_results(resp.json())
+        results, nxt = unwrap_results(polite_get(session, nxt).json())
         out.extend(results)
         pages += 1
     return out
 
 
+# Politeness (history backfill): seconds slept before EVERY request, and how
+# often a 429/5xx is retried. The 6-hourly run keeps PAUSE at 0; a backfill
+# walks months of windows and must not look like a load test to the park's
+# EarthRanger (--pause). Retry-After is honoured, capped at RETRY_CAP_S.
+PAUSE = 0.0
+RETRIES = 4
+RETRY_CAP_S = 300
+REQUESTS_MADE = 0
+
+
+def polite_get(session: requests.Session, url: str, params: Optional[dict] = None):
+    """One GET, paced and backed off. Never parallel, never a tight retry."""
+    global REQUESTS_MADE
+    delay = max(PAUSE, 1.0) * 5
+    for attempt in range(RETRIES + 1):
+        if PAUSE > 0:
+            time.sleep(PAUSE)
+        REQUESTS_MADE += 1
+        resp = session.get(url, params=params or {}, timeout=120)
+        if resp.status_code not in (429, 502, 503, 504) or attempt == RETRIES:
+            resp.raise_for_status()
+            return resp
+        wait = delay
+        ra = resp.headers.get('Retry-After', '')
+        if ra.isdigit():
+            wait = max(wait, int(ra))
+        wait = min(wait, RETRY_CAP_S)
+        sys.stderr.write(f"warn: HTTP {resp.status_code}, backing off {wait:.0f}s\n")
+        time.sleep(wait)
+        delay *= 2
+    raise RuntimeError('unreachable')
+
+
 def er_get(session: requests.Session, api: str, path: str, params: Optional[dict] = None):
     """GET helper with error handling."""
-    resp = session.get(f"{api}/{path}", params=params or {}, timeout=60)
-    resp.raise_for_status()
-    return resp.json()
+    return polite_get(session, f"{api}/{path}", params).json()
 
 
 def fetch_subjects(session: requests.Session, api: str) -> list:
@@ -307,6 +337,27 @@ def normalise_timestamp(t: str) -> str:
     return t + 'Z'
 
 
+def _ts(v):
+    try:
+        d = datetime.fromisoformat(str(v).replace('Z', '+00:00'))
+        return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
+    except Exception:
+        return None
+
+
+def subject_outside_window(s: dict, since: str, until: str) -> bool:
+    """True only when the roster PROVES the subject has no fix in the window
+    (a day of slack either side); an unparseable or missing date is not proof."""
+    lo, hi = _ts(since), _ts(until)
+    last, created = _ts(s.get('last_position_date')), _ts(s.get('created_at'))
+    day = timedelta(days=1)
+    if lo and last and last < lo - day:
+        return True
+    if hi and created and created > hi + day:
+        return True
+    return False
+
+
 def point_key(subject_id: str, recorded_at: str) -> str:
     """Ledger key shared with srv/autofetch_ledger.go:autofetchKeyHash —
     sha256("<subject_id>|<recorded_at RFC3339 Z>") first 16 hex chars.
@@ -426,6 +477,12 @@ def main():
     ap.add_argument('--days', type=int, default=1, help='Days of history (default: 1, used if --since not set)')
     ap.add_argument('--since', type=str, default=None,
                     help='ISO-8601 timestamp: only fetch data after this time (overrides --days)')
+    ap.add_argument('--until', type=str, default=None,
+                    help='ISO-8601 timestamp: upper bound of the window (default: now). History backfill.')
+    ap.add_argument('--pause', type=float, default=0.0,
+                    help='Seconds to sleep before every API request (backfill politeness; default 0)')
+    ap.add_argument('--roster-cache', default=None,
+                    help='JSON file caching subjects + their sources, so a multi-window backfill lists them once')
     ap.add_argument('--dry-run', action='store_true', help='Build GPX but do not write it')
     args = ap.parse_args()
 
@@ -435,6 +492,8 @@ def main():
         print(json.dumps({'ok': False, 'error': 'EARTHRANGER_PASSWORD env var not set'}))
         sys.exit(1)
 
+    global PAUSE
+    PAUSE = max(0.0, args.pause)
     session = requests.Session()
     session.headers['User-Agent'] = '5mp-autofetch/1.0'
 
@@ -456,14 +515,22 @@ def main():
         since = args.since
     else:
         since = (now - timedelta(days=args.days)).isoformat()
-    until = now.isoformat()
+    until = args.until or now.isoformat()
 
-    # 2. Get subjects (excluding wildlife/animal collars)
+    # 2. Get subjects (excluding wildlife/animal collars). A backfill passes
+    #    --roster-cache: the roster and each subject's sources are listed once
+    #    for the whole walk instead of once per window.
+    roster = None
+    if args.roster_cache and os.path.exists(args.roster_cache):
+        with open(args.roster_cache, encoding='utf-8') as fh:
+            roster = json.load(fh)
     try:
-        subjects = fetch_subjects(session, api)
+        subjects = roster['subjects'] if roster else fetch_subjects(session, api)
     except Exception as e:
         print(json.dumps({'ok': False, 'error': f'subject list: {type(e).__name__}: {e}'}))
         sys.exit(1)
+    roster_sources = roster['sources'] if roster else {}
+    roster_dirty = roster is None and bool(args.roster_cache)
     seen = load_seen(args.seen)
 
     # 3. Fetch patrol context — maps subject_id → patrol_type string
@@ -489,14 +556,26 @@ def main():
     tracks = {}  # subject_id → [(lon, lat, time, alt), ...]
     subject_count = 0
     skipped_no_source = 0
+    skipped_inactive = 0
     fetch_errors = 0      # a failed fetch is a hole, not a quiet subject
     dropped_seen = 0
     new_keys = []         # (key, recorded_at) of every kept point
 
     for s in subjects:
         sid = s['id']
+        # A subject that had stopped reporting before the window opened, or
+        # was created after it closed, cannot have fixes in it: no request.
+        if args.roster_cache and subject_outside_window(s, since, until):
+            skipped_inactive += 1
+            continue
         try:
-            sources = fetch_sources(session, api, sid)
+            if sid in roster_sources:
+                sources = roster_sources[sid]
+            else:
+                sources = fetch_sources(session, api, sid)
+                if args.roster_cache:
+                    roster_sources[sid] = sources
+                    roster_dirty = True
         except Exception as e:
             fetch_errors += 1
             sys.stderr.write(f"warn: sources for {sid}: {type(e).__name__}: {e}\n")
@@ -528,6 +607,17 @@ def main():
             subject_count += 1
 
     partial = fetch_errors > 0
+    if roster_dirty:
+        # Only what was actually listed is cached; a failure to write the
+        # cache must never cost the fetch that was just paid for.
+        try:
+            slim = [{k: s.get(k) for k in ('id', 'subject_type', 'subject_subtype', 'created_at', 'last_position_date')}
+                    for s in subjects]
+            os.makedirs(os.path.dirname(os.path.abspath(args.roster_cache)), exist_ok=True)
+            with open(args.roster_cache, 'w', encoding='utf-8') as fh:
+                json.dump({'subjects': slim, 'sources': roster_sources}, fh)
+        except Exception as e:
+            sys.stderr.write(f"warn: roster cache not written: {e}\n")
 
     def write_new_keys():
         if args.new_keys and not args.dry_run:
@@ -539,7 +629,8 @@ def main():
     if not tracks:
         write_new_keys()
         print(json.dumps({'ok': True, 'subjects': 0, 'points': 0, 'dropped': dropped_seen,
-                          'partial': partial, 'errors': fetch_errors,
+                          'partial': partial, 'errors': fetch_errors, 'requests': REQUESTS_MADE,
+                          'skipped_inactive': skipped_inactive,
                           'types': {'foot': 0, 'vehicle': 0, 'aircraft': 0},
                           'message': 'No new GPS data for the period'}))
         sys.exit(0)
@@ -556,7 +647,7 @@ def main():
     # 8. Write
     summary = {'ok': True, 'subjects': subject_count, 'points': total_pts,
                'dropped': dropped_seen, 'partial': partial, 'errors': fetch_errors,
-               'types': type_counts}
+               'types': type_counts, 'requests': REQUESTS_MADE, 'skipped_inactive': skipped_inactive}
     if args.dry_run:
         # Write to stderr for inspection
         sys.stderr.write(gpx_xml[:2000] + '\n...\n')
