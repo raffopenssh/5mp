@@ -592,9 +592,10 @@ GET /api/admin/learning-queue
 POST /api/admin/process-learning
 ```
 
-### Pending Approvals
+### Learner review
 ```
-GET /api/admin/pending-approvals
+GET /api/admin/learner?state=map|pending|rejected|all&park_id=&family=&sort=
+POST /api/admin/learner/release
 POST /api/admin/approve/{id}
 POST /api/admin/reject/{id}
 ```

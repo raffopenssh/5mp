@@ -80,8 +80,34 @@ func (l *GPXLearner) Start() {
 	l.running = true
 	l.mu.Unlock()
 
+	l.recoverInterrupted()
 	go l.processLoop()
 	slog.Info("GPX learner started")
+}
+
+// recoverInterrupted settles jobs a restart killed mid-run. This process is
+// the only worker, so at startup nothing can truly be 'processing': such a row
+// was started and never finished, and it stayed that way for good (one sat
+// from 2026-09-18 until the admin panel started counting them). A job whose
+// upload still exists goes back to 'pending' and is learned again; one whose
+// upload has since been deleted has nothing to learn from and is closed as
+// 'cancelled' -- not 'failed', which would read as an error to act on.
+func (l *GPXLearner) recoverInterrupted() {
+	ctx := context.Background()
+	if res, err := l.db.ExecContext(ctx, `UPDATE gpx_learning_queue
+		SET status = 'cancelled', completed_at = CURRENT_TIMESTAMP,
+		    error_message = 'interrupted by a restart; the upload was deleted before it could be retried'
+		WHERE status = 'processing' AND upload_id NOT IN (SELECT id FROM gpx_uploads)`); err != nil {
+		slog.Warn("learner: could not close orphaned jobs", "error", err)
+	} else if n, _ := res.RowsAffected(); n > 0 {
+		slog.Info("learner: closed interrupted jobs whose upload is gone", "jobs", n)
+	}
+	if res, err := l.db.ExecContext(ctx, `UPDATE gpx_learning_queue
+		SET status = 'pending', started_at = NULL WHERE status = 'processing'`); err != nil {
+		slog.Warn("learner: could not requeue interrupted jobs", "error", err)
+	} else if n, _ := res.RowsAffected(); n > 0 {
+		slog.Info("learner: requeued jobs interrupted by a restart", "jobs", n)
+	}
 }
 
 // Stop halts background processing

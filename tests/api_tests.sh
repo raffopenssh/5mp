@@ -176,9 +176,8 @@ test_api "search_areas" "/api/areas/search" "200" "true"
 test_api "wdpa_search" "/api/wdpa/search" "200" "true"
 
 yellow "\n=== Admin Endpoints (alpha: password grants admin access) ==="
-test_api "admin_gpx_logs" "/api/admin/gpx-logs" "200"
-test_api "admin_learning_results" "/api/admin/learning-results" "200"
-test_api "admin_pending" "/api/admin/pending-approvals" "200"
+test_api "admin_activity" "/api/admin/activity" "200"
+test_api "admin_learner" "/api/admin/learner" "200"
 test_api "admin_learned_features" "/api/admin/learned-features?park_id=CAF_Chinko" "200"
 
 yellow "\n=== Notifications ==="

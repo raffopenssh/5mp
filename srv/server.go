@@ -558,9 +558,6 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("GET /api/export/patrol-pixels", s.HandleAPIExportPatrolPixels)
 
 	// Admin APIs
-	mux.HandleFunc("GET /api/admin/gpx-logs", s.RequireAdmin(s.HandleAPIGPXUploadLogs))
-	mux.HandleFunc("GET /api/admin/learning-results", s.RequireAdmin(s.HandleAPILearningResults))
-	mux.HandleFunc("GET /api/admin/pending-approvals", s.RequireAdmin(s.HandleAPIPendingApprovals))
 	mux.HandleFunc("POST /api/admin/trigger-faolex-sync", s.RequireAdminOrLocal(s.HandleAPITriggerFAOLEXSync))
 	mux.HandleFunc("POST /api/admin/trigger-publication-sync", s.RequireAdminOrLocal(s.HandleAPITriggerPublicationSync))
 	mux.HandleFunc("GET /api/admin/learner", s.RequireAdmin(s.HandleAPIAdminLearner))
@@ -577,11 +574,9 @@ func (s *Server) Serve(addr string) error {
 	mux.HandleFunc("POST /api/admin/approve-feature", s.RequireAdmin(s.HandleAPIApproveLearnedFeature))
 	mux.HandleFunc("POST /api/admin/reject-feature", s.RequireAdmin(s.HandleAPIRejectLearnedFeature))
 	mux.HandleFunc("POST /api/admin/bulk-approve", s.RequireAdmin(s.HandleAPIBulkApprove))
-	mux.HandleFunc("POST /api/admin/approve-high-confidence", s.RequireAdmin(s.HandleAPIApproveHighConfidence))
 	mux.HandleFunc("POST /api/admin/bulk-reject", s.RequireAdmin(s.HandleAPIBulkReject))
 	mux.HandleFunc("POST /api/admin/delete-upload", s.RequireAdmin(s.HandleAPIDeleteUpload))
 	mux.HandleFunc("POST /api/admin/bulk-delete-uploads", s.RequireAdmin(s.HandleAPIBulkDeleteUploads))
-	mux.HandleFunc("GET /api/admin/upload-detail", s.HandleAPIUploadDetail)
 	mux.HandleFunc("POST /api/admin/hide-notification", s.RequireAdmin(s.HandleAPIHideNotification))
 
 	// Access tab: AOI ownership + per-dataset queue control. RequireAdmin is

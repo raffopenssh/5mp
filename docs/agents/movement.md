@@ -167,9 +167,12 @@ of `globe.css`. Backend `srv/admin_learner.go` (`GET /api/admin/learner`,
   per weekly file) and returns the 12 longest legs *of N*.
 - Aircraft km with no measured airframe is its own bar
   (`aircraft_unknown`), never folded into plane or helicopter.
-- Still served but no longer used by the UI: `/api/admin/gpx-logs`,
-  `/pending-approvals`, `/learned-features`, `/learning-results`,
-  `/upload-detail`, `/approve-high-confidence` (the last should not be called).
+- Removed with the old tabs: `/api/admin/gpx-logs`, `/pending-approvals`,
+  `/learning-results`, `/upload-detail`, `/approve-high-confidence`.
+  `/api/admin/learned-features` stays (the park panel reads it).
+- A learning job left `processing` by a restart is settled at startup
+  (`GPXLearner.recoverInterrupted`): requeued if its upload exists, closed as
+  `cancelled` if not.
 
 ## Measured (2026-11-11; 536 files, 745,833 points, hints stripped)
 

@@ -4,7 +4,7 @@ package srv
 //                                   the patrol pipeline, fetched or uploaded.
 // GET /api/admin/activity/detail -- one file, summarised.
 //
-// The log it replaced (/api/admin/gpx-logs, still served) was written for
+// The log it replaced (/api/admin/gpx-logs, removed) was written for
 // hand-uploaded tracks: a filename, a park and seven km columns. After the
 // autofetch backfill a row is a WEEK of a ranger fleet -- 60,000 points, 1,300
 // segments, four parks -- named "autofetch-20261105.gpx" and credited to one
