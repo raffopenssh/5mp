@@ -198,6 +198,48 @@ def extract_bbox(pbf_path, key, bbox):
     return out
 
 
+# Everything the rotation reads from a park extract (enrich_park_infra and
+# osm_hydro's river/lake filters), as ONE tags-filter over the country.
+# Tanzania took 22 minutes for 24 parks because each park re-read the whole
+# 700 MB file (~40 s of `osmium extract` apiece) -- most of it buildings,
+# which nothing here uses. Filter once, then cut every park out of the small
+# file in a single pass. A tag added to a reader below must be added here, or
+# that reader silently gets nothing from the rotation.
+ROTATION_FILTER = [
+    "n/place=city,town,village,hamlet",
+    "n/natural=peak,hill",
+    "w/waterway=river,stream,canal",
+    "w/highway=motorway,trunk,primary,secondary,tertiary,"
+    "unclassified,residential,track,path,service",
+    "w/natural=water", "w/landuse=reservoir", "r/natural=water",
+]
+
+
+def prefilter(pbf_path, out):
+    """Country PBF -> only the objects ROTATION_FILTER names (+ their nodes)."""
+    subprocess.run(["osmium", "tags-filter", pbf_path, *ROTATION_FILTER,
+                    "-o", out, "--overwrite"], check=True)
+    return out
+
+
+def extract_many(pbf_path, bboxes, work_dir):
+    """{key: path} -- every bbox cut out of pbf_path in ONE pass.
+
+    bboxes: {key: (w, s, e, n)}. Files land in work_dir, which the caller
+    removes. Output names are indices, not park ids (accents, apostrophes)."""
+    keys = list(bboxes)
+    cfg = {"directory": work_dir, "extracts": [
+        {"output": f"area_{i}.osm.pbf", "bbox": list(bboxes[k])}
+        for i, k in enumerate(keys)]}
+    cfg_path = os.path.join(work_dir, "extracts.json")
+    with open(cfg_path, "w") as fh:
+        json.dump(cfg, fh)
+    subprocess.run(["osmium", "extract", "-c", cfg_path, pbf_path,
+                    "--overwrite"], check=True)
+    return {k: os.path.join(work_dir, f"area_{i}.osm.pbf")
+            for i, k in enumerate(keys)}
+
+
 def _osmium_extract(pbf_path, park_id, bbox, out):
     """bbox-extract park area from country PBF; derive waterway geojson.
     Returns path to the bbox-extracted park PBF (caller may reuse for
@@ -503,17 +545,44 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
     if dry_run:
         print(f"{country}: would refresh {len(parks)} parks")
         return 0
+    import shutil
+    import tempfile
+    import time
+    t0 = time.time()
     pbf, temporary = ensure_pbf(country, max_age_days=PBF_CACHE_MAX_AGE_DAYS)
+    work = tempfile.mkdtemp(prefix=f"osm_enrich_{country}_", dir="/tmp")
     done = 0
     try:
+        # Two passes over the country instead of one per park (see
+        # ROTATION_FILTER). The country file is deleted as soon as the
+        # filtered copy exists, so the peak on disk is one country, not
+        # a country plus every park of it.
+        src = pbf
+        try:
+            src = prefilter(pbf, os.path.join(work, "infra.osm.pbf"))
+            if temporary:
+                os.remove(pbf)
+        except (subprocess.CalledProcessError, OSError) as ex:
+            print(f"  prefilter failed, extracting from the full file: {ex}",
+                  file=sys.stderr)
+        bboxes = {p["id"]: park_bbox(p, buffer_km) for p in parks}
+        try:
+            areas = extract_many(src, bboxes, work)
+        except (subprocess.CalledProcessError, OSError) as ex:
+            print(f"  multi-extract failed, falling back to one pass per "
+                  f"park: {ex}", file=sys.stderr)
+            areas = {}
+        print(f"  {country}: extracts ready in {time.time() - t0:.0f}s",
+              file=sys.stderr)
         for p in parks:
             print(f"  {p['id']}", file=sys.stderr)
-            bbox = park_bbox(p, buffer_km)
-            try:
-                area = extract_bbox(pbf, p["id"], bbox)
-            except subprocess.CalledProcessError as ex:
-                print(f"  extract failed {p['id']}: {ex}", file=sys.stderr)
-                continue
+            area = areas.get(p["id"])
+            if not area or not os.path.exists(area):
+                try:
+                    area = extract_bbox(src, p["id"], bboxes[p["id"]])
+                except subprocess.CalledProcessError as ex:
+                    print(f"  extract failed {p['id']}: {ex}", file=sys.stderr)
+                    continue
             try:
                 enrich_park_infra(area, p["id"], force=True)
                 _osm_hydro_fallback(area, p["id"])
@@ -522,9 +591,12 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
                 try: os.remove(area)
                 except OSError: pass
     finally:
+        shutil.rmtree(work, ignore_errors=True)
         if temporary:
             try: os.remove(pbf)
             except OSError: pass
+    print(f"  {country}: {done}/{len(parks)} parks in {time.time() - t0:.0f}s",
+          file=sys.stderr)
     return done
 
 
