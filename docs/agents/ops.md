@@ -123,6 +123,11 @@ that needs it happens in that pass and **nothing but the result is stored**:
   outside the park's bbox extract is `outside_reference` — unmeasured, not
   "not on the map". The village / river line in a learned tip is looked up at
   request time (`srv/learned_context.go`), villages across all parks' rows.
+* **Measured 2026-11-11, TZA 23 parks: 748 s** (was 22 min) — 189 s download +
+  prefilter, 559 s per-park; counts identical to the previous run (Tarangire
+  places 544 → 543, live OSM). The one-pass `extract_many` was **OOM-killed**
+  (osmium 7 GB RSS on a 7.4 GB VM) and the fallback cut each park from the
+  prefiltered file instead, so the gain is the prefilter, not the single pass.
 
 ## Cron jobs report into the notification bell — by SHAPE, not by a list
 
