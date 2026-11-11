@@ -17,7 +17,7 @@
 (function () {
     'use strict';
     var SRC = 'learned-map';
-    var L = { roadCase: 'learned-roads-case', road: 'learned-roads', runwayCase: 'learned-runway-case', runway: 'learned-runway', pt: 'learned-points', ptH: 'learned-lz' };
+    var L = { roadCase: 'learned-roads-case', road: 'learned-roads', runwayCase: 'learned-runway-case', runway: 'learned-runway', pt: 'learned-points', air: 'learned-airfield-icon', ptH: 'learned-lz' };
     var COL = { airstrip: '#f8fafc', landing_zone: '#f0abfc', place: '#5eead4', road: '#fde68a' };
 
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -108,6 +108,20 @@
             ['any', ['!=', ['get', 'family'], 'place'], ['in', ['get', 'park_id'], ['literal', placeParks]]]];
     }
 
+    // A bare white disc reads as a rendering fault, not as a landing site
+    // (reported as "Safari shows white dots"). The disc carries a plane.
+    var PLANE = 'M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z';
+    function planeImage(map) {
+        if (map.hasImage('learned-plane')) return true;
+        try {
+            var c = document.createElement('canvas'); c.width = c.height = 48;
+            var g = c.getContext('2d');
+            g.scale(2, 2); g.fillStyle = '#000'; g.fill(new Path2D(PLANE));
+            map.addImage('learned-plane', g.getImageData(0, 0, 48, 48), { sdf: true, pixelRatio: 2 });
+            return true;
+        } catch (e) { return false; }
+    }
+
     function addLayers(map) {
         var z = ['interpolate', ['linear'], ['zoom']];
         // A dark band under the dashes: the track is drawn ABOVE the pinned
@@ -126,12 +140,17 @@
         map.addLayer({ id: L.pt, type: 'circle', source: SRC, minzoom: 5,
             filter: ptFilter(),
             paint: {
-                'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 3.5, 2], 11, ['match', ['get', 'family'], 'airfield', 7, 5]]),
+                'circle-radius': z.concat([5, ['match', ['get', 'family'], 'airfield', 6, 2], 11, ['match', ['get', 'family'], 'airfield', 9, 5]]),
                 'circle-color': ['match', ['get', 'family'], 'airfield', COL.airstrip, COL.place],
                 'circle-stroke-color': '#0f172a', 'circle-stroke-width': 1.5,
                 // An airstrip with a drawn runway steps back once the line is legible.
                 // (a zoom expression must be outermost, so the case sits in the stop)
                 'circle-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
+        if (planeImage(map)) map.addLayer({ id: L.air, type: 'symbol', source: SRC, minzoom: 5,
+            filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'family'], 'airfield'], ['!=', ['get', 'kind'], 'landing_zone']],
+            layout: { 'icon-image': 'learned-plane', 'icon-size': z.concat([5, 0.4, 11, 0.6]), 'icon-allow-overlap': true, 'icon-ignore-placement': true },
+            paint: { 'icon-color': '#0f172a',
+                'icon-opacity': z.concat([10, 1, 12, ['case', ['all', ['==', ['get', 'kind'], 'airstrip'], ['has', 'length_m']], 0.25, 1]]) } });
         map.addLayer({ id: L.ptH, type: 'circle', source: SRC, minzoom: 5,
             filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'kind'], 'landing_zone']],
             paint: { 'circle-radius': z.concat([5, 3, 11, 6]), 'circle-color': 'rgba(15,23,42,0.6)',
@@ -167,7 +186,7 @@
             ((map.getStyle() || {}).layers || []).forEach(function (l) {
                 if (l.id.indexOf('pinned-') === 0 && (l.type === 'circle' || l.type === 'symbol')) mv(l.id);
             });
-            [L.runwayCase, L.runway, L.pt, L.ptH].forEach(mv);
+            [L.runwayCase, L.runway, L.pt, L.air, L.ptH].forEach(mv);
         },
         setPlaceParks: function (ids) {
             ids = (ids || []).slice().sort();
