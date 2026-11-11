@@ -189,12 +189,27 @@ def ensure_pbf(iso, dest_dir="/tmp", max_age_days=None):
     return pbf, pbf.startswith("/tmp/")
 
 
+def _expendable():
+    """preexec_fn: if memory runs out, the kernel kills THIS osmium child.
+
+    osmium's id sets are dense bitmaps over the planet's id range, so its
+    memory follows the number of extracts, not the size of the file (measured
+    on Tanzania: 1.7 GB per bbox). The 5mp server shares this VM; a nightly
+    refresh must be the thing that dies, and it must die alone."""
+    try:
+        with open("/proc/self/oom_score_adj", "w") as fh:
+            fh.write("1000")
+    except OSError:
+        pass
+
+
 def extract_bbox(pbf_path, key, bbox):
     """bbox-extract an area from a country PBF. Caller must delete the result."""
     w, s, e, n = bbox
     out = f"/tmp/{key}_area.osm.pbf"
     subprocess.run(["osmium", "extract", "-b", f"{w},{s},{e},{n}",
-                    pbf_path, "-o", out, "--overwrite"], check=True)
+                    pbf_path, "-o", out, "--overwrite"], check=True,
+                   preexec_fn=_expendable)
     return out
 
 
@@ -218,26 +233,95 @@ ROTATION_FILTER = [
 def prefilter(pbf_path, out):
     """Country PBF -> only the objects ROTATION_FILTER names (+ their nodes)."""
     subprocess.run(["osmium", "tags-filter", pbf_path, *ROTATION_FILTER,
-                    "-o", out, "--overwrite"], check=True)
+                    "-o", out, "--overwrite"], check=True,
+                   preexec_fn=_expendable)
+    return out
+
+
+# The tagged NODES the rotation reads (a subset of ROTATION_FILTER). They are
+# cut from their own small file because the ways file is node-renumbered.
+ROTATION_NODE_FILTER = [f for f in ROTATION_FILTER if f.startswith("n/")]
+
+# Measured on Tanzania (osmium 1.16, 23 parks, 269 MB filtered file):
+#   4 bboxes in one pass, original ids      7.0 GB RSS  -> OOM-killed
+#   23 bboxes, nodes renumbered             5.1 GB
+#   8 bboxes, nodes renumbered              1.8 GB, 22 s
+# Node ids span 13e9 and osmium keeps one dense bitmap per extract; after
+# `renumber -t node` what is left is the way-id bitmap, ~0.23 GB per extract.
+EXTRACT_GB_EACH = 0.25
+EXTRACT_GB_BUDGET = 2.0
+
+
+def _extract_chunk_size():
+    """How many bboxes one `osmium extract` pass may hold in memory."""
+    budget = EXTRACT_GB_BUDGET
+    try:
+        for line in open("/proc/meminfo"):
+            if line.startswith("MemAvailable:"):
+                budget = min(budget, int(line.split()[1]) / 1048576 * 0.4)
+    except (OSError, ValueError):
+        pass
+    return max(1, int(budget / EXTRACT_GB_EACH))
+
+
+def prepare_rotation(infra_pbf, work_dir):
+    """(ways_pbf, nodes_pbf) for extract_many, from the prefiltered country.
+
+    ways_pbf has its NODE ids renumbered (way and relation ids, which are
+    stored as osm_id, are untouched) so a multi-extract fits in memory.
+    nodes_pbf holds the tagged nodes with their ORIGINAL ids -- place and peak
+    rows store a node id, so they must never be read from ways_pbf."""
+    nodes = os.path.join(work_dir, "nodes.osm.pbf")
+    ways = os.path.join(work_dir, "ways.osm.pbf")
+    subprocess.run(["osmium", "tags-filter", infra_pbf, *ROTATION_NODE_FILTER,
+                    "-o", nodes, "--overwrite"], check=True,
+                   preexec_fn=_expendable)
+    subprocess.run(["osmium", "renumber", "-t", "node", infra_pbf,
+                    "-o", ways, "--overwrite"], check=True,
+                   preexec_fn=_expendable)
+    return ways, nodes
+
+
+def extract_nodes(nodes_pbf, bbox, out):
+    """One park's tagged nodes (original ids). ~0.1 s on the small file."""
+    w, s, e, n = bbox
+    subprocess.run(["osmium", "extract", "-s", "simple", "-b",
+                    f"{w},{s},{e},{n}", nodes_pbf, "-o", out, "--overwrite"],
+                   check=True, preexec_fn=_expendable)
     return out
 
 
 def extract_many(pbf_path, bboxes, work_dir):
-    """{key: path} -- every bbox cut out of pbf_path in ONE pass.
+    """{key: path} -- every bbox cut out of pbf_path, a memory-sized chunk
+    of them per pass (see EXTRACT_GB_EACH; one pass for all of Tanzania was
+    OOM-killed).
 
     bboxes: {key: (w, s, e, n)}. Files land in work_dir, which the caller
-    removes. Output names are indices, not park ids (accents, apostrophes)."""
+    removes. Output names are indices, not park ids (accents, apostrophes).
+    A chunk that fails is simply absent from the result: the caller cuts
+    those parks one at a time, and the other chunks keep their gain."""
     keys = list(bboxes)
-    cfg = {"directory": work_dir, "extracts": [
-        {"output": f"area_{i}.osm.pbf", "bbox": list(bboxes[k])}
-        for i, k in enumerate(keys)]}
-    cfg_path = os.path.join(work_dir, "extracts.json")
-    with open(cfg_path, "w") as fh:
-        json.dump(cfg, fh)
-    subprocess.run(["osmium", "extract", "-c", cfg_path, pbf_path,
-                    "--overwrite"], check=True)
-    return {k: os.path.join(work_dir, f"area_{i}.osm.pbf")
-            for i, k in enumerate(keys)}
+    step = _extract_chunk_size()
+    out = {}
+    for c0 in range(0, len(keys), step):
+        idx = range(c0, min(c0 + step, len(keys)))
+        cfg = {"directory": work_dir, "extracts": [
+            {"output": f"area_{i}.osm.pbf", "bbox": list(bboxes[keys[i]])}
+            for i in idx]}
+        cfg_path = os.path.join(work_dir, "extracts.json")
+        with open(cfg_path, "w") as fh:
+            json.dump(cfg, fh)
+        try:
+            subprocess.run(["osmium", "extract", "-c", cfg_path, pbf_path,
+                            "--overwrite"], check=True,
+                           preexec_fn=_expendable)
+        except (subprocess.CalledProcessError, OSError) as ex:
+            print(f"  multi-extract of {len(idx)} parks failed, they fall "
+                  f"back to one pass each: {ex}", file=sys.stderr)
+            continue
+        out.update({keys[i]: os.path.join(work_dir, f"area_{i}.osm.pbf")
+                    for i in idx})
+    return out
 
 
 def _osmium_extract(pbf_path, park_id, bbox, out):
@@ -346,7 +430,7 @@ def _road_class(props):
 
 
 def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
-                      append=False):
+                      append=False, nodes_pbf=None):
     """Fill osm_places (placenames + named rivers/streams as points) and
     roads_heigit for parks that have no rows yet. Runs opportunistically
     while the country PBF is on disk; no-op when data already present.
@@ -369,6 +453,10 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
       mode saw non-empty tables and returned): XSA spans 3 countries and had
       432 placenames for 485,000 km². Geofabrik country extracts overlap at
       borders, hence the osm_id filter rather than a blind insert.
+
+    nodes_pbf: where to read place/peak NODES from when park_pbf has had its
+    node ids renumbered (the rotation, see prepare_rotation). Their osm_id is
+    a node id, so reading them from a renumbered file would store nonsense.
     """
     import sqlite3
     db = sqlite3.connect(DB_PATH, timeout=30)
@@ -381,7 +469,7 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
 
         if n_places == 0 or force or append:
             rows = []
-            for f in _export_filtered(park_pbf, park_id,
+            for f in _export_filtered(nodes_pbf or park_pbf, park_id,
                                       ["n/place=city,town,village,hamlet"], "point"):
                 p = f["properties"]
                 name = p.get("name")
@@ -409,7 +497,7 @@ def enrich_park_infra(park_pbf, park_id, force=False, replace=False,
                                           f.get("id", ""),
                                           json.dumps(p, ensure_ascii=False)))
             rows += [r for _, r in best.values()]
-            for f in _export_filtered(park_pbf, park_id,
+            for f in _export_filtered(nodes_pbf or park_pbf, park_id,
                                       ["n/natural=peak,hill"], "point"):
                 p = f["properties"]
                 name = p.get("name")
@@ -566,17 +654,32 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
             print(f"  prefilter failed, extracting from the full file: {ex}",
                   file=sys.stderr)
         bboxes = {p["id"]: park_bbox(p, buffer_km) for p in parks}
+        areas, nodes = {}, None
         try:
-            areas = extract_many(src, bboxes, work)
+            ways, nodes = prepare_rotation(src, work)
+            areas = extract_many(ways, bboxes, work)
+            os.remove(ways)
         except (subprocess.CalledProcessError, OSError) as ex:
             print(f"  multi-extract failed, falling back to one pass per "
                   f"park: {ex}", file=sys.stderr)
-            areas = {}
+            areas, nodes = {}, None
         print(f"  {country}: extracts ready in {time.time() - t0:.0f}s",
               file=sys.stderr)
         for p in parks:
             print(f"  {p['id']}", file=sys.stderr)
             area = areas.get(p["id"])
+            park_nodes = None
+            if area and os.path.exists(area):
+                # A multi-extract area is node-renumbered: it is only usable
+                # together with this park's original-id nodes.
+                try:
+                    park_nodes = extract_nodes(
+                        nodes, bboxes[p["id"]],
+                        os.path.join(work, "park_nodes.osm.pbf"))
+                except (subprocess.CalledProcessError, OSError) as ex:
+                    print(f"  node extract failed {p['id']}: {ex}",
+                          file=sys.stderr)
+                    area = None
             if not area or not os.path.exists(area):
                 try:
                     area = extract_bbox(src, p["id"], bboxes[p["id"]])
@@ -584,7 +687,8 @@ def enrich_country(country, parks, buffer_km=50, dry_run=False):
                     print(f"  extract failed {p['id']}: {ex}", file=sys.stderr)
                     continue
             try:
-                enrich_park_infra(area, p["id"], force=True)
+                enrich_park_infra(area, p["id"], force=True,
+                                  nodes_pbf=park_nodes)
                 _osm_hydro_fallback(area, p["id"])
                 done += 1
             finally:
@@ -658,6 +762,18 @@ def enrich_all(iso=None, buffer_km=50, dry_run=False, rotate=0):
     if not by_iso:
         print("no parks match")
         return
+    if not dry_run:
+        # Two rotations at once (a manual run meeting the 05:15 cron) would
+        # each hold ~2 GB of osmium and interleave deletes on the same parks.
+        import fcntl
+        global _ROTATION_LOCK
+        _ROTATION_LOCK = open(STATE_PATH + ".lock", "w")
+        try:
+            fcntl.flock(_ROTATION_LOCK, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            print("another OSM rotation is running; not starting a second",
+                  file=sys.stderr)
+            return
     state = _load_state()
     order = sorted(by_iso, key=lambda c: (state.get(c, {}).get("at", ""), c))
     if rotate:

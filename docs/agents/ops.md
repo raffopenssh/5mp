@@ -123,11 +123,21 @@ that needs it happens in that pass and **nothing but the result is stored**:
   outside the park's bbox extract is `outside_reference` — unmeasured, not
   "not on the map". The village / river line in a learned tip is looked up at
   request time (`srv/learned_context.go`), villages across all parks' rows.
-* **Measured 2026-11-11, TZA 23 parks: 748 s** (was 22 min) — 189 s download +
-  prefilter, 559 s per-park; counts identical to the previous run (Tarangire
-  places 544 → 543, live OSM). The one-pass `extract_many` was **OOM-killed**
-  (osmium 7 GB RSS on a 7.4 GB VM) and the fallback cut each park from the
-  prefiltered file instead, so the gain is the prefilter, not the single pass.
+* **osmium's memory follows the number of bboxes, not the file size**: it
+  keeps a dense bitmap over the planet's id range per extract (TZA: 1.7 GB per
+  bbox; a one-pass cut of 23 parks was OOM-killed at 7 GB on this 7.4 GB VM,
+  beside the server). The rotation therefore (`prepare_rotation`,
+  `extract_many`) renumbers the NODE ids of the prefiltered file (0.23 GB per
+  bbox), cuts parks in memory-sized chunks (≤ 2 GB, 8 per pass), and reads
+  place/peak nodes from a separate original-id file (`nodes_pbf=`) — their
+  `osm_id` is a node id; way/relation ids are never renumbered. Every osmium
+  child sets `oom_score_adj=1000`, and `--enrich-all` takes a flock
+  (`data/osm_enrich_state.json.lock`).
+  **Measured, TZA 23 parks:** 22 min → 748 s (prefilter; multi-extract
+  OOM-killed, fell back) → **442 s without the ~110–240 s download** (199 s
+  to extracts ready, 243 s per-park, was 559 s). Roads and river names
+  identical; 7 places fewer across 4 parks — nodes *outside* the 50 km bbox
+  that the old cut dragged in as members of a crossing road.
 
 ## Cron jobs report into the notification bell — by SHAPE, not by a list
 
