@@ -92,6 +92,52 @@ and `detectAirstrips` additionally called any straight 500 m with an abrupt end
 an airstrip, on trucks too. Low grid speed alone is also not ground: a plane
 orbiting covers little net distance per minute.
 
+## The event learner (2026-11-11) — places, roads, airstrips
+
+Replaced the counter learner (`confidence = min(uses*20, 90)`, approve at a
+fixed count). Its `detectStops` / `detectBases` / `simplifyCoords` compared
+**kilometres with radii written in metres**, so every 30-minute segment was a
+stop: that was the >1,000 pending places.
+
+- **Events, not counters.** `learned_events` (migration 073) holds one row per
+  landing, take-off, stop and road traversal, de-duplicated park-wide on
+  tracker + time + kind (`SameEvent`); vehicle-track time already read is kept
+  as kind `coverage`, so a re-delivered window adds nothing. The harness
+  delivers every archive twice and requires **0** added events.
+- **Evidence** (`srv/learned_evidence.go`): distinct days / journeys /
+  trackers, both directions, axis agreement, runway line + length fitted from
+  ground-run fixes (**absent if unmeasured**, and "at least N m"), fixed-wing
+  vs rotor journeys (rotor-only = `landing_zone`; subtype unmeasured =
+  `airfield`), reference-list match as a bonus, dwell, OSM/HeiGIT agreement.
+- **Score** = P(used again within 28 d), sign-constrained logistic + Platt,
+  fitted on the early days and thresholded on the later ones:
+  `go run ./cmd/movement-eval -replay-only -dump-learner x.csv` →
+  `scripts/train_learner_score.py x.csv` → `srv/learned_score_model.go`
+  (**generated, never edit**). Thresholds target 97.5 % so the approved
+  *state* holds ≥ 95 % through the demotion grace (`learnedDemoteMinIdle`).
+- **States**: `auto_approved` / `pending` / `rejected`, each with a
+  `status_reason`. `approved_by = 'auto'` marks a learner decision; a
+  reviewer's `approved` or `rejected` is never overridden. Idle time is counted
+  in days the *park* was active, so a quiet park demotes nothing.
+- **Movement only**: `classifyByMovementOnly` (`srv/upload_queue.go`) moves ER
+  device labels into `ClassifiedSegment.Label` before classifying.
+- **Map**: `GET /api/learned-map` (client tenant only, approved only) +
+  `srv/static/learned.js`, on by default (`?learned=0` hides). A MapLibre zoom
+  expression must be outermost — nesting it in a `case` silently dropped the
+  whole points layer.
+- **Raw input is kept**: `data/autofetch_archive/<env>/*.gpx.gz`;
+  `cleanupUploadQueue` deletes an autofetch row only once archived. Rebuild:
+  `scripts/learner_rebuild_backup.sh <env> <parks> --delete`, then
+  `cmd/autofetch-backfill` (polite, resumable, state in
+  `data/autofetch_backfill/`). Re-run the replay after the archive grows.
+
+Known flaws, measured not fixed: recall is 17–31 % at this precision (140 days
+of history); one runway can yield a second "airstrip" at its far end; an event
+outside every park is credited to the park its tracker last flew in (Dar es
+Salaam and Morogoro appear under Nyerere); other parks touched by af12 tracks
+(Udzungwa, Uluguru, …) still hold old counter-era rows (`evidence_json IS
+NULL`) beside new ones; `gpx_learning_queue` id 2348 is stuck `processing`.
+
 ## Measured (2026-11-11; 536 files, 745,833 points, hints stripped)
 
 | | before | after |
