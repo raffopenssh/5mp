@@ -22506,6 +22506,10 @@ ${starredItems.narratives.map(n => {
             try { reconcileViewLayerDuplicates(); } finally { window._reconcilingPins = false; }
         }
         syncPinCategoryButtons();
+        // Learned tracks ride the Roads toggle (srv/static/learned.js).
+        if (window.LearnedMap && LearnedMap.setRoadParks) {
+            LearnedMap.setRoadParks(Object.values(pinnedLayers).filter(p => p && p.type === 'road').map(p => p.parkId));
+        }
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');
         const categoryKeys = Object.keys(pinnedLayers);

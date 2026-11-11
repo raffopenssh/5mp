@@ -1,4 +1,5 @@
-/* What the learner approved, drawn on the map with no user action.
+/* What the learner approved, drawn on the map with no user action --
+ * except road sections, which follow the Roads toggle (setRoadParks).
  *
  * GET /api/learned-map returns approved airstrips (a runway LINE where the
  * ground runs measured one), helicopter landing zones, places and road
@@ -89,9 +90,17 @@
         var b = a + 18; return (a < 10 ? '0' : '') + a + '/' + b;
     }
 
+    // Learned tracks are a ROADS layer: drawn only for the parks whose Roads
+    // row is on (popup or stats panel -- both are the 'road' pin). Airstrips,
+    // landing zones and places stay on by default.
+    var roadParks = [];
+    function roadFilter() {
+        return ['all', ['==', ['get', 'family'], 'road'], ['in', ['get', 'park_id'], ['literal', roadParks]]];
+    }
+
     function addLayers(map) {
         var z = ['interpolate', ['linear'], ['zoom']];
-        map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: ['==', ['get', 'family'], 'road'],
+        map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: { 'line-color': COL.road, 'line-width': z.concat([7, 0.8, 12, 2.2]), 'line-opacity': 0.85, 'line-dasharray': [2, 1.5] } });
         map.addLayer({ id: L.runwayCase, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
@@ -123,6 +132,13 @@
         layers: L,
         data: null,
         tipHTML: tipHTML,
+        setRoadParks: function (ids) {
+            ids = (ids || []).slice().sort();
+            if (ids.join('|') === roadParks.join('|')) return;
+            roadParks = ids;
+            var map = LearnedMap.map;
+            if (map && map.getLayer(L.road)) map.setFilter(L.road, roadFilter());
+        },
         // After a reviewer decision in the admin panel: redraw from the server.
         reload: function () {
             var map = LearnedMap.map;
