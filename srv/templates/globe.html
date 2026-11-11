@@ -22509,7 +22509,12 @@ ${starredItems.narratives.map(n => {
         // Learned tracks ride the Roads toggle (srv/static/learned.js).
         if (window.LearnedMap && LearnedMap.setRoadParks) {
             LearnedMap.setRoadParks(Object.values(pinnedLayers).filter(p => p && p.type === 'road').map(p => p.parkId));
-            LearnedMap.setPlaceParks([...new Set(Object.values(pinnedLayers).filter(p => p && (p.type === 'place' || p.type === 'visits')).map(p => p.parkId))]);
+            // …and learned places the Places toggle, unless Patrol visits is
+            // already drawing the same sites as circles.
+            const pins = Object.values(pinnedLayers).filter(Boolean);
+            const visitParks = new Set(pins.filter(p => p.type === 'visits').map(p => p.parkId));
+            LearnedMap.setPlaceParks([...new Set(pins.filter(p => p.type === 'place' && !visitParks.has(p.parkId)).map(p => p.parkId))]);
+            LearnedMap.lift();
         }
         const indicator = document.getElementById('pinned-indicator');
         const itemsContainer = document.getElementById('pinned-items');
@@ -22848,6 +22853,17 @@ ${starredItems.narratives.map(n => {
     }
     window.overviewFeatureIDs = overviewFeatureIDs;
 
+    // A Patrol visits circle and a learned-place dot are one site; the circle
+    // borrows the dot's tip (srv/static/learned.js). '' when the learned map
+    // has no such place (other tenant, not yet loaded) → the plain tip.
+    function learnedPlaceTip(props) {
+        const LM = window.LearnedMap;
+        const m = /^visited_place_(\d+)$/.exec(String(props && props.feature_id || ''));
+        if (!m || !LM || !LM.data || !LM.tipHTML) return '';
+        const f = LM.data.features.find(x => x.properties.family === 'place' && String(x.properties.id) === m[1]);
+        return f ? LM.tipHTML(f.properties) : '';
+    }
+
     function featureTipHTML(props, type, parkName) {
         props = props || {};
         // Normalize type names
@@ -22890,6 +22906,10 @@ ${starredItems.narratives.map(n => {
             html += fireSeasonLine(props, '11px');
             html += `</div>`;
             
+        } else if (type === 'visits' && learnedPlaceTip(props)) {
+            // Same site as the learned-place dot: say what that tip says
+            // (where it is, stays/days/trackers, last seen, how approved).
+            html += `<div style="font-size: 12px; line-height: 1.5;">${learnedPlaceTip(props)}</div>`;
         } else if (type === 'visits') {
             html += `<div style="font-size: 13px; line-height: 1.6; color: #374151;">`;
             if (props.name) html += `<div style="font-weight: 600; font-size: 14px; margin-bottom: 5px;">${escapeHtml(props.name)}</div>`;

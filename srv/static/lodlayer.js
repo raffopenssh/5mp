@@ -313,6 +313,7 @@
         // The vanguard chains — the few hundred trajectories that carry
         // information — sit above every pinned rendering (fireseason.js).
         if (window.FireSeason && FireSeason.lift) FireSeason.lift();
+        if (window.LearnedMap && LearnedMap.lift) LearnedMap.lift();
     }
 
     // ---- the transition, made visible ------------------------------------

@@ -17,7 +17,7 @@
 (function () {
     'use strict';
     var SRC = 'learned-map';
-    var L = { road: 'learned-roads', runwayCase: 'learned-runway-case', runway: 'learned-runway', pt: 'learned-points', ptH: 'learned-lz' };
+    var L = { roadCase: 'learned-roads-case', road: 'learned-roads', runwayCase: 'learned-runway-case', runway: 'learned-runway', pt: 'learned-points', ptH: 'learned-lz' };
     var COL = { airstrip: '#f8fafc', landing_zone: '#f0abfc', place: '#5eead4', road: '#fde68a' };
 
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -98,8 +98,10 @@
         return ['all', ['==', ['get', 'family'], 'road'], ['in', ['get', 'park_id'], ['literal', roadParks]]];
     }
 
-    // Learned places likewise: only for parks whose Places or Patrol visits
-    // row is on. Airstrips share the layer and are not gated.
+    // Learned places likewise: only for parks whose Places row is on. The
+    // Patrol visits pin draws the same sites as visit-sized circles (with this
+    // file's tip), so where that is on the dot would be a second marker and
+    // the caller leaves the park out. Airstrips share the layer, ungated.
     var placeParks = [];
     function ptFilter() {
         return ['all', ['==', ['geometry-type'], 'Point'], ['!=', ['get', 'kind'], 'landing_zone'],
@@ -108,9 +110,15 @@
 
     function addLayers(map) {
         var z = ['interpolate', ['linear'], ['zoom']];
-        map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
+        // A dark band under the dashes: the track is drawn ABOVE the pinned
+        // OSM roads (see lift), and bare yellow dashes on a blue line read as
+        // noise. The band cuts the road out so the dashes sit on dark ground.
+        map.addLayer({ id: L.roadCase, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': COL.road, 'line-width': z.concat([7, 0.8, 12, 2.2]), 'line-opacity': 0.85, 'line-dasharray': [2, 1.5] } });
+            paint: { 'line-color': '#0b1220', 'line-width': z.concat([7, 3.2, 12, 6.5]), 'line-opacity': 0.92 } });
+        map.addLayer({ id: L.road, type: 'line', source: SRC, minzoom: 7, filter: roadFilter(),
+            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            paint: { 'line-color': COL.road, 'line-width': z.concat([7, 1.3, 12, 2.8]), 'line-dasharray': [2.2, 1.4] } });
         map.addLayer({ id: L.runwayCase, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
             paint: { 'line-color': '#0f172a', 'line-width': z.concat([9, 4, 14, 14]) } });
         map.addLayer({ id: L.runway, type: 'line', source: SRC, minzoom: 9, filter: ['==', ['get', 'runway'], true],
@@ -145,7 +153,21 @@
             if (ids.join('|') === roadParks.join('|')) return;
             roadParks = ids;
             var map = LearnedMap.map;
-            if (map && map.getLayer(L.road)) map.setFilter(L.road, roadFilter());
+            if (map && map.getLayer(L.road)) { map.setFilter(L.roadCase, roadFilter()); map.setFilter(L.road, roadFilter()); }
+        },
+        // Pins are added after us and LOD pins restack themselves to the top,
+        // so the order is re-asserted from both places: learned tracks over
+        // the pinned roads, the pins' own point markers and labels over the
+        // tracks, learned airstrips and places over everything.
+        lift: function () {
+            var map = LearnedMap.map;
+            if (!map || !map.getLayer(L.road)) return;
+            var mv = function (id) { try { if (map.getLayer(id)) map.moveLayer(id); } catch (e) { } };
+            mv(L.roadCase); mv(L.road);
+            ((map.getStyle() || {}).layers || []).forEach(function (l) {
+                if (l.id.indexOf('pinned-') === 0 && (l.type === 'circle' || l.type === 'symbol')) mv(l.id);
+            });
+            [L.runwayCase, L.runway, L.pt, L.ptH].forEach(mv);
         },
         setPlaceParks: function (ids) {
             ids = (ids || []).slice().sort();
@@ -175,6 +197,7 @@
                         if (map.getSource(SRC)) { map.getSource(SRC).setData(fc); return; }
                         map.addSource(SRC, { type: 'geojson', data: fc });
                         addLayers(map);
+                        LearnedMap.lift();
                     };
                     if (map.isStyleLoaded && map.isStyleLoaded()) go(); else map.once('idle', go);
                     // A basemap switch replaces the style and drops our layers.
